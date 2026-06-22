@@ -1,0 +1,6 @@
+@AZM_HostAddress = http://localhost:5043
+
+GET {{AZM_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
