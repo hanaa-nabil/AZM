@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AZM.Domain.Interfaces
+﻿namespace AZM.Domain.Interfaces
 {
-    internal interface IEventRepository
+    public interface IEventRepository
     {
     }
 }

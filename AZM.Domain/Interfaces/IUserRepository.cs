@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AZM.Domain.Entities;
 
 namespace AZM.Domain.Interfaces
 {
-    internal interface IUserRepository
+    public interface IUserRepository
     {
+        Task<bool> EmailExistsAsync(string email);
+        Task<bool> PhoneExistsAsync(string phoneNumber);
+        Task<User?> GetByEmailAsync(string email);
+        Task<User?> GetByIdAsync(string id);
     }
 }

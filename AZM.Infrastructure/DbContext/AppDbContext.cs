@@ -1,12 +1,7 @@
 ﻿using AZM.Domain.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AZM.Infrastructure.DbContext
 {
@@ -24,6 +19,7 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<LiveSession> LiveSessions { get; set; } = null!;
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
         public DbSet<Achievement> Achievements { get; set; } = null!;
+        public DbSet<OtpCode> OtpCodes { get; set; } = null!;   // ← NEW
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -92,12 +88,16 @@ namespace AZM.Infrastructure.DbContext
                 .HasForeignKey(a => a.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ----- Event <-> User (creator, 1-to-many, no inverse navigation) -----
+            // ----- Event <-> User (creator, no cascade to avoid cycles) -----
             builder.Entity<Event>()
                 .HasOne(e => e.CreatedByUser)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // ----- OtpCode — index on Email for fast lookup -----  ← NEW
+            builder.Entity<OtpCode>()
+                .HasIndex(o => o.Email);
         }
     }
 }
