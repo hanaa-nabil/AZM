@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using AZM.Application.Common;
+using MediatR;
 
 namespace AZM.Application.Common
 {
-    internal class ICommand
-    {
-    }
+    public interface ICommand : IRequest<Result> { }
+    public interface ICommand<TResponse> : IRequest<Result<TResponse>> { }
 }
