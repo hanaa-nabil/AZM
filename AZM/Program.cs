@@ -1,26 +1,82 @@
-using AZM.Infrastructure.DbContext;
-using Microsoft.EntityFrameworkCore;
+using AZM.Infrastructure.DependencyInjection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using System.Threading.RateLimiting;
 
 namespace AZM
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // ── Infrastructure (DB, Identity, JWT, Email, Repositories) ──
+            builder.Services.AddInfrastructure(builder.Configuration);
+
+            // ── MediatR (scans Application layer for all command handlers) ──
+            builder.Services.AddMediatR(cfg =>
+                cfg.RegisterServicesFromAssembly(
+                    typeof(AZM.Application.Auth.Handlers.RegisterCommandHandler).Assembly));
+
+            // ── JWT Authentication ──
+            var jwtSection = builder.Configuration.GetSection("JwtSettings");
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtSection["Issuer"],
+                    ValidAudience = jwtSection["Audience"],
+                    IssuerSigningKey = new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(jwtSection["SecretKey"]!))
+                };
+            });
+
+            builder.Services.AddAuthorization();
+
+            // ── Rate Limiting ──
+            builder.Services.AddRateLimiter(options =>
+            {
+                options.AddPolicy("registration", httpContext =>
+                    RateLimitPartition.GetFixedWindowLimiter(
+                        partitionKey: httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+                        factory: _ => new FixedWindowRateLimiterOptions
+                        {
+                            PermitLimit = 5,
+                            Window = TimeSpan.FromMinutes(1)
+                        }));
+
+                options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+            });
+
+            // ── CORS ──
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("DefaultCorsPolicy", policy =>
+                {
+                    policy.AllowAnyOrigin()   // tighten this when you go to production
+                          .AllowAnyHeader()
+                          .AllowAnyMethod();
+                });
+            });
+
+            // ── Controllers + Swagger ──
             builder.Services.AddControllers();
-
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
-
-
+            builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1", new() { Title = "AZM.Api", Version = "v1" });
-
-                // Lets you authorize with a Bearer token directly from Swagger UI
+                options.SwaggerDoc("v1", new() { Title = "AZM API", Version = "v1" });
                 options.AddSecurityDefinition("Bearer", new()
                 {
                     Name = "Authorization",
@@ -41,19 +97,19 @@ namespace AZM
                                 Id = "Bearer"
                             }
                         },
-                        new string[] { }
+                        Array.Empty<string>()
                     }
                 });
             });
-            builder.Services.AddAuthorization();
-            builder.Services.AddDbContext<AppDbContext>(options =>
-               options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-           
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Seed roles
+            using (var scope = app.Services.CreateScope())
+            {
+                await InfrastructureServiceExtensions.SeedRolesAsync(scope.ServiceProvider);
+            }
+
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
@@ -61,14 +117,11 @@ namespace AZM
             }
 
             app.UseHttpsRedirection();
-
             app.UseCors("DefaultCorsPolicy");
-
+            app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
-
             app.MapControllers();
-
             app.Run();
         }
     }

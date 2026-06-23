@@ -1,11 +1,5 @@
 ﻿using AZM.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AZM.Domain.Entities
 {
@@ -15,9 +9,9 @@ namespace AZM.Domain.Entities
         public string LastName { get; set; } = string.Empty;
         public DateTime BirthDate { get; set; }
         public Gender Gender { get; set; }
-        public string? NationalityCode { get; set; }    
-        public string? IdDocumentNumber { get; set; }      
-        public string? IdDocumentImageUrl { get; set; }     
+        public string? NationalityCode { get; set; }
+        public string? IdDocumentNumber { get; set; }
+        public string? IdDocumentImageUrl { get; set; }
         public bool IsIdVerified { get; set; } = false;
         public string? FaceScanFrontUrl { get; set; }
         public string? FaceScanLeftUrl { get; set; }
@@ -27,6 +21,16 @@ namespace AZM.Domain.Entities
         public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
         public DateTime? LastLoginAtUtc { get; set; }
         public bool IsActive { get; set; } = true;
+
+        // Social login identifiers
+        public string? GoogleId { get; set; }
+
+        // Tracks how the account was created
+        public bool IsGoogleAccount { get; set; } = false;
+
+        // Google accounts skip OTP — their email is already verified by Google
+        // but may still be pending phone number collection
+        public bool IsPendingPhoneNumber { get; set; } = false;
 
         // ----- Navigation properties -----
         public UserProfile? Profile { get; set; }

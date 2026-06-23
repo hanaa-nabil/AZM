@@ -4,6 +4,7 @@ using AZM.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AZM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260622204919_AddOtpCodes")]
+    partial class AddOtpCodes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -329,9 +332,6 @@ namespace AZM.Infrastructure.Migrations
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
-                    b.Property<string>("GoogleId")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("IdDocumentImageUrl")
                         .HasColumnType("nvarchar(max)");
 
@@ -344,13 +344,7 @@ namespace AZM.Infrastructure.Migrations
                     b.Property<bool>("IsFaceVerified")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsGoogleAccount")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsIdVerified")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsPendingPhoneNumber")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastLoginAtUtc")
