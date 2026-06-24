@@ -103,6 +103,20 @@ namespace AZM
             });
 
             var app = builder.Build();
+            app.UseHangfireDashboard("/hangfire");
+
+            // Schedule your recurring jobs here
+            RecurringJob.AddOrUpdate<EventReminderJob>(
+                "event-reminders",
+                job => job.RunAsync(),
+                Cron.Minutely);   // checks every minute, sends notification if event is in 1hr
+
+            RecurringJob.AddOrUpdate<ExpireStaleSessionsJob>(
+                "expire-stale-sessions",
+                job => job.RunAsync(),
+                Cron.Hourly);     // checks every hour, ends sessions idle over 6hrs
+
+            app.MapHub<MapHub>("/hubs/map");  // SignalR hub endpoint
 
             // Seed roles
             using (var scope = app.Services.CreateScope())

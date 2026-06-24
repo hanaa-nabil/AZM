@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace AZM.Infrastructure.Maps
 {
-    public class GoogleMapsOptions
+    public class MatrixRow
     {
-        public const string SectionName = "GoogleMaps";
-        public string ApiKey { get; set; } = string.Empty;
+        [JsonPropertyName("elements")]
+        public List<MatrixElement> Elements { get; set; } = [];
     }
 }

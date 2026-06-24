@@ -38,6 +38,7 @@ namespace AZM.Domain.Entities
         public ICollection<LiveSession> LiveSessions { get; set; } = new List<LiveSession>();
         public ICollection<Achievement> Achievements { get; set; } = new List<Achievement>();
 
+        public string? FcmToken { get; set; }
         public string FullName => $"{FirstName} {LastName}".Trim();
     }
 }

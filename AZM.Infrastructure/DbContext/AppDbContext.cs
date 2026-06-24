@@ -19,7 +19,7 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<LiveSession> LiveSessions { get; set; } = null!;
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
         public DbSet<Achievement> Achievements { get; set; } = null!;
-        public DbSet<OtpCode> OtpCodes { get; set; } = null!;   // ← NEW
+        public DbSet<OtpCode> OtpCodes { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

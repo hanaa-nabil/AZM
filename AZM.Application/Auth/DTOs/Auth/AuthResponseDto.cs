@@ -1,4 +1,4 @@
-﻿namespace AZM.Application.Auth.DTOs
+﻿namespace AZM.Application.Auth.DTOs.Auth
 {
     public class AuthResponseDto
     {

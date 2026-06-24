@@ -1,5 +1,5 @@
 ﻿using AZM.Application.Auth.Commands;
-using AZM.Application.Auth.DTOs;
+using AZM.Application.Auth.DTOs.Auth;
 using AZM.Application.Common;
 using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;

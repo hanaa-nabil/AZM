@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace AZM.Infrastructure.RealTime
 {
-    internal class IMapHubClient
+    public interface IMapHubClient
     {
+        Task ReceiveLocationUpdate(string userId, double lat, double lng);
+        Task ReceiveSnapshot(Dictionary<string, (double lat, double lng)> positions);
+        Task ReceiveSOS(string userId, double lat, double lng);
+        Task RunnerFinished(string userId, TimeSpan finishTime);
     }
 }

@@ -1,7 +1,7 @@
 ﻿using AZM.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
-namespace AZM.Application.Auth.DTOs
+namespace AZM.Application.Auth.DTOs.Auth
 {
     public class RegisterRequestDto
     {

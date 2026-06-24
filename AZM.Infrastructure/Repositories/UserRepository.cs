@@ -1,5 +1,6 @@
 ﻿using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;
+using AZM.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,10 +9,12 @@ namespace AZM.Infrastructure.Repositories
     public class UserRepository : IUserRepository
     {
         private readonly UserManager<User> _userManager;
+        private readonly AppDbContext _db;
 
-        public UserRepository(UserManager<User> userManager)
+        public UserRepository(UserManager<User> userManager, AppDbContext db)
         {
             _userManager = userManager;
+            _db = db;
         }
 
         public async Task<bool> EmailExistsAsync(string email)
@@ -26,5 +29,16 @@ namespace AZM.Infrastructure.Repositories
 
         public async Task<User?> GetByIdAsync(string id)
             => await _userManager.FindByIdAsync(id);
+
+
+        public async Task UpdateFcmTokenAsync(string userId, string fcmToken)
+        {
+            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+
+            if (user is null) return;
+
+            user.FcmToken = fcmToken;
+            await _db.SaveChangesAsync();
+        }
     }
 }

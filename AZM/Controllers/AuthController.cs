@@ -1,5 +1,5 @@
 ﻿using AZM.Application.Auth.Commands;
-using AZM.Application.Auth.DTOs;
+using AZM.Application.Auth.DTOs.Auth;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;

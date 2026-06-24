@@ -11,6 +11,8 @@ namespace AZM.Domain.Enums
         Scheduled,
         Active,
         Completed,
-        Cancelled
+        Cancelled,
+        Draft,     
+        Published
     }
 }
