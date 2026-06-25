@@ -13,10 +13,6 @@ namespace AZM.Infrastructure.DbContext
 
         public DbSet<Event> Events { get; set; } = null!;
         public DbSet<EventParticipant> EventParticipants { get; set; } = null!;
-        public DbSet<EventRoute> EventRoutes { get; set; } = null!;
-        public DbSet<EventRouteWaypoint> EventRouteWaypoints { get; set; } = null!;
-        public DbSet<LiveLocation> LiveLocations { get; set; } = null!;
-        public DbSet<LiveSession> LiveSessions { get; set; } = null!;
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
         public DbSet<Achievement> Achievements { get; set; } = null!;
         public DbSet<OtpCode> OtpCodes { get; set; } = null!;
@@ -25,12 +21,6 @@ namespace AZM.Infrastructure.DbContext
         {
             base.OnModelCreating(builder);
 
-            // ----- Event <-> EventRoute (1-to-1) -----
-            builder.Entity<EventRoute>()
-                .HasOne(r => r.Event)
-                .WithOne(e => e.Route)
-                .HasForeignKey<EventRoute>(r => r.EventId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             // ----- Event <-> EventParticipant (1-to-many) -----
             builder.Entity<EventParticipant>()
@@ -53,33 +43,6 @@ namespace AZM.Infrastructure.DbContext
                 .HasForeignKey<UserProfile>(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // ----- User <-> LiveSession (1-to-many) -----
-            builder.Entity<LiveSession>()
-                .HasOne(s => s.User)
-                .WithMany(u => u.LiveSessions)
-                .HasForeignKey(s => s.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ----- Event <-> LiveSession (optional 1-to-many) -----
-            builder.Entity<LiveSession>()
-                .HasOne(s => s.Event)
-                .WithMany()
-                .HasForeignKey(s => s.EventId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // ----- LiveSession <-> LiveLocation (1-to-many) -----
-            builder.Entity<LiveLocation>()
-                .HasOne(l => l.LiveSession)
-                .WithMany(s => s.Locations)
-                .HasForeignKey(l => l.LiveSessionId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // ----- EventRoute <-> EventRouteWaypoint (1-to-many) -----
-            builder.Entity<EventRouteWaypoint>()
-                .HasOne(w => w.EventRoute)
-                .WithMany(r => r.Waypoints)
-                .HasForeignKey(w => w.EventRouteId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             // ----- User <-> Achievement (1-to-many) -----
             builder.Entity<Achievement>()

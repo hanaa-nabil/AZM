@@ -6,11 +6,13 @@ using System.Threading.Tasks;
 
 namespace AZM.Domain.Enums
 {
-    public enum SessionStatus
+    public enum SportType
     {
-        Active,
-        Paused,
-        Completed,
-        Expired
+        Running = 0,
+        Cycling = 1,
+        Skating = 2,
+        Swimming = 3,
+        Hiking = 4,
+        Other = 5
     }
 }

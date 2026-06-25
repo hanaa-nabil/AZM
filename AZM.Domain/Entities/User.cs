@@ -35,7 +35,6 @@ namespace AZM.Domain.Entities
         // ----- Navigation properties -----
         public UserProfile? Profile { get; set; }
         public ICollection<EventParticipant> EventParticipants { get; set; } = new List<EventParticipant>();
-        public ICollection<LiveSession> LiveSessions { get; set; } = new List<LiveSession>();
         public ICollection<Achievement> Achievements { get; set; } = new List<Achievement>();
 
         public string? FcmToken { get; set; }

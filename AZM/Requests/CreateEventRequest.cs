@@ -1,13 +1,9 @@
-﻿using AZM.Application.Auth.DTOs.Event;
-using AZM.Application.Common;
-using AZM.Domain.Enums;
-using MediatR;
+﻿using AZM.Domain.Enums;
 
-namespace AZM.Application.Events.Commands
+namespace AZM.Api.Requests
 {
-    public class CreateEventCommand : IRequest<Result<EventDto>>
+    public class CreateEventRequest
     {
-        public string CreatedByUserId { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public DateTime StartAtUtc { get; set; }

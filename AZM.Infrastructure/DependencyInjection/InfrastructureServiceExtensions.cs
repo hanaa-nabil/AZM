@@ -1,18 +1,18 @@
 ﻿using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;
-using AZM.Infrastructure.Caching;
 using AZM.Infrastructure.DbContext;
 using AZM.Infrastructure.Identity;
-using AZM.Infrastructure.Maps;
 using AZM.Infrastructure.Notifications;
-using AZM.Infrastructure.RealTime;
 using AZM.Infrastructure.Repositories;
 using AZM.Infrastructure.Services;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
+using Hangfire;
+using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StackExchange.Redis;
 
 namespace AZM.Infrastructure.DependencyInjection
 {
@@ -45,25 +45,7 @@ namespace AZM.Infrastructure.DependencyInjection
             services.Configure<JwtSettings>(
                 configuration.GetSection("JwtSettings"));
 
-            // ── 4. REDIS ─────────────────────────────────────────────
-            // Redis is an in-memory store — we use it to hold live GPS
-            // positions. It is MUCH faster than hitting the database
-            // every 3 seconds per runner.
-            services.AddSingleton<IConnectionMultiplexer>(_ =>
-                ConnectionMultiplexer.Connect(
-                    configuration.GetConnectionString("Redis")!));
-
-            services.AddScoped<ILocationCacheService, RedisLocationCacheService>();
-
-            // ── 5. SIGNALR ───────────────────────────────────────────
-            // SignalR keeps a persistent WebSocket connection open
-            // between the server and every runner's phone.
-            // When one runner moves, the server pushes that position
-            // to everyone else in the same event group instantly.
-            services.AddSignalR();
-            services.AddScoped<LocationBroadcaster>();
-
-            // ── 6. HANGFIRE ──────────────────────────────────────────
+            // ── 4. HANGFIRE ──────────────────────────────────────────
             // Hangfire runs scheduled background jobs.
             // We use SQL Server as the job storage (same DB you already have).
             // It creates its own tables automatically on first run.
@@ -85,25 +67,33 @@ namespace AZM.Infrastructure.DependencyInjection
             // This is the background worker process that picks up and runs jobs
             services.AddHangfireServer();
 
-            // ── 7. GOOGLE MAPS ───────────────────────────────────────
-            services.Configure<GoogleMapsOptions>(
-                configuration.GetSection(GoogleMapsOptions.SectionName));
-
-            services.AddHttpClient<IGoogleMapsService, GoogleMapsService>();
-
-            // ── 8. REPOSITORIES ──────────────────────────────────────
+            // ── 5. REPOSITORIES ──────────────────────────────────────
             services.AddScoped<IEventRepository, EventRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
-            services.AddScoped<ILiveSessionRepository, LiveSessionRepository>();
 
+            // ── 6. NOTIFICATIONS (FCM) ────────────────────────────────
             services.Configure<FcmOptions>(configuration.GetSection(FcmOptions.SectionName));
+
+            // Initialize Firebase ONCE here at startup, not inside FcmNotificationService's
+            // constructor — that service is Scoped and gets re-constructed on every Hangfire
+            // job tick, which previously meant re-reading the credential file (and throwing)
+            // every single time it was missing.
+            var fcmKeyPath = configuration[$"{FcmOptions.SectionName}:ServiceAccountKeyPath"];
+            if (!string.IsNullOrWhiteSpace(fcmKeyPath) && File.Exists(fcmKeyPath) && FirebaseApp.DefaultInstance is null)
+            {
+                FirebaseApp.Create(new AppOptions
+                {
+                    Credential = GoogleCredential.FromFile(fcmKeyPath)
+                });
+            }
+
             services.AddScoped<INotificationService, FcmNotificationService>();
-            // ── 9. SERVICES ──────────────────────────────────────────
+
+            // ── 7. SERVICES ───────────────────────────────────────────
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IOtpService, OtpService>();
             services.AddScoped<ISocialAuthService, GoogleAuthService>();
-            services.AddScoped<INotificationService, FcmNotificationService>();
             services.AddScoped<IPasswordHasher<OtpCode>, PasswordHasher<OtpCode>>();
 
             return services;

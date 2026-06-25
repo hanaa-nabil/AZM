@@ -1,58 +1,52 @@
 ﻿using AZM.Domain.Interfaces;
 using FirebaseAdmin;
 using FirebaseAdmin.Messaging;
-using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace AZM.Infrastructure.Services
 {
     public class FcmNotificationService : INotificationService
     {
-        private readonly FirebaseMessaging _messaging;
+        private readonly FirebaseMessaging? _messaging;
         private readonly IUserRepository _userRepo;
         private readonly ILogger<FcmNotificationService> _logger;
 
         public FcmNotificationService(
-            IOptions<FcmOptions> options,
             IUserRepository userRepo,
             ILogger<FcmNotificationService> logger)
         {
             _userRepo = userRepo;
             _logger = logger;
 
-            // Initialize Firebase only once
-            if (FirebaseApp.DefaultInstance is null)
+            // Firebase is initialized ONCE at startup in InfrastructureServiceExtensions.AddInfrastructure.
+            // If that init was skipped (missing/invalid service account file), FirebaseApp.DefaultInstance
+            // stays null and we degrade gracefully here instead of throwing on every resolution.
+            if (FirebaseApp.DefaultInstance is not null)
             {
-                FirebaseApp.Create(new AppOptions
-                {
-                    Credential = GoogleCredential.FromFile(options.Value.ServiceAccountKeyPath)
-                });
+                _messaging = FirebaseMessaging.DefaultInstance;
             }
-
-            _messaging = FirebaseMessaging.DefaultInstance;
+            else
+            {
+                _logger.LogWarning("Firebase not initialized — push notifications are disabled.");
+                _messaging = null;
+            }
         }
 
-        // Send to a single user
         public async Task SendToUserAsync(string userId, string title, string body)
         {
-            // Get the user's FCM device token from DB
-            var user = await _userRepo.GetByIdAsync(userId);
+            if (_messaging is null) return;
 
+            var user = await _userRepo.GetByIdAsync(userId);
             if (user is null || string.IsNullOrEmpty(user.FcmToken))
             {
-                _logger.LogWarning("No FCM token found for user {UserId}", userId);
+                _logger.LogWarning("No FCM token for user {UserId}", userId);
                 return;
             }
 
             var message = new Message
             {
                 Token = user.FcmToken,
-                Notification = new Notification
-                {
-                    Title = title,
-                    Body = body
-                },
+                Notification = new Notification { Title = title, Body = body },
                 Android = new AndroidConfig
                 {
                     Priority = Priority.High,
@@ -62,21 +56,13 @@ namespace AZM.Infrastructure.Services
                         Body = body,
                         Sound = "default"
                     }
-                },
-                Apns = new ApnsConfig
-                {
-                    Aps = new Aps
-                    {
-                        Alert = new ApsAlert { Title = title, Body = body },
-                        Sound = "default"
-                    }
                 }
             };
 
             try
             {
                 var result = await _messaging.SendAsync(message);
-                _logger.LogInformation("FCM sent to {UserId}, messageId: {MessageId}", userId, result);
+                _logger.LogInformation("FCM sent to {UserId}: {Result}", userId, result);
             }
             catch (FirebaseMessagingException ex)
             {
@@ -84,63 +70,32 @@ namespace AZM.Infrastructure.Services
             }
         }
 
-        // Send to multiple users at once (SOS alert, event reminder, etc.)
         public async Task SendToGroupAsync(IEnumerable<string> userIds, string title, string body)
         {
-            // Get all FCM tokens for these users
-            var tokens = new List<string>();
+            if (_messaging is null) return;
 
-            foreach (var userId in userIds)
+            var tokens = new List<string>();
+            foreach (var uid in userIds)
             {
-                var user = await _userRepo.GetByIdAsync(userId);
+                var user = await _userRepo.GetByIdAsync(uid);
                 if (user is not null && !string.IsNullOrEmpty(user.FcmToken))
                     tokens.Add(user.FcmToken);
             }
 
-            if (tokens.Count == 0)
-            {
-                _logger.LogWarning("No FCM tokens found for group notification");
-                return;
-            }
+            if (tokens.Count == 0) return;
 
-            // Firebase allows max 500 tokens per batch
-            var batches = tokens.Chunk(500);
-
-            foreach (var batch in batches)
+            foreach (var batch in tokens.Chunk(500))
             {
-                var multicastMessage = new MulticastMessage
+                var multicast = new MulticastMessage
                 {
                     Tokens = batch.ToList(),
-                    Notification = new Notification
-                    {
-                        Title = title,
-                        Body = body
-                    },
-                    Android = new AndroidConfig
-                    {
-                        Priority = Priority.High,
-                        Notification = new AndroidNotification
-                        {
-                            Title = title,
-                            Body = body,
-                            Sound = "default"
-                        }
-                    },
-                    Apns = new ApnsConfig
-                    {
-                        Aps = new Aps
-                        {
-                            Alert = new ApsAlert { Title = title, Body = body },
-                            Sound = "default"
-                        }
-                    }
+                    Notification = new Notification { Title = title, Body = body }
                 };
 
                 try
                 {
-                    var result = await _messaging.SendEachForMulticastAsync(multicastMessage);
-                    _logger.LogInformation(
-                        "FCM group sent: {Success} success, {Failure} failed",
+                    var result = await _messaging.SendEachForMulticastAsync(multicast);
+                    _logger.LogInformation("FCM group: {Success} ok, {Fail} failed",
                         result.SuccessCount, result.FailureCount);
                 }
                 catch (FirebaseMessagingException ex)
@@ -149,6 +104,5 @@ namespace AZM.Infrastructure.Services
                 }
             }
         }
-
     }
 }

@@ -1,11 +1,13 @@
+using AZM.Application.Auth.Handlers;
+using AZM.Infrastructure.BackgroundJobs;
 using AZM.Infrastructure.DependencyInjection;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Threading.RateLimiting;
 
-namespace AZM
+namespace AZM.Api
 {
     public class Program
     {
@@ -13,13 +15,12 @@ namespace AZM
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // ── Infrastructure (DB, Identity, JWT, Email, Repositories) ──
+            // ── Infrastructure ──
             builder.Services.AddInfrastructure(builder.Configuration);
 
-            // ── MediatR (scans Application layer for all command handlers) ──
+            // ── MediatR — scan entire Application assembly ──
             builder.Services.AddMediatR(cfg =>
-                cfg.RegisterServicesFromAssembly(
-                    typeof(AZM.Application.Auth.Handlers.RegisterCommandHandler).Assembly));
+                cfg.RegisterServicesFromAssemblyContaining<RegisterCommandHandler>());
 
             // ── JWT Authentication ──
             var jwtSection = builder.Configuration.GetSection("JwtSettings");
@@ -60,15 +61,13 @@ namespace AZM
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             });
 
-            // ── CORS ──
+            // ── CORS — AllowAnyOrigin for dev/Flutter ──
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("DefaultCorsPolicy", policy =>
-                {
-                    policy.AllowAnyOrigin()   // tighten this when you go to production
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
-                });
+                    policy.AllowAnyHeader()
+                          .AllowAnyMethod()
+                          .AllowAnyOrigin());  
             });
 
             // ── Controllers + Swagger ──
@@ -94,7 +93,7 @@ namespace AZM
                             Reference = new Microsoft.OpenApi.Models.OpenApiReference
                             {
                                 Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                                Id = "Bearer"
+                                Id   = "Bearer"
                             }
                         },
                         Array.Empty<string>()
@@ -103,26 +102,10 @@ namespace AZM
             });
 
             var app = builder.Build();
-            app.UseHangfireDashboard("/hangfire");
 
-            // Schedule your recurring jobs here
-            RecurringJob.AddOrUpdate<EventReminderJob>(
-                "event-reminders",
-                job => job.RunAsync(),
-                Cron.Minutely);   // checks every minute, sends notification if event is in 1hr
-
-            RecurringJob.AddOrUpdate<ExpireStaleSessionsJob>(
-                "expire-stale-sessions",
-                job => job.RunAsync(),
-                Cron.Hourly);     // checks every hour, ends sessions idle over 6hrs
-
-            app.MapHub<MapHub>("/hubs/map");  // SignalR hub endpoint
-
-            // Seed roles
+            // ── Seed Roles ──
             using (var scope = app.Services.CreateScope())
-            {
                 await InfrastructureServiceExtensions.SeedRolesAsync(scope.ServiceProvider);
-            }
 
             if (app.Environment.IsDevelopment())
             {
@@ -135,6 +118,14 @@ namespace AZM
             app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseHangfireDashboard("/hangfire");
+
+            // ── Hangfire recurring jobs ──
+            RecurringJob.AddOrUpdate<EventReminderJob>(
+                "event-reminders",
+                job => job.RunAsync(),
+                Cron.Minutely);
+
             app.MapControllers();
             app.Run();
         }
