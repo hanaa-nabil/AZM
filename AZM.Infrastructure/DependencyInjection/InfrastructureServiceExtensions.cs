@@ -1,8 +1,8 @@
 ﻿using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;
+using AZM.Infrastructure.Caching;
 using AZM.Infrastructure.DbContext;
 using AZM.Infrastructure.Identity;
-using AZM.Infrastructure.Notifications;
 using AZM.Infrastructure.Repositories;
 using AZM.Infrastructure.Services;
 using FirebaseAdmin;
@@ -13,6 +13,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Hangfire;
+using Hangfire.SqlServer;
+using StackExchange.Redis;
 
 namespace AZM.Infrastructure.DependencyInjection
 {
@@ -27,8 +30,8 @@ namespace AZM.Infrastructure.DependencyInjection
                 options.UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection")));
 
-            // ── 2. IDENTITY ──────────────────────────────────────────
-            services.AddIdentity<User, IdentityRole<Guid>>(options =>
+            // Identity
+            services.AddIdentity<User, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
@@ -41,59 +44,14 @@ namespace AZM.Infrastructure.DependencyInjection
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-            // ── 3. JWT ───────────────────────────────────────────────
-            services.Configure<JwtSettings>(
-                configuration.GetSection("JwtSettings"));
+            // JWT settings
+            services.Configure<JwtSettings>(options =>
+                configuration.GetSection("JwtSettings").Bind(options));
 
-            // ── 4. HANGFIRE ──────────────────────────────────────────
-            // Hangfire runs scheduled background jobs.
-            // We use SQL Server as the job storage (same DB you already have).
-            // It creates its own tables automatically on first run.
-            services.AddHangfire(h => h
-                .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
-                .UseSimpleAssemblyNameTypeSerializer()
-                .UseRecommendedSerializerSettings()
-                .UseSqlServerStorage(
-                    configuration.GetConnectionString("DefaultConnection"),
-                    new SqlServerStorageOptions
-                    {
-                        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-                        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-                        QueuePollInterval = TimeSpan.Zero,
-                        UseRecommendedIsolationLevel = true,
-                        DisableGlobalLocks = true
-                    }));
-
-            // This is the background worker process that picks up and runs jobs
-            services.AddHangfireServer();
-
-            // ── 5. REPOSITORIES ──────────────────────────────────────
-            services.AddScoped<IEventRepository, EventRepository>();
-            services.AddScoped<IUserRepository, UserRepository>();
-
-            // ── 6. NOTIFICATIONS (FCM) ────────────────────────────────
-            services.Configure<FcmOptions>(configuration.GetSection(FcmOptions.SectionName));
-
-            // Initialize Firebase ONCE here at startup, not inside FcmNotificationService's
-            // constructor — that service is Scoped and gets re-constructed on every Hangfire
-            // job tick, which previously meant re-reading the credential file (and throwing)
-            // every single time it was missing.
-            var fcmKeyPath = configuration[$"{FcmOptions.SectionName}:ServiceAccountKeyPath"];
-            if (!string.IsNullOrWhiteSpace(fcmKeyPath) && File.Exists(fcmKeyPath) && FirebaseApp.DefaultInstance is null)
-            {
-                FirebaseApp.Create(new AppOptions
-                {
-                    Credential = GoogleCredential.FromFile(fcmKeyPath)
-                });
-            }
-
-            services.AddScoped<INotificationService, FcmNotificationService>();
-
-            // ── 7. SERVICES ───────────────────────────────────────────
+            // Services
             services.AddScoped<ITokenService, TokenService>();
             services.AddScoped<IEmailService, EmailService>();
             services.AddScoped<IOtpService, OtpService>();
-            services.AddScoped<ISocialAuthService, GoogleAuthService>();
             services.AddScoped<IPasswordHasher<OtpCode>, PasswordHasher<OtpCode>>();
 
             return services;

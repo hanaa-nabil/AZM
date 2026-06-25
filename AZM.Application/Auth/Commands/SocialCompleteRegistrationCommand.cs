@@ -4,7 +4,7 @@ using MediatR;
 
 namespace AZM.Application.Auth.Commands
 {
-    public class SocialCompleteRegistrationCommand : IRequest<Result<AuthResponseDto>>
+    public class SocialCompleteRegistrationCommand : IRequest<Result<RegisterResponseDto>>
     {
         public SocialCompleteRegistrationDto Dto { get; set; }
 

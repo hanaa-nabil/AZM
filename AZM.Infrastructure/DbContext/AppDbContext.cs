@@ -16,7 +16,7 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<EventParticipant> EventParticipants { get; set; } = null!;
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
         public DbSet<Achievement> Achievements { get; set; } = null!;
-        public DbSet<OtpCode> OtpCodes { get; set; } = null!;
+        public DbSet<OtpCode> OtpCodes { get; set; } = null!;   // ← NEW
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -58,6 +58,17 @@ namespace AZM.Infrastructure.DbContext
                 .WithMany()
                 .HasForeignKey(e => e.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // ----- User <-> UserSport (1-to-many) -----
+            builder.Entity<UserSport>()
+                .HasOne(s => s.User)
+                .WithMany(u => u.Sports)
+                .HasForeignKey(s => s.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<UserSport>()
+                .HasIndex(s => new { s.UserId, s.Sport })
+                .IsUnique(); // prevent duplicate sport entries per user
 
             // ----- OtpCode — index on Email for fast lookup -----  ← NEW
             builder.Entity<OtpCode>()

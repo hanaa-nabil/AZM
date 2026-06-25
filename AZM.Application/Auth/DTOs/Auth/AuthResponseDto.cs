@@ -7,5 +7,6 @@
         public string FullName { get; set; } = string.Empty;
         public string Token { get; set; } = string.Empty;
         public bool EmailConfirmed { get; set; }
+        public string? ProfilePhotoUrl { get; set; }
     }
 }

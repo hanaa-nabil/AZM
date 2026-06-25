@@ -37,7 +37,6 @@ namespace AZM.Domain.Entities
         public ICollection<EventParticipant> EventParticipants { get; set; } = new List<EventParticipant>();
         public ICollection<Achievement> Achievements { get; set; } = new List<Achievement>();
 
-        public string? FcmToken { get; set; }
         public string FullName => $"{FirstName} {LastName}".Trim();
     }
 }

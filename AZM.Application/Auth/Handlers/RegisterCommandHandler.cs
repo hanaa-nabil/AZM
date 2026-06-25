@@ -8,29 +8,26 @@ using Microsoft.AspNetCore.Identity;
 
 namespace AZM.Application.Auth.Handlers
 {
-    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<AuthResponseDto>>
+    public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<RegisterResponseDto>>
     {
         private readonly UserManager<User> _userManager;
         private readonly IUserRepository _userRepository;
-        private readonly ITokenService _tokenService;
         private readonly IEmailService _emailService;
         private readonly IOtpService _otpService;
 
         public RegisterCommandHandler(
             UserManager<User> userManager,
             IUserRepository userRepository,
-            ITokenService tokenService,
             IEmailService emailService,
             IOtpService otpService)
         {
             _userManager = userManager;
             _userRepository = userRepository;
-            _tokenService = tokenService;
             _emailService = emailService;
             _otpService = otpService;
         }
 
-        public async Task<Result<AuthResponseDto>> Handle(
+        public async Task<Result<RegisterResponseDto>> Handle(
             RegisterCommand request,
             CancellationToken cancellationToken)
         {
@@ -46,31 +43,25 @@ namespace AZM.Application.Auth.Handlers
             var birthDate = DateOnly.FromDateTime(dto.BirthDate);
 
             if (birthDate >= today)
-                return Result<AuthResponseDto>.Failure(
+                return Result<RegisterResponseDto>.Failure(
                     "Birth date cannot be today or in the future.", 400);
 
             if (birthDate < today.AddYears(-100))
-                return Result<AuthResponseDto>.Failure(
+                return Result<RegisterResponseDto>.Failure(
                     "Please enter a valid birth date.", 400);
 
             // 3. Duplicate email check
             if (await _userRepository.EmailExistsAsync(email))
-                return Result<AuthResponseDto>.Failure(
+                return Result<RegisterResponseDto>.Failure(
                     "An account with this email already exists.", 409);
 
-            // 4. Duplicate phone check
-            if (await _userRepository.PhoneExistsAsync(dto.PhoneNumber))
-                return Result<AuthResponseDto>.Failure(
-                    "An account with this phone number already exists.", 409);
-
-            // 5. Create the user — Identity handles password hashing
+            // 4. Create the user — phone number will be added in the next step
             var user = new User
             {
                 UserName = email,
                 Email = email,
                 FirstName = firstName,
                 LastName = lastName,
-                PhoneNumber = dto.PhoneNumber,
                 BirthDate = dto.BirthDate,
                 Gender = dto.Gender,
                 EmailConfirmed = false,
@@ -82,24 +73,28 @@ namespace AZM.Application.Auth.Handlers
             if (!createResult.Succeeded)
             {
                 var errors = string.Join(" ", createResult.Errors.Select(e => e.Description));
-                return Result<AuthResponseDto>.Failure(errors, 400);
+                return Result<RegisterResponseDto>.Failure(errors, 400);
             }
 
-            // 6. Generate OTP and send it to their email
-            var otp = await _otpService.GenerateAndStoreOtpAsync(email);
-            await _emailService.SendOtpEmailAsync(email, firstName, otp);
+            // 5. Generate OTP and send it to their email
+            //    If the email send fails, delete the user so we don't leave an orphaned account
+            try
+            {
+                var otp = await _otpService.GenerateAndStoreOtpAsync(email);
+                await _emailService.SendOtpEmailAsync(email, firstName, otp);
+            }
+            catch
+            {
+                await _userManager.DeleteAsync(user);
+                return Result<RegisterResponseDto>.Failure(
+                    "Failed to send verification email. Please try again.", 500);
+            }
 
-            // 7. Generate JWT
-            var roles = await _userManager.GetRolesAsync(user);
-            var token = _tokenService.GenerateJwtToken(user, roles);
-
-            return Result<AuthResponseDto>.Success(new AuthResponseDto
+            // 6. Return userId + email only — JWT is issued after the full flow is complete
+            return Result<RegisterResponseDto>.Success(new RegisterResponseDto
             {
                 UserId = user.Id,
-                Email = user.Email!,
-                FullName = user.FullName,
-                Token = token,
-                EmailConfirmed = false
+                Email = user.Email!
             }, 201);
         }
     }

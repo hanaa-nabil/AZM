@@ -4,7 +4,7 @@ using MediatR;
 
 namespace AZM.Application.Auth.Commands
 {
-    public class RegisterCommand : IRequest<Result<AuthResponseDto>>
+    public class RegisterCommand : IRequest<Result<RegisterResponseDto>>
     {
         public RegisterRequestDto Dto { get; set; }
 

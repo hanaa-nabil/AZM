@@ -8,23 +8,21 @@ using Microsoft.AspNetCore.Identity;
 
 namespace AZM.Application.Auth.Handlers
 {
-    public class SocialCompleteRegistrationHandler : IRequestHandler<SocialCompleteRegistrationCommand, Result<AuthResponseDto>>
+    public class SocialCompleteRegistrationHandler
+        : IRequestHandler<SocialCompleteRegistrationCommand, Result<RegisterResponseDto>>
     {
         private readonly UserManager<User> _userManager;
         private readonly IUserRepository _userRepository;
-        private readonly ITokenService _tokenService;
 
         public SocialCompleteRegistrationHandler(
             UserManager<User> userManager,
-            IUserRepository userRepository,
-            ITokenService tokenService)
+            IUserRepository userRepository)
         {
             _userManager = userManager;
             _userRepository = userRepository;
-            _tokenService = tokenService;
         }
 
-        public async Task<Result<AuthResponseDto>> Handle(
+        public async Task<Result<RegisterResponseDto>> Handle(
             SocialCompleteRegistrationCommand request,
             CancellationToken cancellationToken)
         {
@@ -34,22 +32,24 @@ namespace AZM.Application.Auth.Handlers
             // 1. Find the user
             var user = await _userRepository.GetByEmailAsync(email);
             if (user is null)
-                return Result<AuthResponseDto>.Failure("No account found with this email.", 404);
+                return Result<RegisterResponseDto>.Failure("No account found with this email.", 404);
 
             // 2. Make sure this is actually a Google account
             if (!user.IsGoogleAccount)
-                return Result<AuthResponseDto>.Failure("This endpoint is only for social accounts.", 400);
+                return Result<RegisterResponseDto>.Failure(
+                    "This endpoint is only for social accounts.", 400);
 
             // 3. Make sure they haven't already completed registration
             if (!user.IsPendingPhoneNumber)
-                return Result<AuthResponseDto>.Failure("Registration is already complete.", 400);
+                return Result<RegisterResponseDto>.Failure(
+                    "Registration is already complete.", 400);
 
             // 4. Check phone number is not already taken
             if (await _userRepository.PhoneExistsAsync(phoneNumber))
-                return Result<AuthResponseDto>.Failure(
+                return Result<RegisterResponseDto>.Failure(
                     "An account with this phone number already exists.", 409);
 
-            // 5. Update phone number and mark registration as complete
+            // 5. Update phone number and mark phone step as complete
             user.PhoneNumber = phoneNumber;
             user.IsPendingPhoneNumber = false;
 
@@ -57,20 +57,14 @@ namespace AZM.Application.Auth.Handlers
             if (!updateResult.Succeeded)
             {
                 var errors = string.Join(" ", updateResult.Errors.Select(e => e.Description));
-                return Result<AuthResponseDto>.Failure(errors, 400);
+                return Result<RegisterResponseDto>.Failure(errors, 400);
             }
 
-            // 6. Generate fresh JWT
-            var roles = await _userManager.GetRolesAsync(user);
-            var token = _tokenService.GenerateJwtToken(user, roles);
-
-            return Result<AuthResponseDto>.Success(new AuthResponseDto
+            // 6. Phone saved — proceed to complete-profile to pick sports, add photo, and get token
+            return Result<RegisterResponseDto>.Success(new RegisterResponseDto
             {
                 UserId = user.Id,
-                Email = user.Email!,
-                FullName = user.FullName,
-                Token = token,
-                EmailConfirmed = true
+                Email = user.Email!
             });
         }
     }
