@@ -94,7 +94,10 @@ namespace AZM.Application.Auth.Handlers
             return Result<RegisterResponseDto>.Success(new RegisterResponseDto
             {
                 UserId = user.Id,
-                Email = user.Email!
+                Email = user.Email!,
+                EmailVerificationRequired = true,   // ← add this
+                PhoneNumberRequired = true,          // ← add this
+            Message = "Please check your email for the verification code."
             }, 201);
         }
     }

@@ -1,6 +1,6 @@
 ﻿using AZM.Application.Common;
 using AZM.Application.Events.Commands;
-using AZM.Application.Events.Queries;
+
 using AZM.Domain.Enums;
 using AZM.Domain.Interfaces;
 using MediatR;

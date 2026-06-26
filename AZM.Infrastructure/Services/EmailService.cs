@@ -39,6 +39,19 @@ namespace AZM.Infrastructure.Services
             await SendEmailAsync(toEmail, subject, body);
         }
 
+        public async Task SendPasswordResetOtpAsync(string toEmail, string firstName, string otp)
+        {
+            var subject = "Reset your AZM password";
+            var body = $@"
+                <h2>Hi {firstName},</h2>
+                <p>We received a request to reset your password. Use the code below:</p>
+                <h1 style='letter-spacing:8px'>{otp}</h1>
+                <p>This code expires in <strong>10 minutes</strong>.</p>
+                <p>If you didn't request a password reset, you can safely ignore this email.</p>";
+
+            await SendEmailAsync(toEmail, subject, body);
+        }
+
         private async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
         {
             var message = new MimeMessage();

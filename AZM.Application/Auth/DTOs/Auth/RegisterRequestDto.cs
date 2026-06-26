@@ -19,12 +19,6 @@ namespace AZM.Application.Auth.DTOs.Auth
         [MaxLength(256)]
         public string Email { get; set; } = string.Empty;
 
-        [Required]
-        [Phone]
-        [MinLength(7, ErrorMessage = "Phone number is too short.")]
-        [MaxLength(15, ErrorMessage = "Phone number is too long.")]
-        public string PhoneNumber { get; set; } = string.Empty;
-
         [Required, MinLength(8), MaxLength(128)]
         [RegularExpression(
             @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&\#_])[A-Za-z\d@$!%*?&\#_]{8,}$",

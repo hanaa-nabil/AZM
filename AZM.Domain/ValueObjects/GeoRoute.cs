@@ -1,12 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AZM.Domain.ValueObjects
+﻿namespace AZM.Domain.ValueObjects
 {
-    internal class GeoRoute
+    public class GeoRoute
     {
+        public List<GeoLocation> Points { get; set; } = new();
+
+        public GeoRoute() { }
+
+        public GeoRoute(List<GeoLocation> points)
+        {
+            Points = points;
+        }
     }
 }

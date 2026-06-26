@@ -22,21 +22,22 @@ namespace AZM.Domain.Entities
         public DateTime? LastLoginAtUtc { get; set; }
         public bool IsActive { get; set; } = true;
 
-        // Social login identifiers
         public string? GoogleId { get; set; }
-
-        // Tracks how the account was created
         public bool IsGoogleAccount { get; set; } = false;
-
-        // Google accounts skip OTP — their email is already verified by Google
-        // but may still be pending phone number collection
         public bool IsPendingPhoneNumber { get; set; } = false;
 
-        // ----- Navigation properties -----
+        // Navigation properties
         public UserProfile? Profile { get; set; }
         public ICollection<EventParticipant> EventParticipants { get; set; } = new List<EventParticipant>();
         public ICollection<Achievement> Achievements { get; set; } = new List<Achievement>();
 
+<<<<<<< HEAD
+=======
+        public string? FcmToken { get; set; }
+        public string? ProfilePhotoUrl { get; set; }
+        public ICollection<UserSport> Sports { get; set; } = new List<UserSport>();
+
+>>>>>>> DB Back to local, Auth working technically
         public string FullName => $"{FirstName} {LastName}".Trim();
     }
 }

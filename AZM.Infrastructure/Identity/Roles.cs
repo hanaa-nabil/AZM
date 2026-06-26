@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace AZM.Infrastructure.Identity
 {
-    internal class Roles
+    public class Roles
     {
     }
 }

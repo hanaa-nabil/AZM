@@ -4,5 +4,6 @@
     {
         Task SendOtpEmailAsync(string toEmail, string firstName, string otp);
         Task SendWelcomeEmailAsync(string toEmail, string firstName);
+        Task SendPasswordResetOtpAsync(string toEmail, string firstName, string otp);
     }
 }

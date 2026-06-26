@@ -1,12 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AZM.Domain.ValueObjects
+﻿namespace AZM.Domain.ValueObjects
 {
-    internal class GeoLocation
+    public class GeoLocation
     {
+        public double Lat { get; set; }
+        public double Lng { get; set; }
+
+        public GeoLocation() { }
+
+        public GeoLocation(double lat, double lng)
+        {
+            Lat = lat;
+            Lng = lng;
+        }
     }
 }

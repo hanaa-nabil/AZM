@@ -1,4 +1,4 @@
-using AZM.Application.Auth.DTOs;
+using AZM.Application.Auth.DTOs.Auth;
 using AZM.Application.Common;
 using MediatR;
 

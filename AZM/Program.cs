@@ -3,6 +3,7 @@ using AZM.Infrastructure.BackgroundJobs;
 using AZM.Infrastructure.DependencyInjection;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -15,18 +16,22 @@ namespace AZM.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // ── Infrastructure ──
+            // Infrastructure
             builder.Services.AddInfrastructure(builder.Configuration);
 
-            // ── MediatR — scan entire Application assembly ──
+            // MediatR
             builder.Services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssemblyContaining<RegisterCommandHandler>());
 
+<<<<<<< HEAD
             builder.Services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssemblyContaining<RegisterCommandHandler>());
 
 
             // ── JWT Authentication ──
+=======
+            // JWT Authentication
+>>>>>>> DB Back to local, Auth working technically
             var jwtSection = builder.Configuration.GetSection("JwtSettings");
             builder.Services.AddAuthentication(options =>
             {
@@ -50,7 +55,7 @@ namespace AZM.Api
 
             builder.Services.AddAuthorization();
 
-            // ── Rate Limiting ──
+            // Rate Limiting
             builder.Services.AddRateLimiter(options =>
             {
                 options.AddPolicy("registration", httpContext =>
@@ -65,16 +70,16 @@ namespace AZM.Api
                 options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
             });
 
-            // ── CORS — AllowAnyOrigin for dev/Flutter ──
+            // CORS
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("DefaultCorsPolicy", policy =>
                     policy.AllowAnyHeader()
                           .AllowAnyMethod()
-                          .AllowAnyOrigin());  
+                          .AllowAnyOrigin());
             });
 
-            // ── Controllers + Swagger ──
+            // Controllers + Swagger
             builder.Services.AddControllers();
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
@@ -97,7 +102,7 @@ namespace AZM.Api
                             Reference = new Microsoft.OpenApi.Models.OpenApiReference
                             {
                                 Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
-                                Id   = "Bearer"
+                                Id = "Bearer"
                             }
                         },
                         Array.Empty<string>()
@@ -107,7 +112,7 @@ namespace AZM.Api
 
             var app = builder.Build();
 
-            // ── Seed Roles ──
+            // Seed Roles
             using (var scope = app.Services.CreateScope())
                 await InfrastructureServiceExtensions.SeedRolesAsync(scope.ServiceProvider);
 
@@ -124,7 +129,6 @@ namespace AZM.Api
             app.UseAuthorization();
             app.UseHangfireDashboard("/hangfire");
 
-            // ── Hangfire recurring jobs ──
             RecurringJob.AddOrUpdate<EventReminderJob>(
                 "event-reminders",
                 job => job.RunAsync(),
