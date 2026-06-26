@@ -29,7 +29,7 @@ namespace AZM.Infrastructure.BackgroundJobs
             {
                 var participantIds = ev.Participants
                     .Where(p => p.Status == ParticipantStatus.Joined)
-                    .Select(p => p.UserId);
+                    .Select(p => p.UserId.ToString());
 
                 await _notifications.SendToGroupAsync(
                     participantIds,

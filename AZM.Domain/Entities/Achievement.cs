@@ -17,7 +17,7 @@ namespace AZM.Domain.Entities
 
         public DateTime EarnedAtUtc { get; set; } = DateTime.UtcNow;
 
-        public string UserId { get; set; } = string.Empty; // string because IdentityUser.Id is a string
+        public Guid UserId { get; set; }  
         public User? User { get; set; }
     }
 }

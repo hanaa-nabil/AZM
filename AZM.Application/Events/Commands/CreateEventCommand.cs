@@ -1,21 +1,21 @@
-﻿using AZM.Application.Auth.DTOs.Event;
-using AZM.Application.Common;
+﻿using AZM.Application.Common;
 using AZM.Domain.Enums;
 using MediatR;
 
 namespace AZM.Application.Events.Commands
 {
-    public class CreateEventCommand : IRequest<Result<EventDto>>
-    {
-        public string CreatedByUserId { get; set; } = string.Empty;
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
-        public DateTime StartAtUtc { get; set; }
-        public DifficultyLevel Difficulty { get; set; }
-        public int? MaxParticipants { get; set; }
-        public double MeetingLat { get; set; }
-        public double MeetingLng { get; set; }
-        public string MeetingAddress { get; set; } = string.Empty;
-        public SportType SportType { get; set; }
-    }
+    public record CreateEventCommand(
+     string Title,
+     string Description,
+     SportType SportType,
+     DifficultyLevel DifficultyLevel,
+     double Latitude,
+     double Longitude,
+     string LocationName,
+     DateTime EventDate,
+     Guid OrganizerId,
+     int MaxParticipants = 0,
+     double? DistanceKm = null,
+     string? CoverImageUrl = null
+     ) : IRequest<Result<Guid>>;
 }

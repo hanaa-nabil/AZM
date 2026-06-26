@@ -22,6 +22,10 @@ namespace AZM.Api
             builder.Services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssemblyContaining<RegisterCommandHandler>());
 
+            builder.Services.AddMediatR(cfg =>
+                cfg.RegisterServicesFromAssemblyContaining<RegisterCommandHandler>());
+
+
             // ── JWT Authentication ──
             var jwtSection = builder.Configuration.GetSection("JwtSettings");
             builder.Services.AddAuthentication(options =>

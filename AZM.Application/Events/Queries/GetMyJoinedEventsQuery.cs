@@ -1,4 +1,5 @@
-﻿using AZM.Application.Common;
+﻿using AZM.Application.Auth.DTOs.Event;
+using AZM.Application.Common;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -8,5 +9,5 @@ using System.Threading.Tasks;
 
 namespace AZM.Application.Events.Queries
 {
-    public record LeaveEventCommand(Guid EventId, Guid UserId) : IRequest<Result<bool>>;
+    public record GetMyJoinedEventsQuery(Guid UserId) : IRequest<Result<IEnumerable<EventFeedItemDto>>>;
 }

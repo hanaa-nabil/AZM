@@ -8,6 +8,6 @@ namespace AZM.Domain.Interfaces
         Task<bool> PhoneExistsAsync(string phoneNumber);
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByIdAsync(string id);
-        Task UpdateFcmTokenAsync(string userId, string fcmToken);
+        Task UpdateFcmTokenAsync(Guid userId, string fcmToken);
     }
 }

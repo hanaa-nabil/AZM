@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AZM.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Initialcreate : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -15,7 +15,7 @@ namespace AZM.Infrastructure.Migrations
                 name: "AspNetRoles",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -29,7 +29,7 @@ namespace AZM.Infrastructure.Migrations
                 name: "AspNetUsers",
                 columns: table => new
                 {
-                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -45,6 +45,10 @@ namespace AZM.Infrastructure.Migrations
                     CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
                     LastLoginAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
+                    GoogleId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    IsGoogleAccount = table.Column<bool>(type: "bit", nullable: false),
+                    IsPendingPhoneNumber = table.Column<bool>(type: "bit", nullable: false),
+                    FcmToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -66,12 +70,28 @@ namespace AZM.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "OtpCodes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Code = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ExpiresAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    IsUsed = table.Column<bool>(type: "bit", nullable: false),
+                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_OtpCodes", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -94,7 +114,7 @@ namespace AZM.Infrastructure.Migrations
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     EarnedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -113,7 +133,7 @@ namespace AZM.Infrastructure.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ClaimType = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ClaimValue = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
@@ -135,7 +155,7 @@ namespace AZM.Infrastructure.Migrations
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -152,8 +172,8 @@ namespace AZM.Infrastructure.Migrations
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RoleId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    RoleId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -176,7 +196,7 @@ namespace AZM.Infrastructure.Migrations
                 name: "AspNetUserTokens",
                 columns: table => new
                 {
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
@@ -199,20 +219,27 @@ namespace AZM.Infrastructure.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Difficulty = table.Column<int>(type: "int", nullable: false),
+                    SportType = table.Column<int>(type: "int", nullable: false),
+                    DifficultyLevel = table.Column<int>(type: "int", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    StartAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    MaxParticipants = table.Column<int>(type: "int", nullable: true),
-                    CreatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatedByUserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    Latitude = table.Column<double>(type: "float", nullable: false),
+                    Longitude = table.Column<double>(type: "float", nullable: false),
+                    LocationName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EventDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    OrganizerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    MaxParticipants = table.Column<int>(type: "int", nullable: false),
+                    DistanceKm = table.Column<double>(type: "float", nullable: true),
+                    RouteImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CoverImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Events", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Events_AspNetUsers_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
+                        name: "FK_Events_AspNetUsers_OrganizerId",
+                        column: x => x.OrganizerId,
                         principalTable: "AspNetUsers",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -229,7 +256,7 @@ namespace AZM.Infrastructure.Migrations
                     EventsCompletedCount = table.Column<int>(type: "int", nullable: false),
                     TotalDistanceMeters = table.Column<double>(type: "float", nullable: false),
                     UpdatedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -247,12 +274,11 @@ namespace AZM.Infrastructure.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    JoinedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CheckedInAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    CompletedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
                     EventId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
+                    JoinedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LeftAt = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -267,105 +293,6 @@ namespace AZM.Infrastructure.Migrations
                         name: "FK_EventParticipants_Events_EventId",
                         column: x => x.EventId,
                         principalTable: "Events",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "EventRoutes",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StartLatitude = table.Column<double>(type: "float", nullable: false),
-                    StartLongitude = table.Column<double>(type: "float", nullable: false),
-                    StartAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    EndLatitude = table.Column<double>(type: "float", nullable: false),
-                    EndLongitude = table.Column<double>(type: "float", nullable: false),
-                    EndAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    DistanceMeters = table.Column<double>(type: "float", nullable: true),
-                    EstimatedDurationSeconds = table.Column<int>(type: "int", nullable: true),
-                    EventId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventRoutes", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_EventRoutes_Events_EventId",
-                        column: x => x.EventId,
-                        principalTable: "Events",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "LiveSessions",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StartedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    EndedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    EventId = table.Column<Guid>(type: "uniqueidentifier", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LiveSessions", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_LiveSessions_AspNetUsers_UserId",
-                        column: x => x.UserId,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_LiveSessions_Events_EventId",
-                        column: x => x.EventId,
-                        principalTable: "Events",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "EventRouteWaypoints",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Order = table.Column<int>(type: "int", nullable: false),
-                    Latitude = table.Column<double>(type: "float", nullable: false),
-                    Longitude = table.Column<double>(type: "float", nullable: false),
-                    EventRouteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_EventRouteWaypoints", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_EventRouteWaypoints_EventRoutes_EventRouteId",
-                        column: x => x.EventRouteId,
-                        principalTable: "EventRoutes",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "LiveLocations",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Latitude = table.Column<double>(type: "float", nullable: false),
-                    Longitude = table.Column<double>(type: "float", nullable: false),
-                    AccuracyMeters = table.Column<double>(type: "float", nullable: true),
-                    SpeedMetersPerSecond = table.Column<double>(type: "float", nullable: true),
-                    HeadingDegrees = table.Column<double>(type: "float", nullable: true),
-                    RecordedAtUtc = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    LiveSessionId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_LiveLocations", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_LiveLocations_LiveSessions_LiveSessionId",
-                        column: x => x.LiveSessionId,
-                        principalTable: "LiveSessions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -425,35 +352,14 @@ namespace AZM.Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_EventRoutes_EventId",
-                table: "EventRoutes",
-                column: "EventId",
-                unique: true);
-
-            migrationBuilder.CreateIndex(
-                name: "IX_EventRouteWaypoints_EventRouteId",
-                table: "EventRouteWaypoints",
-                column: "EventRouteId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Events_CreatedByUserId",
+                name: "IX_Events_OrganizerId",
                 table: "Events",
-                column: "CreatedByUserId");
+                column: "OrganizerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_LiveLocations_LiveSessionId",
-                table: "LiveLocations",
-                column: "LiveSessionId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LiveSessions_EventId",
-                table: "LiveSessions",
-                column: "EventId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_LiveSessions_UserId",
-                table: "LiveSessions",
-                column: "UserId");
+                name: "IX_OtpCodes_Email",
+                table: "OtpCodes",
+                column: "Email");
 
             migrationBuilder.CreateIndex(
                 name: "IX_UserProfiles_UserId",
@@ -487,22 +393,13 @@ namespace AZM.Infrastructure.Migrations
                 name: "EventParticipants");
 
             migrationBuilder.DropTable(
-                name: "EventRouteWaypoints");
-
-            migrationBuilder.DropTable(
-                name: "LiveLocations");
+                name: "OtpCodes");
 
             migrationBuilder.DropTable(
                 name: "UserProfiles");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
-
-            migrationBuilder.DropTable(
-                name: "EventRoutes");
-
-            migrationBuilder.DropTable(
-                name: "LiveSessions");
 
             migrationBuilder.DropTable(
                 name: "Events");

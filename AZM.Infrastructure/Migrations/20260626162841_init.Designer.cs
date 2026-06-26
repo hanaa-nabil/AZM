@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AZM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260622005455_Initialcreate")]
-    partial class Initialcreate
+    [Migration("20260626162841_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -42,9 +42,8 @@ namespace AZM.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -59,28 +58,46 @@ namespace AZM.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("CreatedAtUtc")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("CoverImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CreatedByUserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Difficulty")
+                    b.Property<int>("DifficultyLevel")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("EndAtUtc")
+                    b.Property<double?>("DistanceKm")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("EventDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("MaxParticipants")
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<string>("LocationName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<int>("MaxParticipants")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("StartAtUtc")
-                        .HasColumnType("datetime2");
+                    b.Property<Guid>("OrganizerId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("RouteImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SportType")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -89,9 +106,12 @@ namespace AZM.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CreatedByUserId");
+                    b.HasIndex("OrganizerId");
 
                     b.ToTable("Events");
                 });
@@ -102,24 +122,20 @@ namespace AZM.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime?>("CheckedInAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("CompletedAtUtc")
-                        .HasColumnType("datetime2");
-
                     b.Property<Guid>("EventId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTime>("JoinedAtUtc")
+                    b.Property<DateTime>("JoinedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LeftAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -130,141 +146,41 @@ namespace AZM.Infrastructure.Migrations
                     b.ToTable("EventParticipants");
                 });
 
-            modelBuilder.Entity("AZM.Domain.Entities.EventRoute", b =>
+            modelBuilder.Entity("AZM.Domain.Entities.OtpCode", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<double?>("DistanceMeters")
-                        .HasColumnType("float");
-
-                    b.Property<string>("EndAddress")
+                    b.Property<string>("Code")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<double>("EndLatitude")
-                        .HasColumnType("float");
-
-                    b.Property<double>("EndLongitude")
-                        .HasColumnType("float");
-
-                    b.Property<int?>("EstimatedDurationSeconds")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("StartAddress")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("StartLatitude")
-                        .HasColumnType("float");
-
-                    b.Property<double>("StartLongitude")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId")
-                        .IsUnique();
-
-                    b.ToTable("EventRoutes");
-                });
-
-            modelBuilder.Entity("AZM.Domain.Entities.EventRouteWaypoint", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("EventRouteId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("float");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventRouteId");
-
-                    b.ToTable("EventRouteWaypoints");
-                });
-
-            modelBuilder.Entity("AZM.Domain.Entities.LiveLocation", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double?>("AccuracyMeters")
-                        .HasColumnType("float");
-
-                    b.Property<double?>("HeadingDegrees")
-                        .HasColumnType("float");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("float");
-
-                    b.Property<Guid>("LiveSessionId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("float");
-
-                    b.Property<DateTime>("RecordedAtUtc")
+                    b.Property<DateTime>("CreatedAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<double?>("SpeedMetersPerSecond")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("LiveSessionId");
-
-                    b.ToTable("LiveLocations");
-                });
-
-            modelBuilder.Entity("AZM.Domain.Entities.LiveSession", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("EndedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid?>("EventId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("StartedAtUtc")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("UserId")
+                    b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
+                    b.Property<DateTime>("ExpiresAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("bit");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("Email");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("LiveSessions");
+                    b.ToTable("OtpCodes");
                 });
 
             modelBuilder.Entity("AZM.Domain.Entities.User", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
@@ -295,12 +211,18 @@ namespace AZM.Infrastructure.Migrations
                     b.Property<string>("FaceScanRightUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("FcmToken")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Gender")
                         .HasColumnType("int");
+
+                    b.Property<string>("GoogleId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("IdDocumentImageUrl")
                         .HasColumnType("nvarchar(max)");
@@ -314,7 +236,13 @@ namespace AZM.Infrastructure.Migrations
                     b.Property<bool>("IsFaceVerified")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsGoogleAccount")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsIdVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPendingPhoneNumber")
                         .HasColumnType("bit");
 
                     b.Property<DateTime?>("LastLoginAtUtc")
@@ -397,9 +325,8 @@ namespace AZM.Infrastructure.Migrations
                     b.Property<DateTime>("UpdatedAtUtc")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -409,10 +336,11 @@ namespace AZM.Infrastructure.Migrations
                     b.ToTable("UserProfiles");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
                 {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
@@ -436,7 +364,7 @@ namespace AZM.Infrastructure.Migrations
                     b.ToTable("AspNetRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -450,9 +378,8 @@ namespace AZM.Infrastructure.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -461,7 +388,7 @@ namespace AZM.Infrastructure.Migrations
                     b.ToTable("AspNetRoleClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -475,9 +402,8 @@ namespace AZM.Infrastructure.Migrations
                     b.Property<string>("ClaimValue")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
@@ -486,7 +412,7 @@ namespace AZM.Infrastructure.Migrations
                     b.ToTable("AspNetUserClaims", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
                     b.Property<string>("LoginProvider")
                         .HasColumnType("nvarchar(450)");
@@ -497,9 +423,8 @@ namespace AZM.Infrastructure.Migrations
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("LoginProvider", "ProviderKey");
 
@@ -508,13 +433,13 @@ namespace AZM.Infrastructure.Migrations
                     b.ToTable("AspNetUserLogins", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
-                    b.Property<string>("RoleId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("UserId", "RoleId");
 
@@ -523,10 +448,10 @@ namespace AZM.Infrastructure.Migrations
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("LoginProvider")
                         .HasColumnType("nvarchar(450)");
@@ -555,13 +480,13 @@ namespace AZM.Infrastructure.Migrations
 
             modelBuilder.Entity("AZM.Domain.Entities.Event", b =>
                 {
-                    b.HasOne("AZM.Domain.Entities.User", "CreatedByUser")
+                    b.HasOne("AZM.Domain.Entities.User", "Organizer")
                         .WithMany()
-                        .HasForeignKey("CreatedByUserId")
+                        .HasForeignKey("OrganizerId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("CreatedByUser");
+                    b.Navigation("Organizer");
                 });
 
             modelBuilder.Entity("AZM.Domain.Entities.EventParticipant", b =>
@@ -583,57 +508,6 @@ namespace AZM.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("AZM.Domain.Entities.EventRoute", b =>
-                {
-                    b.HasOne("AZM.Domain.Entities.Event", "Event")
-                        .WithOne("Route")
-                        .HasForeignKey("AZM.Domain.Entities.EventRoute", "EventId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-                });
-
-            modelBuilder.Entity("AZM.Domain.Entities.EventRouteWaypoint", b =>
-                {
-                    b.HasOne("AZM.Domain.Entities.EventRoute", "EventRoute")
-                        .WithMany("Waypoints")
-                        .HasForeignKey("EventRouteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("EventRoute");
-                });
-
-            modelBuilder.Entity("AZM.Domain.Entities.LiveLocation", b =>
-                {
-                    b.HasOne("AZM.Domain.Entities.LiveSession", "LiveSession")
-                        .WithMany("Locations")
-                        .HasForeignKey("LiveSessionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("LiveSession");
-                });
-
-            modelBuilder.Entity("AZM.Domain.Entities.LiveSession", b =>
-                {
-                    b.HasOne("AZM.Domain.Entities.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("AZM.Domain.Entities.User", "User")
-                        .WithMany("LiveSessions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Event");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("AZM.Domain.Entities.UserProfile", b =>
                 {
                     b.HasOne("AZM.Domain.Entities.User", "User")
@@ -645,16 +519,16 @@ namespace AZM.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
                 {
                     b.HasOne("AZM.Domain.Entities.User", null)
                         .WithMany()
@@ -663,7 +537,7 @@ namespace AZM.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
                 {
                     b.HasOne("AZM.Domain.Entities.User", null)
                         .WithMany()
@@ -672,9 +546,9 @@ namespace AZM.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -687,7 +561,7 @@ namespace AZM.Infrastructure.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
                 {
                     b.HasOne("AZM.Domain.Entities.User", null)
                         .WithMany()
@@ -699,18 +573,6 @@ namespace AZM.Infrastructure.Migrations
             modelBuilder.Entity("AZM.Domain.Entities.Event", b =>
                 {
                     b.Navigation("Participants");
-
-                    b.Navigation("Route");
-                });
-
-            modelBuilder.Entity("AZM.Domain.Entities.EventRoute", b =>
-                {
-                    b.Navigation("Waypoints");
-                });
-
-            modelBuilder.Entity("AZM.Domain.Entities.LiveSession", b =>
-                {
-                    b.Navigation("Locations");
                 });
 
             modelBuilder.Entity("AZM.Domain.Entities.User", b =>
@@ -718,8 +580,6 @@ namespace AZM.Infrastructure.Migrations
                     b.Navigation("Achievements");
 
                     b.Navigation("EventParticipants");
-
-                    b.Navigation("LiveSessions");
 
                     b.Navigation("Profile");
                 });

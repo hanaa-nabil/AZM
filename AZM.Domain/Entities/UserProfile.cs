@@ -19,7 +19,7 @@ namespace AZM.Domain.Entities
 
         public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
 
-        public string UserId { get; set; } = string.Empty;
+        public Guid UserId { get; set; } 
         public User? User { get; set; }
     }
 }

@@ -1,27 +1,42 @@
 ﻿using AZM.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AZM.Domain.Entities
 {
     public class EventParticipant
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get; private set; }
+        public Guid EventId { get; private set; }
+        public Event Event { get; private set; } = null!;
+        public Guid UserId { get; private set; }
+        public User User { get; private set; } = null!;
+        public ParticipantStatus Status { get; private set; }
+        public DateTime JoinedAt { get; private set; }
+        public DateTime? LeftAt { get; private set; }
 
-        public ParticipantStatus Status { get; set; } = ParticipantStatus.Invited;
+        private EventParticipant() { }
 
-        public DateTime JoinedAtUtc { get; set; } = DateTime.UtcNow;
-        public DateTime? CheckedInAtUtc { get; set; }
-        public DateTime? CompletedAtUtc { get; set; }
+        public static EventParticipant Create(Guid eventId, Guid userId)
+        {
+            return new EventParticipant
+            {
+                Id = Guid.NewGuid(),
+                EventId = eventId,
+                UserId = userId,
+                Status = ParticipantStatus.Joined,
+                JoinedAt = DateTime.UtcNow
+            };
+        }
 
-        // ----- Foreign keys -----
-        public Guid EventId { get; set; }
-        public Event? Event { get; set; }
+        public void Leave()
+        {
+            Status = ParticipantStatus.Left;
+            LeftAt = DateTime.UtcNow;
+        }
 
-        public string UserId { get; set; } = string.Empty;
-        public User? User { get; set; }
+        public void Rejoin()
+        {
+            Status = ParticipantStatus.Joined;
+            LeftAt = null;
+        }
     }
 }

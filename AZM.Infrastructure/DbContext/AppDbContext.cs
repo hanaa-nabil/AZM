@@ -1,11 +1,12 @@
 ﻿using AZM.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System.Reflection.Emit;
 
 namespace AZM.Infrastructure.DbContext
 {
-    public class AppDbContext : IdentityDbContext<User>
+    public class AppDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
@@ -53,9 +54,9 @@ namespace AZM.Infrastructure.DbContext
 
             // ----- Event <-> User (creator, no cascade to avoid cycles) -----
             builder.Entity<Event>()
-                .HasOne(e => e.CreatedByUser)
+                .HasOne(e => e.Organizer)
                 .WithMany()
-                .HasForeignKey(e => e.CreatedByUserId)
+                .HasForeignKey(e => e.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // ----- OtpCode — index on Email for fast lookup -----  ← NEW

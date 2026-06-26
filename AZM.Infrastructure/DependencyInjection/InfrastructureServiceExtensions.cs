@@ -28,7 +28,7 @@ namespace AZM.Infrastructure.DependencyInjection
                     configuration.GetConnectionString("DefaultConnection")));
 
             // ── 2. IDENTITY ──────────────────────────────────────────
-            services.AddIdentity<User, IdentityRole>(options =>
+            services.AddIdentity<User, IdentityRole<Guid>>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
@@ -102,14 +102,14 @@ namespace AZM.Infrastructure.DependencyInjection
         // ── SEED ROLES ───────────────────────────────────────────────
         public static async Task SeedRolesAsync(IServiceProvider serviceProvider)
         {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
             string[] roles = { "ATHLETE", "ORGANIZER", "ADMIN" };
 
             foreach (var role in roles)
             {
                 if (!await roleManager.RoleExistsAsync(role))
-                    await roleManager.CreateAsync(new IdentityRole(role));
+                    await roleManager.CreateAsync(new IdentityRole<Guid>(role));
             }
         }
     }

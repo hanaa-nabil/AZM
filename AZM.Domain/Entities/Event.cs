@@ -9,44 +9,108 @@ namespace AZM.Domain.Entities
 {
     public class Event
     {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Title { get; set; } = string.Empty;
-        public string Description { get; set; } = string.Empty;
+        public Guid Id { get; private set; }
+        public string Title { get; private set; } = string.Empty;
+        public string Description { get; private set; } = string.Empty;
+        public SportType SportType { get; private set; }
+        public DifficultyLevel DifficultyLevel { get; private set; }
+        public EventStatus Status { get; private set; }
 
-        public DifficultyLevel Difficulty { get; set; }
-        public EventStatus Status { get; set; } = EventStatus.Draft;
+        // Location (provided by Flutter as coordinates)
+        public double Latitude { get; private set; }
+        public double Longitude { get; private set; }
+        public string LocationName { get; private set; } = string.Empty;
 
-        public DateTime StartAtUtc { get; set; }
-        public DateTime? EndAtUtc { get; set; }
-        public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
-        public int? MaxParticipants { get; set; }
-        public SportType SportType { get; set; }
-        public double MeetingLat { get; set; }
-        public double MeetingLng { get; set; }
-        public string MeetingAddress { get; set; } = string.Empty;  
+        // Event timing
+        public DateTime EventDate { get; private set; }
+        public DateTime CreatedAt { get; private set; }
+        public DateTime? UpdatedAt { get; private set; }
 
-        public string CreatedByUserId { get; set; } = string.Empty;
-        public User? CreatedByUser { get; set; }
+        // Organizer
+        public Guid OrganizerId { get; private set; }
+        public User Organizer { get; private set; } = null!;
 
-        public ICollection<EventParticipant> Participants { get; set; } = new List<EventParticipant>();
+        // Capacity
+        public int MaxParticipants { get; private set; }
 
-        public bool IsFull =>
-            MaxParticipants.HasValue &&
-            Participants.Count(p => p.Status == ParticipantStatus.Joined) >= MaxParticipants.Value;
+        // Route info (optional)
+        public double? DistanceKm { get; private set; }
+        public string? RouteImageUrl { get; private set; }
+        public string? CoverImageUrl { get; private set; }
 
-        public void Publish()
+        // Navigation
+        public ICollection<EventParticipant> Participants { get; private set; } = new List<EventParticipant>();
+
+        // Computed
+        public int ParticipantCount => Participants.Count(p => p.Status == ParticipantStatus.Joined);
+        public bool IsFull => MaxParticipants > 0 && ParticipantCount >= MaxParticipants;
+
+        private Event() { }
+
+        public static Event Create(
+            string title,
+            string description,
+            SportType sportType,
+            DifficultyLevel difficultyLevel,
+            double latitude,
+            double longitude,
+            string locationName,
+            DateTime eventDate,
+            Guid organizerId,
+            int maxParticipants = 0,
+            double? distanceKm = null,
+            string? routeImageUrl = null,
+            string? coverImageUrl = null)
         {
-            if (Status != EventStatus.Draft)
-                throw new InvalidOperationException("Only draft events can be published");
-            Status = EventStatus.Scheduled;
+            return new Event
+            {
+                Id = Guid.NewGuid(),
+                Title = title,
+                Description = description,
+                SportType = sportType,
+                DifficultyLevel = difficultyLevel,
+                Status = EventStatus.Upcoming,
+                Latitude = latitude,
+                Longitude = longitude,
+                LocationName = locationName,
+                EventDate = eventDate,
+                OrganizerId = organizerId,
+                MaxParticipants = maxParticipants,
+                DistanceKm = distanceKm,
+                RouteImageUrl = routeImageUrl,
+                CoverImageUrl = coverImageUrl,
+                CreatedAt = DateTime.UtcNow
+            };
         }
 
-        public void Cancel()
+        public void Update(
+            string title,
+            string description,
+            DifficultyLevel difficultyLevel,
+            double latitude,
+            double longitude,
+            string locationName,
+            DateTime eventDate,
+            int maxParticipants,
+            double? distanceKm,
+            string? coverImageUrl)
         {
-            if (Status == EventStatus.Completed)
-                throw new InvalidOperationException("Cannot cancel a completed event");
-            Status = EventStatus.Cancelled;
+            Title = title;
+            Description = description;
+            DifficultyLevel = difficultyLevel;
+            Latitude = latitude;
+            Longitude = longitude;
+            LocationName = locationName;
+            EventDate = eventDate;
+            MaxParticipants = maxParticipants;
+            DistanceKm = distanceKm;
+            CoverImageUrl = coverImageUrl;
+            UpdatedAt = DateTime.UtcNow;
         }
 
+        public void Cancel() => Status = EventStatus.Cancelled;
+        public void Publish() => Status = EventStatus.Upcoming;
+        public void Start() => Status = EventStatus.Ongoing;
+        public void Complete() => Status = EventStatus.Completed;
     }
 }

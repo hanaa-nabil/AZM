@@ -11,38 +11,41 @@ namespace AZM.Application.Events.Handlers
     {
         private readonly IEventRepository _eventRepo;
 
-        public JoinEventHandler(IEventRepository eventRepo)
+        public JoinEventHandler(IEventRepository eventRepo) => _eventRepo = eventRepo;
+
+        public async Task<Result<bool>> Handle(JoinEventCommand cmd, CancellationToken ct)
         {
-            _eventRepo = eventRepo;
-        }
+            var ev = await _eventRepo.GetByIdAsync(cmd.EventId, ct);
+            if (ev is null) return Result<bool>.Failure("Event not found.");
+            if (ev.Status == Domain.Enums.EventStatus.Cancelled)
+                return Result<bool>.Failure("Cannot join a cancelled event.");
+            if (ev.Status == Domain.Enums.EventStatus.Completed)
+                return Result<bool>.Failure("Cannot join a completed event.");
+            if (ev.OrganizerId == cmd.UserId)
+                return Result<bool>.Failure("Organizer cannot join their own event.");
 
-        public async Task<Result<bool>> Handle(JoinEventCommand command, CancellationToken ct)
-        {
-            var ev = await _eventRepo.GetByIdAsync(command.EventId);
-            if (ev is null)
-                return Result<bool>.Failure("Event not found");
-
-            if (ev.Status == EventStatus.Cancelled || ev.Status == EventStatus.Completed)
-                return Result<bool>.Failure("Cannot join this event");
-
-            if (ev.IsFull)
-                return Result<bool>.Failure("Event is full");
-
-            var alreadyJoined = ev.Participants
-                .Any(p => p.UserId == command.UserId && p.Status == ParticipantStatus.Joined);
-
-            if (alreadyJoined)
-                return Result<bool>.Failure("Already joined");
-
-            ev.Participants.Add(new EventParticipant
+            var existing = await _eventRepo.GetParticipantAsync(cmd.EventId, cmd.UserId, ct);
+            if (existing is not null)
             {
-                EventId = command.EventId,
-                UserId = command.UserId,
-                Status = ParticipantStatus.Joined,
-                JoinedAtUtc = DateTime.UtcNow
-            });
+                if (existing.Status == Domain.Enums.ParticipantStatus.Joined)
+                    return Result<bool>.Failure("You have already joined this event.");
+                existing.Rejoin();
+                await _eventRepo.UpdateParticipantAsync(existing, ct);
+            }
+            else
+            {
+                // Check capacity
+                if (ev.MaxParticipants > 0)
+                {
+                    var count = await _eventRepo.GetParticipantCountAsync(cmd.EventId, ct);
+                    if (count >= ev.MaxParticipants)
+                        return Result<bool>.Failure("This event is full.");
+                }
 
-            await _eventRepo.UpdateAsync(ev, ct);
+                var participant = EventParticipant.Create(cmd.EventId, cmd.UserId);
+                await _eventRepo.AddParticipantAsync(participant, ct);
+            }
+
             return Result<bool>.Success(true);
         }
     }

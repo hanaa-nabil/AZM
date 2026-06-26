@@ -9,7 +9,9 @@ namespace AZM.Domain.Enums
     public enum EventStatus
     {
         Scheduled,
+        Ongoing,
         Active,
+        Upcoming,
         Completed,
         Cancelled,
         Draft,     

@@ -1,53 +1,67 @@
 ﻿using AZM.Application.Auth.DTOs.Event;
 using AZM.Application.Auth.DTOs.Participants;
+using AZM.Application.Common;
 using AZM.Application.Events.Queries;
 using AZM.Domain.Interfaces;
 using MediatR;
 
 namespace AZM.Application.Events.Handlers
 {
-    public class GetEventByIdHandler : IRequestHandler<GetEventByIdQuery, EventDto?>
+    public class GetEventByIdHandler : IRequestHandler<GetEventByIdQuery, Result<EventDetailDto>>
     {
         private readonly IEventRepository _eventRepo;
 
-        public GetEventByIdHandler(IEventRepository eventRepo)
-        {
-            _eventRepo = eventRepo;
-        }
+        public GetEventByIdHandler(IEventRepository eventRepo) => _eventRepo = eventRepo;
 
-        public async Task<EventDto?> Handle(GetEventByIdQuery query, CancellationToken ct)
+        public async Task<Result<EventDetailDto>> Handle(GetEventByIdQuery q, CancellationToken ct)
         {
-            var ev = await _eventRepo.GetByIdAsync(query.EventId);
-            if (ev is null) return null;
+            var ev = await _eventRepo.GetByIdWithParticipantsAsync(q.EventId, ct);
+            if (ev is null) return Result<EventDetailDto>.Failure("Event not found.");
 
-            return new EventDto
+            bool isJoined = q.RequestingUserId.HasValue &&
+                ev.Participants.Any(p =>
+                    p.UserId == q.RequestingUserId.Value &&
+                    p.Status == Domain.Enums.ParticipantStatus.Joined);
+
+            var dto = new EventDetailDto
             {
                 Id = ev.Id,
                 Title = ev.Title,
                 Description = ev.Description,
-                Difficulty = ev.Difficulty,
-                Status = ev.Status,
-                StartAtUtc = ev.StartAtUtc,
-                MeetingLat = ev.MeetingLat,
-                MeetingLng = ev.MeetingLng,
-                MeetingAddress = ev.MeetingAddress,
+                SportType = ev.SportType.ToString(),
+                DifficultyLevel = ev.DifficultyLevel.ToString(),
+                Status = ev.Status.ToString(),
+                LocationName = ev.LocationName,
+                Latitude = ev.Latitude,
+                Longitude = ev.Longitude,
+                EventDate = ev.EventDate,
+                CreatedAt = ev.CreatedAt,
+                ParticipantCount = ev.ParticipantCount,
                 MaxParticipants = ev.MaxParticipants,
-                SportType = ev.SportType,
-                CreatedByUserId = ev.CreatedByUserId,
-                CreatedByName = ev.CreatedByUser is not null
-                    ? $"{ev.CreatedByUser.FirstName} {ev.CreatedByUser.LastName}"
-                    : string.Empty,
                 IsFull = ev.IsFull,
-                ParticipantCount = ev.Participants.Count,
-                Participants = ev.Participants.Select(p => new ParticipantDto
+                DistanceKm = ev.DistanceKm,
+                CoverImageUrl = ev.CoverImageUrl,
+                RouteImageUrl = ev.RouteImageUrl,
+                Organizer = new OrganizerSummaryDto
                 {
-                    UserId = p.UserId,
-                    FullName = p.User is not null ? $"{p.User.FirstName} {p.User.LastName}" : string.Empty,
-                    Email = p.User?.Email ?? string.Empty,
-                    Status = p.Status,
-                    JoinedAtUtc = p.JoinedAtUtc
-                }).ToList()
+                    Id = ev.OrganizerId,
+                    FullName = $"{ev.Organizer.FirstName} {ev.Organizer.LastName}".Trim(),
+                    AvatarUrl = null
+                },
+                IsJoined = isJoined,
+                Participants = ev.Participants
+                    .Where(p => p.Status == Domain.Enums.ParticipantStatus.Joined)
+                    .Select(p => new ParticipantDto
+                    {
+                        UserId = p.UserId,
+                        FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
+                        AvatarUrl = null,
+                        JoinedAt = p.JoinedAt,
+                        Status = p.Status.ToString()
+                    })
             };
+
+            return Result<EventDetailDto>.Success(dto);
         }
     }
 }

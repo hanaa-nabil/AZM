@@ -11,26 +11,16 @@ namespace AZM.Application.Events.Handlers
     {
         private readonly IEventRepository _eventRepo;
 
-        public LeaveEventHandler(IEventRepository eventRepo)
+        public LeaveEventHandler(IEventRepository eventRepo) => _eventRepo = eventRepo;
+
+        public async Task<Result<bool>> Handle(LeaveEventCommand cmd, CancellationToken ct)
         {
-            _eventRepo = eventRepo;
-        }
+            var participant = await _eventRepo.GetParticipantAsync(cmd.EventId, cmd.UserId, ct);
+            if (participant is null || participant.Status != Domain.Enums.ParticipantStatus.Joined)
+                return Result<bool>.Failure("You are not a participant of this event.");
 
-        public async Task<Result<bool>> Handle(LeaveEventCommand command, CancellationToken ct)
-        {
-            var ev = await _eventRepo.GetByIdAsync(command.EventId);
-            if (ev is null)
-                return Result<bool>.Failure("Event not found");
-
-            var participant = ev.Participants
-                .FirstOrDefault(p => p.UserId == command.UserId && p.Status == ParticipantStatus.Joined);
-
-            if (participant is null)
-                return Result<bool>.Failure("You are not a participant of this event");
-
-            participant.Status = ParticipantStatus.Left;
-
-            await _eventRepo.UpdateAsync(ev, ct);
+            participant.Leave();
+            await _eventRepo.UpdateParticipantAsync(participant, ct);
             return Result<bool>.Success(true);
         }
     }

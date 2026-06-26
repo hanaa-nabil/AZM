@@ -3,25 +3,24 @@ using AZM.Application.Common;
 using AZM.Application.Events.Queries;
 using AZM.Domain.Interfaces;
 using MediatR;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace AZM.Application.Events.Handlers
 {
-    public class GetNearbyEventsHandler : IRequestHandler<GetNearbyEventsQuery, Result<IEnumerable<EventFeedItemDto>>>
+
+    public class GetMyJoinedEventsHandler : IRequestHandler<GetMyJoinedEventsQuery, Result<IEnumerable<EventFeedItemDto>>>
     {
         private readonly IEventRepository _eventRepo;
 
-        public GetNearbyEventsHandler(IEventRepository eventRepo) => _eventRepo = eventRepo;
+        public GetMyJoinedEventsHandler(IEventRepository eventRepo) => _eventRepo = eventRepo;
 
-        public async Task<Result<IEnumerable<EventFeedItemDto>>> Handle(GetNearbyEventsQuery q, CancellationToken ct)
+        public async Task<Result<IEnumerable<EventFeedItemDto>>> Handle(GetMyJoinedEventsQuery q, CancellationToken ct)
         {
-            var events = await _eventRepo.GetNearbyAsync(q.Latitude, q.Longitude, q.RadiusKm, ct);
-
-            HashSet<Guid> joinedIds = [];
-            if (q.RequestingUserId.HasValue)
-            {
-                var joined = await _eventRepo.GetUserJoinedEventsAsync(q.RequestingUserId.Value, ct);
-                joinedIds = joined.Select(e => e.Id).ToHashSet();
-            }
+            var events = await _eventRepo.GetUserJoinedEventsAsync(q.UserId, ct);
 
             var items = events.Select(e => new EventFeedItemDto
             {
@@ -46,11 +45,10 @@ namespace AZM.Application.Events.Handlers
                     Id = e.OrganizerId,
                     FullName = $"{e.Organizer.FirstName} {e.Organizer.LastName}".Trim(),
                 },
-                IsJoined = joinedIds.Contains(e.Id)
+                IsJoined = true
             });
 
             return Result<IEnumerable<EventFeedItemDto>>.Success(items);
         }
     }
-
 }
