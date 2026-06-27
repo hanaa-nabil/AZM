@@ -93,7 +93,7 @@ namespace AZM.Application.Auth.Handlers
             // 6. Return userId + email only — JWT is issued after the full flow is complete
             return Result<RegisterResponseDto>.Success(new RegisterResponseDto
             {
-                UserId = user.Id,
+                UserId = user.Id.ToString(),
                 Email = user.Email!,
                 EmailVerificationRequired = true,   // ← add this
                 PhoneNumberRequired = true,          // ← add this

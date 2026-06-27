@@ -40,5 +40,16 @@ namespace AZM.Infrastructure.Repositories
             user.FcmToken = fcmToken;
             await _db.SaveChangesAsync();
         }
+
+        public async Task RemoveUserSportsAsync(Guid userId)
+        {
+            var sports = await _db.UserSports
+                .Where(s => s.UserId == userId)
+                .ToListAsync();
+
+            _db.UserSports.RemoveRange(sports);
+            await _db.SaveChangesAsync();
+        }
+
     }
 }

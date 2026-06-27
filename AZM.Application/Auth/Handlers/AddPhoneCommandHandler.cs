@@ -54,7 +54,7 @@ namespace AZM.Application.Auth.Handlers
             // -------------------------------------------------------------------------------
 
             user.PhoneNumber = dto.PhoneNumber;
-            // user.PhoneNumberConfirmed = true; // Uncomment once Firebase verification is active
+            user.IsPendingPhoneVerification = true;
 
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
@@ -66,7 +66,7 @@ namespace AZM.Application.Auth.Handlers
             // 5. Phone saved — proceed to complete-profile to pick sports, add photo, and get token
             return Result<RegisterResponseDto>.Success(new RegisterResponseDto
             {
-                UserId = user.Id,
+                UserId = user.Id.ToString(),
                 Email = user.Email!
             });
         }

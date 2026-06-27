@@ -11,25 +11,18 @@ namespace AZM.Infrastructure.DbContext
 
         public DbSet<Event> Events { get; set; } = null!;
         public DbSet<EventParticipant> EventParticipants { get; set; } = null!;
-<<<<<<< HEAD
-=======
+
         public DbSet<EventRoute> EventRoutes { get; set; } = null!;
         public DbSet<EventRouteWaypoint> EventRouteWaypoints { get; set; } = null!;
->>>>>>> DB Back to local, Auth working technically
+
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
         public DbSet<Achievement> Achievements { get; set; } = null!;
-        public DbSet<OtpCode> OtpCodes { get; set; } = null!;   // ← NEW
+        public DbSet<OtpCode> OtpCodes { get; set; } = null!;   
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
 
-<<<<<<< HEAD
-
-            // ----- Event <-> EventParticipant (1-to-many) -----
-=======
-            // Event <-> EventParticipant (1-to-many)
->>>>>>> DB Back to local, Auth working technically
             builder.Entity<EventParticipant>()
                 .HasOne(p => p.Event)
                 .WithMany(e => e.Participants)
@@ -50,12 +43,6 @@ namespace AZM.Infrastructure.DbContext
                 .HasForeignKey<UserProfile>(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-<<<<<<< HEAD
-
-            // ----- User <-> Achievement (1-to-many) -----
-=======
-            // User <-> Achievement (1-to-many)
->>>>>>> DB Back to local, Auth working technically
             builder.Entity<Achievement>()
                 .HasOne(a => a.User)
                 .WithMany(u => u.Achievements)

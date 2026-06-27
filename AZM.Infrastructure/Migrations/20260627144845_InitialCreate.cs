@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace AZM.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class init : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -49,6 +49,7 @@ namespace AZM.Infrastructure.Migrations
                     IsGoogleAccount = table.Column<bool>(type: "bit", nullable: false),
                     IsPendingPhoneNumber = table.Column<bool>(type: "bit", nullable: false),
                     FcmToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ProfilePhotoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -270,6 +271,26 @@ namespace AZM.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserSports",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    UserId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Sport = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserSports", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserSports_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "EventParticipants",
                 columns: table => new
                 {
@@ -293,6 +314,53 @@ namespace AZM.Infrastructure.Migrations
                         name: "FK_EventParticipants_Events_EventId",
                         column: x => x.EventId,
                         principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventRoutes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    StartLatitude = table.Column<double>(type: "float", nullable: false),
+                    StartLongitude = table.Column<double>(type: "float", nullable: false),
+                    StartAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    EndLatitude = table.Column<double>(type: "float", nullable: false),
+                    EndLongitude = table.Column<double>(type: "float", nullable: false),
+                    EndAddress = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    DistanceMeters = table.Column<double>(type: "float", nullable: true),
+                    EstimatedDurationSeconds = table.Column<int>(type: "int", nullable: true),
+                    EventId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventRoutes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventRoutes_Events_EventId",
+                        column: x => x.EventId,
+                        principalTable: "Events",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EventRouteWaypoints",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Order = table.Column<int>(type: "int", nullable: false),
+                    Latitude = table.Column<double>(type: "float", nullable: false),
+                    Longitude = table.Column<double>(type: "float", nullable: false),
+                    EventRouteId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EventRouteWaypoints", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EventRouteWaypoints_EventRoutes_EventRouteId",
+                        column: x => x.EventRouteId,
+                        principalTable: "EventRoutes",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -352,6 +420,16 @@ namespace AZM.Infrastructure.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_EventRoutes_EventId",
+                table: "EventRoutes",
+                column: "EventId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EventRouteWaypoints_EventRouteId",
+                table: "EventRouteWaypoints",
+                column: "EventRouteId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Events_OrganizerId",
                 table: "Events",
                 column: "OrganizerId");
@@ -365,6 +443,12 @@ namespace AZM.Infrastructure.Migrations
                 name: "IX_UserProfiles_UserId",
                 table: "UserProfiles",
                 column: "UserId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_UserSports_UserId_Sport",
+                table: "UserSports",
+                columns: new[] { "UserId", "Sport" },
                 unique: true);
         }
 
@@ -393,13 +477,22 @@ namespace AZM.Infrastructure.Migrations
                 name: "EventParticipants");
 
             migrationBuilder.DropTable(
+                name: "EventRouteWaypoints");
+
+            migrationBuilder.DropTable(
                 name: "OtpCodes");
 
             migrationBuilder.DropTable(
                 name: "UserProfiles");
 
             migrationBuilder.DropTable(
+                name: "UserSports");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "EventRoutes");
 
             migrationBuilder.DropTable(
                 name: "Events");

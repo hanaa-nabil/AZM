@@ -5,7 +5,9 @@ namespace AZM.Domain.Entities
     public class UserSport
     {
         public int Id { get; set; }
-        public string UserId { get; set; } = string.Empty;
+
+        public Guid UserId { get; set; }      // ← change from string
+
         public Sport Sport { get; set; }
 
         // Navigation

@@ -1,5 +1,4 @@
 using AZM.Application.Auth.Commands;
-using AZM.Application.Auth.DTOs;
 using AZM.Application.Auth.DTOs.Auth;
 using AZM.Application.Common;
 using AZM.Domain.Entities;
@@ -40,24 +39,25 @@ namespace AZM.Application.Auth.Handlers
             if (user is null)
                 return Result<AuthResponseDto>.Failure("No account found.", 404);
 
-            // 2. Must have a phone number before completing profile
-            if (string.IsNullOrEmpty(user.PhoneNumber))
+            // 2. Email must be verified before completing profile
+            if (!user.EmailConfirmed)
                 return Result<AuthResponseDto>.Failure(
-                    "Please add your phone number before completing your profile.", 400);
+                    "Please verify your email before completing your profile.", 400);
 
-            // 3. Validate sports list
+            // 3. Phone must be verified before completing profile
+            if (!user.PhoneNumberConfirmed)
+                return Result<AuthResponseDto>.Failure(
+                    "Please verify your phone number before completing your profile.", 400);
+
+            // 4. At least one sport required (DTO validation handles this but belt-and-suspenders)
             if (dto.Sports is null || dto.Sports.Count == 0)
                 return Result<AuthResponseDto>.Failure(
                     "Please select at least one sport.", 400);
 
-            var validSports = Enum.GetValues<Domain.Enums.Sport>();
-            var invalidSports = dto.Sports.Except(validSports).ToList();
-            if (invalidSports.Count > 0)
-                return Result<AuthResponseDto>.Failure(
-                    $"Invalid sport value(s): {string.Join(", ", invalidSports)}", 400);
 
-            // 4. Save favourite sports (remove old ones first to handle re-submissions)
-            user.Sports.Clear();
+            // 5. Replace sports — delete existing first, then insert fresh
+            await _userRepository.RemoveUserSportsAsync(user.Id);
+
             foreach (var sport in dto.Sports.Distinct())
             {
                 user.Sports.Add(new UserSport
@@ -67,26 +67,23 @@ namespace AZM.Application.Auth.Handlers
                 });
             }
 
-            // 5. Upload profile photo if provided
+            // 6. Upload photo if provided
             if (!string.IsNullOrWhiteSpace(dto.PhotoBase64))
             {
                 try
                 {
-                    var photoUrl = await _photoService.UploadPhotoAsync(
-                        dto.PhotoBase64,
-                        publicId: user.Id   // use userId as the Cloudinary public ID
-                    );
-                    user.ProfilePhotoUrl = photoUrl;
+                    var publicId = $"azm/profiles/{user.Id}";
+                    user.ProfilePhotoUrl = await _photoService.UploadPhotoAsync(
+                        dto.PhotoBase64, publicId);
                 }
-                catch (Exception ex)
+                catch
                 {
-                    // Photo upload failure should not block registration
-                    // The frontend will show initials as fallback
-                    _ = ex; // suppress unused variable warning
+                    // Photo upload failure is non-fatal — profile is still complete
+                    // Log here if you have a logger injected
                 }
             }
 
-            // 6. Persist changes
+            // 7. Persist
             var updateResult = await _userManager.UpdateAsync(user);
             if (!updateResult.Succeeded)
             {
@@ -94,7 +91,7 @@ namespace AZM.Application.Auth.Handlers
                 return Result<AuthResponseDto>.Failure(errors, 400);
             }
 
-            // 7. Registration fully complete — issue JWT
+            // 8. Issue JWT — this is the only place a token is ever issued
             var roles = await _userManager.GetRolesAsync(user);
             var token = _tokenService.GenerateJwtToken(user, roles);
 
@@ -104,7 +101,7 @@ namespace AZM.Application.Auth.Handlers
                 Email = user.Email!,
                 FullName = user.FullName,
                 Token = token,
-                EmailConfirmed = true,
+                EmailConfirmed = user.EmailConfirmed,
                 ProfilePhotoUrl = user.ProfilePhotoUrl
             });
         }

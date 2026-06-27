@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AZM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260626162841_init")]
-    partial class init
+    [Migration("20260627144845_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -144,6 +144,71 @@ namespace AZM.Infrastructure.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("EventParticipants");
+                });
+
+            modelBuilder.Entity("AZM.Domain.Entities.EventRoute", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double?>("DistanceMeters")
+                        .HasColumnType("float");
+
+                    b.Property<string>("EndAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("EndLatitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("EndLongitude")
+                        .HasColumnType("float");
+
+                    b.Property<int?>("EstimatedDurationSeconds")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("EventId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("StartAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<double>("StartLatitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("StartLongitude")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventId");
+
+                    b.ToTable("EventRoutes");
+                });
+
+            modelBuilder.Entity("AZM.Domain.Entities.EventRouteWaypoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("EventRouteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("float");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EventRouteId");
+
+                    b.ToTable("EventRouteWaypoints");
                 });
 
             modelBuilder.Entity("AZM.Domain.Entities.OtpCode", b =>
@@ -278,6 +343,9 @@ namespace AZM.Infrastructure.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<string>("ProfilePhotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("SecurityStamp")
                         .HasColumnType("nvarchar(max)");
 
@@ -334,6 +402,28 @@ namespace AZM.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("UserProfiles");
+                });
+
+            modelBuilder.Entity("AZM.Domain.Entities.UserSport", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Sport")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId", "Sport")
+                        .IsUnique();
+
+                    b.ToTable("UserSports");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
@@ -508,11 +598,44 @@ namespace AZM.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("AZM.Domain.Entities.EventRoute", b =>
+                {
+                    b.HasOne("AZM.Domain.Entities.Event", "Event")
+                        .WithMany()
+                        .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Event");
+                });
+
+            modelBuilder.Entity("AZM.Domain.Entities.EventRouteWaypoint", b =>
+                {
+                    b.HasOne("AZM.Domain.Entities.EventRoute", "EventRoute")
+                        .WithMany("Waypoints")
+                        .HasForeignKey("EventRouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("EventRoute");
+                });
+
             modelBuilder.Entity("AZM.Domain.Entities.UserProfile", b =>
                 {
                     b.HasOne("AZM.Domain.Entities.User", "User")
                         .WithOne("Profile")
                         .HasForeignKey("AZM.Domain.Entities.UserProfile", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AZM.Domain.Entities.UserSport", b =>
+                {
+                    b.HasOne("AZM.Domain.Entities.User", "User")
+                        .WithMany("Sports")
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -575,6 +698,11 @@ namespace AZM.Infrastructure.Migrations
                     b.Navigation("Participants");
                 });
 
+            modelBuilder.Entity("AZM.Domain.Entities.EventRoute", b =>
+                {
+                    b.Navigation("Waypoints");
+                });
+
             modelBuilder.Entity("AZM.Domain.Entities.User", b =>
                 {
                     b.Navigation("Achievements");
@@ -582,6 +710,8 @@ namespace AZM.Infrastructure.Migrations
                     b.Navigation("EventParticipants");
 
                     b.Navigation("Profile");
+
+                    b.Navigation("Sports");
                 });
 #pragma warning restore 612, 618
         }

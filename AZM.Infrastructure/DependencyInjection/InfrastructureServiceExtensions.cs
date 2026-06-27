@@ -2,16 +2,9 @@
 using AZM.Domain.Interfaces;
 using AZM.Infrastructure.DbContext;
 using AZM.Infrastructure.Identity;
-<<<<<<< HEAD
-using AZM.Infrastructure.Repositories;
-using AZM.Infrastructure.Services;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
-=======
 using AZM.Infrastructure.Notifications;
 using AZM.Infrastructure.Repositories;
 using AZM.Infrastructure.Services;
->>>>>>> DB Back to local, Auth working technically
 using Hangfire;
 using Hangfire.SqlServer;
 using Microsoft.AspNetCore.Identity;
@@ -32,12 +25,8 @@ namespace AZM.Infrastructure.DependencyInjection
                 options.UseSqlServer(
                     configuration.GetConnectionString("DefaultConnection")));
 
-<<<<<<< HEAD
-            // Identity
-=======
             // 2. IDENTITY
->>>>>>> DB Back to local, Auth working technically
-            services.AddIdentity<User, IdentityRole>(options =>
+            services.AddIdentity<User, IdentityRole<Guid>>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequireLowercase = true;
@@ -50,16 +39,6 @@ namespace AZM.Infrastructure.DependencyInjection
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-<<<<<<< HEAD
-            // JWT settings
-            services.Configure<JwtSettings>(options =>
-                configuration.GetSection("JwtSettings").Bind(options));
-
-            // Services
-            services.AddScoped<ITokenService, TokenService>();
-            services.AddScoped<IEmailService, EmailService>();
-            services.AddScoped<IOtpService, OtpService>();
-=======
             // 3. JWT
             services.Configure<JwtSettings>(
                 configuration.GetSection("JwtSettings"));
@@ -99,20 +78,16 @@ namespace AZM.Infrastructure.DependencyInjection
             services.Configure<CloudinarySettings>(
                 configuration.GetSection(CloudinarySettings.SectionName));
             services.AddScoped<IPhotoService, CloudinaryPhotoService>();
->>>>>>> DB Back to local, Auth working technically
             services.AddScoped<IPasswordHasher<OtpCode>, PasswordHasher<OtpCode>>();
+            services.AddHttpClient<IFirebaseAuthService, FirebaseAuthService>();
 
             return services;
         }
 
         public static async Task SeedRolesAsync(IServiceProvider serviceProvider)
         {
-<<<<<<< HEAD
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-=======
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
->>>>>>> DB Back to local, Auth working technically
             string[] roles = { "ATHLETE", "ORGANIZER", "ADMIN" };
             foreach (var role in roles)
             {

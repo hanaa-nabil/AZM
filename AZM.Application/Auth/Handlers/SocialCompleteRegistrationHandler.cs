@@ -26,13 +26,13 @@ namespace AZM.Application.Auth.Handlers
             SocialCompleteRegistrationCommand request,
             CancellationToken cancellationToken)
         {
-            var email = request.Dto.Email.Trim().ToLowerInvariant();
-            var phoneNumber = request.Dto.PhoneNumber.Trim();
+            var dto = request.Dto;
+            var phoneNumber = dto.PhoneNumber.Trim();
 
-            // 1. Find the user
-            var user = await _userRepository.GetByEmailAsync(email);
+            // 1. Find the user by ID (not email — frontend already has it from /google response)
+            var user = await _userRepository.GetByIdAsync(dto.UserId);
             if (user is null)
-                return Result<RegisterResponseDto>.Failure("No account found with this email.", 404);
+                return Result<RegisterResponseDto>.Failure("No account found.", 404);
 
             // 2. Make sure this is actually a Google account
             if (!user.IsGoogleAccount)
@@ -60,10 +60,10 @@ namespace AZM.Application.Auth.Handlers
                 return Result<RegisterResponseDto>.Failure(errors, 400);
             }
 
-            // 6. Phone saved — proceed to complete-profile to pick sports, add photo, and get token
+            // 6. Proceed to complete-profile to pick sports, add photo, and get token
             return Result<RegisterResponseDto>.Success(new RegisterResponseDto
             {
-                UserId = user.Id,
+                UserId = user.Id.ToString(),
                 Email = user.Email!
             });
         }

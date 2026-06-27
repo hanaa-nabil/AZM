@@ -149,5 +149,20 @@ namespace AZM.Api.Controllers
                 ? Ok(result.Data)
                 : StatusCode(result.StatusCode, new { error = result.Error });
         }
+
+        /// <summary>
+        /// Step 3b — Verify phone number using the Firebase ID token.
+        /// Must be called after add-phone (email flow) or complete-registration (Google flow).
+        /// Unlocks complete-profile.
+        /// </summary>
+        [HttpPost("verify-phone")]
+        public async Task<IActionResult> VerifyPhone([FromBody] VerifyPhoneRequestDto dto)
+        {
+            var result = await _mediator.Send(new VerifyPhoneCommand(dto));
+            return result.IsSuccess
+                ? Ok(new { message = "Phone number verified successfully." })
+                : StatusCode(result.StatusCode, new { error = result.Error });
+        }
+
     }
 }

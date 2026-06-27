@@ -31,13 +31,14 @@ namespace AZM.Domain.Entities
         public ICollection<EventParticipant> EventParticipants { get; set; } = new List<EventParticipant>();
         public ICollection<Achievement> Achievements { get; set; } = new List<Achievement>();
 
-<<<<<<< HEAD
-=======
         public string? FcmToken { get; set; }
         public string? ProfilePhotoUrl { get; set; }
         public ICollection<UserSport> Sports { get; set; } = new List<UserSport>();
 
->>>>>>> DB Back to local, Auth working technically
+
         public string FullName => $"{FirstName} {LastName}".Trim();
+
+        public bool IsPendingPhoneVerification { get; set; } = false;
+
     }
 }

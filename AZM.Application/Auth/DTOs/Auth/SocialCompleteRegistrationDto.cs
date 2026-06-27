@@ -4,10 +4,10 @@ namespace AZM.Application.Auth.DTOs.Auth
 {
     public class SocialCompleteRegistrationDto
     {
-        [Required, EmailAddress, MaxLength(256)]
-        public string Email { get; set; } = string.Empty;
+        [Required]
+        public string UserId { get; set; } = string.Empty;
 
-        [Required, Phone]
+        [Required]
         public string PhoneNumber { get; set; } = string.Empty;
     }
 }
