@@ -17,12 +17,6 @@ namespace AZM.Infrastructure.Migrations
                 nullable: false,
                 defaultValue: false);
 
-            migrationBuilder.AddColumn<string>(
-                name: "ProfilePhotoUrl",
-                table: "AspNetUsers",
-                type: "nvarchar(500)",
-                maxLength: 500,
-                nullable: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -31,9 +25,6 @@ namespace AZM.Infrastructure.Migrations
                 name: "IsPendingPhoneVerification",
                 table: "AspNetUsers");
 
-            migrationBuilder.DropColumn(
-                name: "ProfilePhotoUrl",
-                table: "AspNetUsers");
         }
     }
 }

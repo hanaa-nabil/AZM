@@ -1,6 +1,7 @@
 ﻿using AZM.Domain.Enums;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,8 @@ namespace AZM.Domain.Entities
         public SportType SportType { get; private set; }
         public DifficultyLevel DifficultyLevel { get; private set; }
         public EventStatus Status { get; private set; }
+        public bool IsPublic { get; private set; } = true;
+        public EventRoute? Route { get; private set; }
 
         // Location (provided by Flutter as coordinates)
         public double Latitude { get; private set; }
@@ -60,7 +63,9 @@ namespace AZM.Domain.Entities
             int maxParticipants = 0,
             double? distanceKm = null,
             string? routeImageUrl = null,
-            string? coverImageUrl = null)
+            string? coverImageUrl = null,
+                bool isPublic = true,
+                EventRoute? route = null)
         {
             return new Event
             {
@@ -79,7 +84,9 @@ namespace AZM.Domain.Entities
                 DistanceKm = distanceKm,
                 RouteImageUrl = routeImageUrl,
                 CoverImageUrl = coverImageUrl,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                IsPublic = isPublic,
+                Route = route,
             };
         }
 
@@ -93,7 +100,9 @@ namespace AZM.Domain.Entities
             DateTime eventDate,
             int maxParticipants,
             double? distanceKm,
-            string? coverImageUrl)
+            string? coverImageUrl,
+            bool isPublic,
+            EventRoute? route = null)
         {
             Title = title;
             Description = description;
@@ -105,6 +114,8 @@ namespace AZM.Domain.Entities
             MaxParticipants = maxParticipants;
             DistanceKm = distanceKm;
             CoverImageUrl = coverImageUrl;
+            IsPublic = isPublic;
+            if (route != null) Route = route;
             UpdatedAt = DateTime.UtcNow;
         }
 

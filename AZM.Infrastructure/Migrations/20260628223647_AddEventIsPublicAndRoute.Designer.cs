@@ -4,6 +4,7 @@ using AZM.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AZM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260628223647_AddEventIsPublicAndRoute")]
+    partial class AddEventIsPublicAndRoute
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -73,6 +76,11 @@ namespace AZM.Infrastructure.Migrations
 
                     b.Property<DateTime>("EventDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPublic")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(true);
 
                     b.Property<double>("Latitude")
                         .HasColumnType("float");
@@ -178,7 +186,8 @@ namespace AZM.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId");
+                    b.HasIndex("EventId")
+                        .IsUnique();
 
                     b.ToTable("EventRoutes");
                 });
@@ -601,8 +610,8 @@ namespace AZM.Infrastructure.Migrations
             modelBuilder.Entity("AZM.Domain.Entities.EventRoute", b =>
                 {
                     b.HasOne("AZM.Domain.Entities.Event", "Event")
-                        .WithMany()
-                        .HasForeignKey("EventId")
+                        .WithOne("Route")
+                        .HasForeignKey("AZM.Domain.Entities.EventRoute", "EventId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -696,6 +705,8 @@ namespace AZM.Infrastructure.Migrations
             modelBuilder.Entity("AZM.Domain.Entities.Event", b =>
                 {
                     b.Navigation("Participants");
+
+                    b.Navigation("Route");
                 });
 
             modelBuilder.Entity("AZM.Domain.Entities.EventRoute", b =>

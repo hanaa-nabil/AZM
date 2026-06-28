@@ -1,4 +1,5 @@
 ﻿using AZM.Api.Requests;
+using AZM.Application.Auth.DTOs.Event;
 using AZM.Application.Events.Commands;
 using AZM.Application.Events.Queries;
 using AZM.Domain.Enums;
@@ -109,46 +110,69 @@ namespace AZM.Api.Controllers
             return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
         }
 
-        // ── Create ────────────────────────────────────────────────────────────────
 
-        /// <summary>
-        /// Create a new sport event. The authenticated user becomes the organizer.
-        /// </summary>
+        // ── Create ─────────────────────────────────────────────────────────────────
         [HttpPost]
         [Authorize]
         public async Task<IActionResult> Create([FromBody] CreateEventRequest request)
         {
+            // Map WaypointRequest → WaypointDto
+            EventRouteDto? routeDto = null;
+            if (request.Route is not null)
+            {
+                routeDto = new EventRouteDto(
+                    request.Route.StartLatitude,
+                    request.Route.StartLongitude,
+                    request.Route.StartAddress,
+                    request.Route.EndLatitude,
+                    request.Route.EndLongitude,
+                    request.Route.EndAddress,
+                    request.Route.DistanceMeters,
+                    request.Route.EstimatedDurationSeconds,
+                    request.Route.Waypoints?
+                        .Select(w => new WaypointDto(w.Order, w.Latitude, w.Longitude))
+                        .ToList());
+            }
+
             var cmd = new CreateEventCommand(
-                request.Title,
-                request.Description,
-                request.SportType,
-                request.DifficultyLevel,
-                request.Latitude,
-                request.Longitude,
-                request.LocationName,
-                request.EventDate,
-                CurrentUserId!.Value,
-                request.MaxParticipants,
-                request.DistanceKm,
-                request.CoverImageUrl);
+                request.Title, request.Description,
+                request.SportType, request.DifficultyLevel,
+                request.Latitude, request.Longitude, request.LocationName,
+                request.EventDate, CurrentUserId!.Value,
+                request.MaxParticipants, request.DistanceKm, request.CoverImageUrl,
+                request.IsPublic, routeDto);
 
             var result = await _mediator.Send(cmd);
             if (!result.IsSuccess) return BadRequest(result.Error);
-
             return CreatedAtAction(nameof(GetById), new { id = result.Data }, new { id = result.Data });
         }
 
-        // ── Update ────────────────────────────────────────────────────────────────
-
+        // ── Update ─────────────────────────────────────────────────────────────────
         [HttpPut("{id:guid}")]
         [Authorize]
         public async Task<IActionResult> Update(Guid id, [FromBody] UpdateEventRequest request)
         {
+            EventRouteDto? routeDto = null;
+            if (request.Route is not null)
+            {
+                routeDto = new EventRouteDto(
+                    request.Route.StartLatitude, request.Route.StartLongitude,
+                    request.Route.StartAddress,
+                    request.Route.EndLatitude, request.Route.EndLongitude,
+                    request.Route.EndAddress,
+                    request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds,
+                    request.Route.Waypoints?
+                        .Select(w => new WaypointDto(w.Order, w.Latitude, w.Longitude))
+                        .ToList());
+            }
+
             var cmd = new UpdateEventCommand(
                 id, CurrentUserId!.Value,
                 request.Title, request.Description, request.DifficultyLevel,
                 request.Latitude, request.Longitude, request.LocationName,
-                request.EventDate, request.MaxParticipants, request.DistanceKm, request.CoverImageUrl);
+                request.EventDate, request.MaxParticipants,
+                request.DistanceKm, request.CoverImageUrl,
+                request.IsPublic, routeDto);
 
             var result = await _mediator.Send(cmd);
             return result.IsSuccess ? NoContent() : BadRequest(result.Error);

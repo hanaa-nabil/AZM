@@ -57,6 +57,19 @@ namespace AZM.Infrastructure.DbContext
                 .HasForeignKey(e => e.OrganizerId)
                 .OnDelete(DeleteBehavior.Restrict);
 
+            // Event → Route (one-to-one, optional)
+            builder.Entity<Event>()
+                .HasOne(e => e.Route)
+                .WithOne(r => r.Event)
+                .HasForeignKey<EventRoute>(r => r.EventId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // IsPublic default
+            builder.Entity<Event>()
+                .Property(e => e.IsPublic)
+                .HasDefaultValue(true);
+
+
             // EventRoute <-> EventRouteWaypoint (1-to-many)
             builder.Entity<EventRouteWaypoint>()
                 .HasOne(w => w.EventRoute)
