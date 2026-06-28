@@ -4,13 +4,9 @@ using MediatR;
 
 namespace AZM.Application.Auth.Commands
 {
-    public class VerifyOtpCommand : IRequest<Result>
+    public class VerifyOtpCommand : IRequest<Result<VerifyOtpResponseDto>>
     {
         public VerifyOtpRequestDto Dto { get; set; }
-
-        public VerifyOtpCommand(VerifyOtpRequestDto dto)
-        {
-            Dto = dto;
-        }
+        public VerifyOtpCommand(VerifyOtpRequestDto dto) => Dto = dto;
     }
 }

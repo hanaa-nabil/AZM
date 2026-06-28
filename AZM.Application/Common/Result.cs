@@ -6,6 +6,7 @@
         public T? Data { get; private set; }
         public string? Error { get; private set; }
         public int StatusCode { get; private set; }
+        public string Token { get; set; } = string.Empty;
 
         private Result(bool isSuccess, T? data, string? error, int statusCode)
         {

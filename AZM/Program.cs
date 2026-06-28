@@ -80,11 +80,11 @@ namespace AZM.Api
                 options.AddSecurityDefinition("Bearer", new()
                 {
                     Name = "Authorization",
-                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
-                    Scheme = "Bearer",
+                    Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+                    Scheme = "bearer",
                     BearerFormat = "JWT",
                     In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-                    Description = "Enter: Bearer {your token}"
+                    Description = "Enter your JWT token only — no 'Bearer' prefix needed."
                 });
                 options.AddSecurityRequirement(new()
                 {
@@ -113,7 +113,15 @@ namespace AZM.Api
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            if (app.Environment.IsDevelopment()|| app.Environment.IsProduction())
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI(options =>
+                {
+                    options.SwaggerEndpoint("/swagger/v1/swagger.json", "AZM API v1");
+                    options.RoutePrefix = string.Empty; 
+                });
+            }
             app.UseHttpsRedirection();
             app.UseCors("DefaultCorsPolicy");
             app.UseRateLimiter();

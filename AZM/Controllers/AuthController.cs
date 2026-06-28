@@ -1,5 +1,6 @@
 ﻿using AZM.Application.Auth.Commands;
 using AZM.Application.Auth.DTOs.Auth;
+using AZM.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -39,9 +40,13 @@ namespace AZM.Api.Controllers
         {
             var result = await _mediator.Send(new VerifyOtpCommand(dto));
             return result.IsSuccess
-                ? Ok(new { message = "Email verified successfully." })
-                : StatusCode(result.StatusCode, new { error = result.Error });
+                   ? Ok(result.Data)
+                   : StatusCode(result.StatusCode, new { error = result.Error });
+
         }
+
+
+
 
         /// <summary>
         /// Resend OTP to the registered email. 60-second cooldown.
@@ -118,7 +123,7 @@ namespace AZM.Api.Controllers
         {
             var result = await _mediator.Send(new ResetPasswordCommand(dto));
             return result.IsSuccess
-                ? Ok(new { message = "Password reset successfully. You may now sign in." })
+                ? Ok(new { message = "Password reset successfully. You may now Login ." })
                 : StatusCode(result.StatusCode, new { error = result.Error });
         }
 
