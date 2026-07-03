@@ -20,6 +20,9 @@ namespace AZM.Infrastructure.Repositories
         public async Task<bool> EmailExistsAsync(string email)
             => await _userManager.FindByEmailAsync(email) is not null;
 
+        public async Task<bool> UsernameExistsAsync(string username)
+            => await _userManager.FindByNameAsync(username) is not null;
+
         public async Task<bool> PhoneExistsAsync(string phoneNumber)
             => await _userManager.Users
                 .AnyAsync(u => u.PhoneNumber == phoneNumber);

@@ -37,6 +37,7 @@ namespace AZM.Application.Auth.Handlers
             var email = dto.Email.Trim().ToLowerInvariant();
             var firstName = dto.FirstName.Trim();
             var lastName = dto.LastName.Trim();
+            var username = dto.Username.Trim();
 
             // 2. Birthdate validation
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -55,10 +56,15 @@ namespace AZM.Application.Auth.Handlers
                 return Result<RegisterResponseDto>.Failure(
                     "An account with this email already exists.", 409);
 
+            // 3b. Duplicate username check
+            if (await _userRepository.UsernameExistsAsync(username))
+                return Result<RegisterResponseDto>.Failure(
+                    "This username is already taken.", 409);
+
             // 4. Create the user — phone number will be added in the next step
             var user = new User
             {
-                UserName = email,
+                UserName = username,
                 Email = email,
                 FirstName = firstName,
                 LastName = lastName,
