@@ -108,11 +108,8 @@ namespace AZM.Api
             using (var scope = app.Services.CreateScope())
                 await InfrastructureServiceExtensions.SeedRolesAsync(scope.ServiceProvider);
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
             app.UseCors("DefaultCorsPolicy");
