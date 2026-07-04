@@ -1,5 +1,5 @@
 ﻿using AZM.Application.Auth.Commands;
-using AZM.Application.Auth.DTOs.Auth;
+using AZM.Application.DTOs.Auth;
 using AZM.Domain.Entities;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -40,13 +40,9 @@ namespace AZM.Api.Controllers
         {
             var result = await _mediator.Send(new VerifyOtpCommand(dto));
             return result.IsSuccess
-                   ? Ok(result.Data)
-                   : StatusCode(result.StatusCode, new { error = result.Error });
-
+                ? Ok(result.Data)
+                : StatusCode(result.StatusCode, new { error = result.Error });
         }
-
-
-
 
         /// <summary>
         /// Resend OTP to the registered email. 60-second cooldown.
@@ -123,23 +119,28 @@ namespace AZM.Api.Controllers
         {
             var result = await _mediator.Send(new ResetPasswordCommand(dto));
             return result.IsSuccess
-                ? Ok(new { message = "Password reset successfully. You may now Login ." })
+                ? Ok(new { message = "Password reset successfully. You may now log in." })
                 : StatusCode(result.StatusCode, new { error = result.Error });
         }
 
         /// <summary>
         /// Sign in with Google.
-        /// Returns JWT if existing account.
-        /// Returns userId + email (no token) if new account — proceed to complete-registration.
+        /// Existing account: returns JWT + full profile (200).
+        /// New account: returns userId + email, no token (201) — proceed to complete-registration.
         /// </summary>
         [HttpPost("google")]
         [EnableRateLimiting("registration")]
         public async Task<IActionResult> GoogleSignIn([FromBody] GoogleAuthRequestDto dto)
         {
             var result = await _mediator.Send(new GoogleSignInCommand(dto));
-            return result.IsSuccess
-                ? StatusCode(result.StatusCode, result.Data)
-                : StatusCode(result.StatusCode, new { error = result.Error });
+
+            if (!result.IsSuccess)
+                return StatusCode(result.StatusCode, new { error = result.Error });
+
+            // 201 for new accounts (incomplete registration), 200 for returning users
+            return result.StatusCode == 201
+                ? StatusCode(201, result.Data)
+                : Ok(result.Data);
         }
 
         /// <summary>
@@ -168,6 +169,5 @@ namespace AZM.Api.Controllers
                 ? Ok(new { message = "Phone number verified successfully." })
                 : StatusCode(result.StatusCode, new { error = result.Error });
         }
-
     }
 }

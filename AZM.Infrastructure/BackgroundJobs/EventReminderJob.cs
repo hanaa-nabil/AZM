@@ -1,14 +1,9 @@
 ﻿using AZM.Domain.Enums;
 using AZM.Domain.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AZM.Infrastructure.BackgroundJobs
 {
-    public class EventReminderJob      
+    public class EventReminderJob
     {
         private readonly IEventRepository _eventRepo;
         private readonly INotificationService _notifications;
@@ -25,7 +20,7 @@ namespace AZM.Infrastructure.BackgroundJobs
         {
             var events = await _eventRepo.GetStartingWithinAsync(TimeSpan.FromHours(1));
 
-            foreach (var ev in events)
+            foreach (var ev in events.Where(e => e.ReminderSentAt == null))
             {
                 var participantIds = ev.Participants
                     .Where(p => p.Status == ParticipantStatus.Joined)
@@ -35,8 +30,10 @@ namespace AZM.Infrastructure.BackgroundJobs
                     participantIds,
                     "Event starting soon!",
                     $"{ev.Title} starts in 1 hour. Get ready!");
+
+                await _eventRepo.MarkReminderSentAsync(ev.Id);
             }
         }
     }
-
 }
+

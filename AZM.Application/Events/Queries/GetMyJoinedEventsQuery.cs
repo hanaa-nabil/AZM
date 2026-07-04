@@ -1,5 +1,5 @@
-﻿using AZM.Application.Auth.DTOs.Event;
-using AZM.Application.Common;
+﻿using AZM.Application.Common;
+using AZM.Application.DTOs.Event;
 using MediatR;
 using System;
 using System.Collections.Generic;

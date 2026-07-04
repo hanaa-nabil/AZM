@@ -1,6 +1,6 @@
 using AZM.Application.Auth.Commands;
-using AZM.Application.Auth.DTOs.Auth;
 using AZM.Application.Common;
+using AZM.Application.DTOs.Auth;
 using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;
 using MediatR;

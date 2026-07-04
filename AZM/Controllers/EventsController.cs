@@ -1,11 +1,12 @@
 ﻿using AZM.Api.Requests;
-using AZM.Application.Auth.DTOs.Event;
+using AZM.Application.DTOs.Event;
 using AZM.Application.Events.Commands;
 using AZM.Application.Events.Queries;
 using AZM.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace AZM.Api.Controllers
@@ -19,9 +20,11 @@ namespace AZM.Api.Controllers
 
         public EventsController(IMediator mediator) => _mediator = mediator;
 
-        private Guid? CurrentUserId =>
-            Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
+        //private Guid? CurrentUserId =>
+        //    Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
 
+        private Guid? CurrentUserId =>
+            Guid.TryParse(User.FindFirstValue(JwtRegisteredClaimNames.Sub), out var id) ? id : null;
         // ── Feed ──────────────────────────────────────────────────────────────────
 
         /// <summary>

@@ -18,8 +18,9 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
         public DbSet<Achievement> Achievements { get; set; } = null!;
         public DbSet<OtpCode> OtpCodes { get; set; } = null!;   
-        public DbSet<UserSport> UserSports { get; set; } = null!;  
+        public DbSet<UserSport> UserSports { get; set; } = null!;
 
+        public DbSet<Notification> Notifications => Set<Notification>();
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);

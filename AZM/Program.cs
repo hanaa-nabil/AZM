@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
 namespace AZM.Api
@@ -32,6 +33,7 @@ namespace AZM.Api
             })
             .AddJwtBearer(options =>
             {
+                options.MapInboundClaims = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuer = true,
@@ -72,7 +74,10 @@ namespace AZM.Api
             });
 
             // Controllers + Swagger
-            builder.Services.AddControllers();
+            builder.Services.AddControllers().AddJsonOptions(options =>
+            {
+                options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            });
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
@@ -108,11 +113,6 @@ namespace AZM.Api
             using (var scope = app.Services.CreateScope())
                 await InfrastructureServiceExtensions.SeedRolesAsync(scope.ServiceProvider);
 
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
             if (app.Environment.IsDevelopment()|| app.Environment.IsProduction())
             {
                 app.UseSwagger();

@@ -31,6 +31,9 @@ namespace AZM.Infrastructure.Repositories
             => await _userManager.FindByIdAsync(id);
 
 
+        public async Task<bool> UsernameExistsAsync(string username)
+            => await _userManager.FindByNameAsync(username) is not null;
+
         public async Task UpdateFcmTokenAsync(Guid userId, string fcmToken)
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);

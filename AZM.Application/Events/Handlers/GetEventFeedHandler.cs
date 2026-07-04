@@ -1,5 +1,5 @@
-﻿using AZM.Application.Auth.DTOs.Event;
-using AZM.Application.Common;
+﻿using AZM.Application.Common;
+using AZM.Application.DTOs.Event;
 using AZM.Application.Events.Queries;
 using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;

@@ -1,6 +1,5 @@
 ﻿using AZM.Domain.Entities;
 
-
 namespace AZM.Domain.Interfaces
 {
     public interface IUserRepository
@@ -11,6 +10,7 @@ namespace AZM.Domain.Interfaces
         Task<User?> GetByIdAsync(string id);
         Task UpdateFcmTokenAsync(Guid userId, string fcmToken);
 
+        Task<bool> UsernameExistsAsync(string username);
         Task RemoveUserSportsAsync(Guid userId);
     }
 }

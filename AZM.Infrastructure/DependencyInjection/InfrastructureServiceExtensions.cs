@@ -66,9 +66,8 @@ namespace AZM.Infrastructure.DependencyInjection
             services.AddScoped<IUserRepository, UserRepository>();
 
             // 6. NOTIFICATIONS
-            services.Configure<FcmOptions>(
-                configuration.GetSection(FcmOptions.SectionName));
-            services.AddScoped<INotificationService, FcmNotificationService>();
+            services.AddScoped<INotificationService, NotificationService>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
 
             // 7. SERVICES
             services.AddScoped<ITokenService, TokenService>();

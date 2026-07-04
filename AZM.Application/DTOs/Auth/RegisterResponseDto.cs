@@ -1,0 +1,11 @@
+namespace AZM.Application.DTOs.Auth
+{
+    public class RegisterResponseDto
+    {
+        public string UserId { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public bool EmailVerificationRequired { get; set; }
+        public bool PhoneNumberRequired { get; set; }
+        public string? Message { get; set; }
+    }
+}

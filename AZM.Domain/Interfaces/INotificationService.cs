@@ -1,9 +1,16 @@
-﻿namespace AZM.Domain.Interfaces
+﻿using AZM.Domain.Enums;
+
+namespace AZM.Domain.Interfaces
 {
     public interface INotificationService
     {
-        Task SendToUserAsync(string userId, string title, string body);
-        Task SendToGroupAsync(IEnumerable<string> userIds, string title, string body);
+        Task SendAsync(Guid recipientId, NotificationType type, string title, string body,
+            Guid? relatedEventId = null, CancellationToken ct = default);
+
+        Task SendBulkAsync(IEnumerable<Guid> recipientIds, NotificationType type, string title, string body,
+            Guid? relatedEventId = null, CancellationToken ct = default);
+
+        Task SendToGroupAsync(IEnumerable<string> userIds, string title, string body, CancellationToken ct = default);
     }
 
 }

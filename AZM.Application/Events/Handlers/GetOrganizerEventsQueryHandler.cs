@@ -1,14 +1,9 @@
-﻿using AZM.Application.Auth.DTOs.Event;
-using AZM.Application.Common;
+﻿using AZM.Application.Common;
+using AZM.Application.DTOs.Event;
 using AZM.Application.Events.Queries;
 using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AZM.Application.Events.Handlers
 {

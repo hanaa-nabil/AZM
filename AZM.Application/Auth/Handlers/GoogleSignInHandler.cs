@@ -1,6 +1,6 @@
 using AZM.Application.Auth.Commands;
-using AZM.Application.Auth.DTOs.Auth;
 using AZM.Application.Common;
+using AZM.Application.DTOs.Auth;
 using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;
 using MediatR;
@@ -38,15 +38,17 @@ namespace AZM.Application.Auth.Handlers
 
             var email = googleUser.Email.Trim().ToLowerInvariant();
 
-            // 2. Block if a password account already exists with this email
+            // 2. Look up existing account
             var existingUser = await _userRepository.GetByEmailAsync(email);
-            if (existingUser is not null && !existingUser.IsGoogleAccount)
-                return Result<AuthResponseDto>.Failure(
-                    "An account with this email already exists. Please sign in with your password.", 409);
 
-            // 3. Existing Google account — sign in and return token
-            if (existingUser is not null && existingUser.IsGoogleAccount)
+            if (existingUser is not null)
             {
+                // Block password accounts from using Google sign-in
+                if (!existingUser.IsGoogleAccount)
+                    return Result<AuthResponseDto>.Failure(
+                        "An account with this email already exists. Please sign in with your password.", 409);
+
+                // Existing Google account — sign in and return token
                 var existingRoles = await _userManager.GetRolesAsync(existingUser);
                 var existingToken = _tokenService.GenerateJwtToken(existingUser, existingRoles);
 
@@ -57,18 +59,20 @@ namespace AZM.Application.Auth.Handlers
                     FullName = existingUser.FullName,
                     Token = existingToken,
                     EmailConfirmed = existingUser.EmailConfirmed,
-                    ProfilePhotoUrl = existingUser.ProfilePhotoUrl
+                    ProfilePhotoUrl = existingUser.ProfilePhotoUrl,
+                    IsRegistrationComplete = true
                 });
             }
 
-            // 4. New Google user — create account, no token yet
-            //    Must go through: complete-registration (phone) → complete-profile (sports/photo) → token
+            // 3. New Google user — create account
+            //    No token yet: must go through complete-registration (phone) → complete-profile → token
             var user = new User
             {
                 UserName = email,
                 Email = email,
                 FirstName = googleUser.FirstName,
                 LastName = googleUser.LastName,
+                // GoogleId stored via ExternalId to keep ISocialAuthService provider-agnostic
                 GoogleId = googleUser.SocialId,
                 IsGoogleAccount = true,
                 EmailConfirmed = true,
@@ -78,19 +82,30 @@ namespace AZM.Application.Auth.Handlers
             };
 
             var createResult = await _userManager.CreateAsync(user);
+
             if (!createResult.Succeeded)
             {
+                // Handle race condition: another request created this account between our lookup and create
+                if (createResult.Errors.Any(e => e.Code == "DuplicateEmail" || e.Code == "DuplicateUserName"))
+                    return Result<AuthResponseDto>.Failure(
+                        "An account with this email already exists. Please sign in with your password.", 409);
+
                 var errors = string.Join(" ", createResult.Errors.Select(e => e.Description));
                 return Result<AuthResponseDto>.Failure(errors, 400);
             }
+
+            // Assign default role so JWT role claims are populated on first full sign-in
+            await _userManager.AddToRoleAsync(user, "User");
 
             return Result<AuthResponseDto>.Success(new AuthResponseDto
             {
                 UserId = user.Id,
                 Email = user.Email!,
                 FullName = user.FullName,
-                Token = string.Empty,
-                EmailConfirmed = true
+                Token = null,
+                EmailConfirmed = true,
+                IsRegistrationComplete = false,
+                RequiresPhone = true
             }, 201);
         }
     }

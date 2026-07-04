@@ -1,6 +1,7 @@
-﻿using AZM.Application.Auth.DTOs.Event;
-using AZM.Application.Auth.DTOs.Participants;
+﻿
 using AZM.Application.Common;
+using AZM.Application.DTOs.Event;
+using AZM.Application.DTOs.Participants;
 using AZM.Application.Events.Queries;
 using AZM.Domain.Interfaces;
 using MediatR;

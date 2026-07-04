@@ -1,5 +1,5 @@
-﻿using AZM.Application.Auth.DTOs.Event;
-using AZM.Application.Common;
+﻿using AZM.Application.Common;
+using AZM.Application.DTOs.Event;
 using AZM.Domain.Enums;
 using MediatR;
 

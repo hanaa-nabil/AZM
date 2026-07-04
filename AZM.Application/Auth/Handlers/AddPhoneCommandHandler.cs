@@ -1,6 +1,6 @@
 using AZM.Application.Auth.Commands;
-using AZM.Application.Auth.DTOs.Auth;
 using AZM.Application.Common;
+using AZM.Application.DTOs.Auth;
 using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;
 using MediatR;
@@ -42,32 +42,37 @@ namespace AZM.Application.Auth.Handlers
                 return Result<RegisterResponseDto>.Failure(
                     "An account with this phone number already exists.", 409);
 
-            // 4. Save the phone number
-            //    Phone OTP verification will be handled by the frontend via Firebase.
-            //    When integration is ready, uncomment the block below and verify
-            //    the Firebase ID token before saving the phone number.
+            // 4. Save the phone number and mark as pending verification
+            //    IsPendingPhoneVerification = true here; VerifyPhoneHandler sets it back to false.
+            //    CompleteProfileHandler must guard on IsPendingPhoneVerification == false before issuing token.
             //
             // ---------- PHONE VERIFICATION (uncomment when integrating frontend) ----------
             // var phoneVerified = await _phoneVerificationService.VerifyFirebaseTokenAsync(dto.FirebaseIdToken);
             // if (!phoneVerified)
             //     return Result<RegisterResponseDto>.Failure("Phone verification failed.", 400);
             // -------------------------------------------------------------------------------
-
             user.PhoneNumber = dto.PhoneNumber;
             user.IsPendingPhoneVerification = true;
 
             var updateResult = await _userManager.UpdateAsync(user);
+
             if (!updateResult.Succeeded)
             {
+                // Handle race condition: another request saved the same phone number between our check and update
+                if (updateResult.Errors.Any(e => e.Code == "DuplicatePhoneNumber"))
+                    return Result<RegisterResponseDto>.Failure(
+                        "An account with this phone number already exists.", 409);
+
                 var errors = string.Join(" ", updateResult.Errors.Select(e => e.Description));
                 return Result<RegisterResponseDto>.Failure(errors, 400);
             }
 
-            // 5. Phone saved — proceed to complete-profile to pick sports, add photo, and get token
+            // 5. Phone saved — next step is verify-phone, then complete-profile
             return Result<RegisterResponseDto>.Success(new RegisterResponseDto
             {
                 UserId = user.Id.ToString(),
-                Email = user.Email!
+                Email = user.Email!,
+                Message = "Phone number saved. Proceed to verify-phone."
             });
         }
     }

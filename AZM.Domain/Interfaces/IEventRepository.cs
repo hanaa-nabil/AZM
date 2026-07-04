@@ -29,5 +29,6 @@ namespace AZM.Domain.Interfaces
         Task UpdateParticipantAsync(EventParticipant participant, CancellationToken ct = default);
         Task<bool> IsParticipantAsync(Guid eventId, Guid userId, CancellationToken ct = default);
         Task<int> GetParticipantCountAsync(Guid eventId, CancellationToken ct = default);
+        Task MarkReminderSentAsync(Guid eventId, CancellationToken ct = default);
     }
 }

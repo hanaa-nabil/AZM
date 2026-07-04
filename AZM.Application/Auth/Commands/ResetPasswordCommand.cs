@@ -1,5 +1,5 @@
-using AZM.Application.Auth.DTOs.Auth;
 using AZM.Application.Common;
+using AZM.Application.DTOs.Auth;
 using MediatR;
 
 namespace AZM.Application.Auth.Commands

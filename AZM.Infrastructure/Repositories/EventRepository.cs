@@ -178,6 +178,13 @@ namespace AZM.Infrastructure.Repositories
             => await _db.EventParticipants.CountAsync(p =>
                 p.EventId == eventId &&
                 p.Status == ParticipantStatus.Joined, ct);
+
+        public async Task MarkReminderSentAsync(Guid eventId, CancellationToken ct = default)
+        {
+            await _db.Events
+                .Where(e => e.Id == eventId)
+                .ExecuteUpdateAsync(s => s.SetProperty(e => e.ReminderSentAt, DateTime.UtcNow), ct);
+        }
     }
 
 }

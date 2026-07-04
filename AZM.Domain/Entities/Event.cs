@@ -18,6 +18,7 @@ namespace AZM.Domain.Entities
         public EventStatus Status { get; private set; }
         public bool IsPublic { get; private set; } = true;
         public EventRoute? Route { get; private set; }
+        public DateTime? ReminderSentAt { get; set; }
 
         // Location (provided by Flutter as coordinates)
         public double Latitude { get; private set; }
