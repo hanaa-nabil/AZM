@@ -12,5 +12,9 @@ namespace AZM.Domain.Interfaces
 
         Task<bool> UsernameExistsAsync(string username);
         Task RemoveUserSportsAsync(Guid userId);
+
+        Task<User?> GetByIdWithDetailsAsync(Guid userId);
+        Task UpdateAsync(User user);
+        Task<bool> UpdateUsernameAsync(Guid userId, string newUsername);
     }
 }

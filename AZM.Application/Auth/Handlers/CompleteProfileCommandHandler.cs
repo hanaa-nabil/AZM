@@ -94,15 +94,17 @@ namespace AZM.Application.Auth.Handlers
             // 8. Issue JWT — this is the only place a token is ever issued
             var roles = await _userManager.GetRolesAsync(user);
             var token = _tokenService.GenerateJwtToken(user, roles);
-
+            var (existingToken, existingExpiresAtUtc) = _tokenService.GenerateJwtToken(user, roles);
             return Result<AuthResponseDto>.Success(new AuthResponseDto
             {
                 UserId = user.Id,
                 Email = user.Email!,
                 FullName = user.FullName,
-                Token = token,
-                EmailConfirmed = user.EmailConfirmed,
-                ProfilePhotoUrl = user.ProfilePhotoUrl
+                Token = null,
+                ExpiresAtUtc = null,
+                TokenType = null,
+                EmailConfirmed = true,
+                IsRegistrationComplete = false
             });
         }
     }

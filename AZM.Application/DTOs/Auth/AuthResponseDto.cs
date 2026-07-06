@@ -10,5 +10,7 @@
         public string? ProfilePhotoUrl { get; set; }
         public bool IsRegistrationComplete { get; set; } = true;
         public bool RequiresPhone { get; set; } = false;
+        public DateTime? ExpiresAtUtc { get; set; }
+        public string? TokenType { get; set; } = "Bearer";
     }
 }

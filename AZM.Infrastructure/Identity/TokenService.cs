@@ -17,8 +17,10 @@ namespace AZM.Infrastructure.Identity
             _jwtSettings = jwtSettings.Value;
         }
 
-        public string GenerateJwtToken(User user, IList<string> roles)
+        public (string Token, DateTime ExpiresAtUtc) GenerateJwtToken(User user, IList<string> roles)
         {
+            var expiresAtUtc = DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes);
+
             var claims = new List<Claim>
             {
                 new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
@@ -40,11 +42,12 @@ namespace AZM.Infrastructure.Identity
                 issuer: _jwtSettings.Issuer,
                 audience: _jwtSettings.Audience,
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryMinutes),
+                expires: expiresAtUtc,
                 signingCredentials: credentials
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            return (tokenString, expiresAtUtc);
         }
     }
 }

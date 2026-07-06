@@ -50,7 +50,7 @@ namespace AZM.Application.Auth.Handlers
 
                 // Existing Google account — sign in and return token
                 var existingRoles = await _userManager.GetRolesAsync(existingUser);
-                var existingToken = _tokenService.GenerateJwtToken(existingUser, existingRoles);
+                var (existingToken, existingExpiresAtUtc) = _tokenService.GenerateJwtToken(existingUser, existingRoles);
 
                 return Result<AuthResponseDto>.Success(new AuthResponseDto
                 {
@@ -58,6 +58,8 @@ namespace AZM.Application.Auth.Handlers
                     Email = existingUser.Email!,
                     FullName = existingUser.FullName,
                     Token = existingToken,
+                    ExpiresAtUtc = existingExpiresAtUtc,
+                    TokenType = "Bearer",
                     EmailConfirmed = existingUser.EmailConfirmed,
                     ProfilePhotoUrl = existingUser.ProfilePhotoUrl,
                     IsRegistrationComplete = true
@@ -105,7 +107,9 @@ namespace AZM.Application.Auth.Handlers
                 Token = null,
                 EmailConfirmed = true,
                 IsRegistrationComplete = false,
-                RequiresPhone = true
+                RequiresPhone = true,
+                ExpiresAtUtc = null,
+                TokenType = null
             }, 201);
         }
     }

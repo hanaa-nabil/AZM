@@ -4,6 +4,6 @@ namespace AZM.Domain.Interfaces
 {
     public interface ITokenService
     {
-        string GenerateJwtToken(User user, IList<string> roles);
+        (string Token, DateTime ExpiresAtUtc) GenerateJwtToken(User user, IList<string> roles);
     }
 }

@@ -49,5 +49,26 @@ namespace AZM.Infrastructure.Services
 
             return result.SecureUrl.ToString();
         }
+
+        public async Task DeletePhotoAsync(string publicId)
+        {
+            var deleteParams = new DeletionParams(publicId);
+            await _cloudinary.DestroyAsync(deleteParams);
+        }
+        private static readonly string[] AvatarColors =
+        {
+    "2563EB", "DC2626", "16A34A", "CA8A04",
+    "9333EA", "0891B2", "EA580C", "DB2777"
+};
+
+        public string GetInitialsAvatarUrl(string initials, Guid seed)
+        {
+            var colorIndex = Math.Abs(seed.GetHashCode()) % AvatarColors.Length;
+            var color = AvatarColors[colorIndex];
+            var safeInitials = string.IsNullOrWhiteSpace(initials) ? "?" : initials;
+
+            return $"https://ui-avatars.com/api/?name={Uri.EscapeDataString(safeInitials)}" +
+                   $"&background={color}&color=fff&size=400&bold=true&rounded=true";
+        }
     }
 }

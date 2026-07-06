@@ -56,7 +56,7 @@ namespace AZM.Application.Auth.Handlers
 
             // 6. Issue JWT
             var roles = await _userManager.GetRolesAsync(user);
-            var token = _tokenService.GenerateJwtToken(user, roles);
+            var (token, expiresAtUtc) = _tokenService.GenerateJwtToken(user, roles);
 
             user.LastLoginAtUtc = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
@@ -67,8 +67,11 @@ namespace AZM.Application.Auth.Handlers
                 Email = user.Email!,
                 FullName = user.FullName,
                 Token = token,
-                EmailConfirmed = user.EmailConfirmed,
-                ProfilePhotoUrl = user.ProfilePhotoUrl
+                ExpiresAtUtc = expiresAtUtc,
+                TokenType = "Bearer",
+                IsRegistrationComplete = true,
+                RequiresPhone = false,
+                EmailConfirmed = user.EmailConfirmed
             });
         }
     }

@@ -28,8 +28,8 @@ namespace AZM.Application.Auth.Handlers
         }
 
         public async Task<Result<VerifyOtpResponseDto>> Handle(
-            VerifyOtpCommand request,
-            CancellationToken cancellationToken)
+                VerifyOtpCommand request,
+                CancellationToken cancellationToken)
         {
             var email = request.Dto.Email.Trim().ToLowerInvariant();
             var code = request.Dto.Code.Trim();
@@ -47,16 +47,17 @@ namespace AZM.Application.Auth.Handlers
 
             user.EmailConfirmed = true;
             await _userManager.UpdateAsync(user);
-
             await _emailService.SendWelcomeEmailAsync(email, user.FirstName);
 
             var roles = await _userManager.GetRolesAsync(user);
-            var token = _tokenService.GenerateJwtToken(user, roles);
+            var (token, expiresAtUtc) = _tokenService.GenerateJwtToken(user, roles);
 
             return Result<VerifyOtpResponseDto>.Success(new VerifyOtpResponseDto
             {
                 Message = "Email verified successfully.",
                 Token = token,
+                ExpiresAtUtc = expiresAtUtc,
+                TokenType = "Bearer",
                 UserId = user.Id.ToString()
             });
         }

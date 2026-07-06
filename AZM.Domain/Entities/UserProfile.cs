@@ -12,7 +12,7 @@ namespace AZM.Domain.Entities
 
         public string? Bio { get; set; }
         public string? AvatarUrl { get; set; }
-
+        public string? Location { get; set; }
         public int EventsJoinedCount { get; set; }
         public int EventsCompletedCount { get; set; }
         public double TotalDistanceMeters { get; set; }

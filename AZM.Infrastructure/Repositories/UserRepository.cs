@@ -30,6 +30,11 @@ namespace AZM.Infrastructure.Repositories
         public async Task<User?> GetByIdAsync(string id)
             => await _userManager.FindByIdAsync(id);
 
+        public async Task<User?> GetByIdWithDetailsAsync(Guid userId)
+            => await _db.Users
+                .Include(u => u.Profile)
+                .Include(u => u.Sports)
+                .FirstOrDefaultAsync(u => u.Id == userId);
 
         public async Task<bool> UsernameExistsAsync(string username)
             => await _userManager.FindByNameAsync(username) is not null;
@@ -37,9 +42,7 @@ namespace AZM.Infrastructure.Repositories
         public async Task UpdateFcmTokenAsync(Guid userId, string fcmToken)
         {
             var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
-
             if (user is null) return;
-
             user.FcmToken = fcmToken;
             await _db.SaveChangesAsync();
         }
@@ -49,10 +52,23 @@ namespace AZM.Infrastructure.Repositories
             var sports = await _db.UserSports
                 .Where(s => s.UserId == userId)
                 .ToListAsync();
-
             _db.UserSports.RemoveRange(sports);
             await _db.SaveChangesAsync();
         }
 
+        public async Task UpdateAsync(User user)
+        {
+            _db.Users.Update(user);
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task<bool> UpdateUsernameAsync(Guid userId, string newUsername)
+        {
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user is null) return false;
+
+            var result = await _userManager.SetUserNameAsync(user, newUsername);
+            return result.Succeeded;
+        }
     }
 }

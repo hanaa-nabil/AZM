@@ -6,5 +6,7 @@ namespace AZM.Domain.Interfaces
         /// Uploads a base64-encoded image to Cloudinary and returns the secure URL.
         /// </summary>
         Task<string> UploadPhotoAsync(string base64Image, string publicId);
+        Task DeletePhotoAsync(string publicId);
+        string GetInitialsAvatarUrl(string initials, Guid seed);
     }
 }

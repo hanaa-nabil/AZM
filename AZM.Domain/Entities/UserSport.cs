@@ -6,7 +6,7 @@ namespace AZM.Domain.Entities
     {
         public int Id { get; set; }
 
-        public Guid UserId { get; set; }      // ← change from string
+        public Guid UserId { get; set; }     
 
         public Sport Sport { get; set; }
 
