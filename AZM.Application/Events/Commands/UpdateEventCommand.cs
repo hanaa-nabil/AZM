@@ -22,8 +22,10 @@ namespace AZM.Application.Events.Commands
         DateTime EventDate,
         int MaxParticipants,
         double? DistanceKm,
+         Pace Pace,
         string? CoverImageUrl,
         bool IsPublic = true,
         EventRouteDto? Route = null
     ) : IRequest<Result<bool>>;
+
 }

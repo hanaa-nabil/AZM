@@ -133,6 +133,12 @@ namespace AZM.Api
                 "event-reminders",
                 job => job.RunAsync(),
                 Cron.Minutely);
+           
+
+            RecurringJob.AddOrUpdate<EventStatusUpdateJob>(
+                "event-status-update",
+                job => job.RunAsync(),
+                Cron.Minutely);
 
             app.MapControllers();
             app.Run();

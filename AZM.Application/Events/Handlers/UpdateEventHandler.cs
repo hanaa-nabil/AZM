@@ -20,27 +20,28 @@ namespace AZM.Application.Events.Handlers
                 return Result<bool>.Failure("Only the organizer can update this event.");
 
             ev.Update(
-                         cmd.Title, cmd.Description, cmd.DifficultyLevel,
-                         cmd.Latitude, cmd.Longitude, cmd.LocationName,
-                         cmd.EventDate, cmd.MaxParticipants,
-                         cmd.DistanceKm, cmd.CoverImageUrl,
-                         cmd.IsPublic,
-                         cmd.Route is not null ? new EventRoute
-                     {
-                         StartLatitude = cmd.Route.StartLatitude,
-                         StartLongitude = cmd.Route.StartLongitude,
-                         StartAddress = cmd.Route.StartAddress,
-                         EndLatitude = cmd.Route.EndLatitude,
-                         EndLongitude = cmd.Route.EndLongitude,
-                         EndAddress = cmd.Route.EndAddress,
-                         DistanceMeters = cmd.Route.DistanceMeters,
-                         EstimatedDurationSeconds = cmd.Route.EstimatedDurationSeconds,
-                         Waypoints = cmd.Route.Waypoints?
-                                    .Select(w => new EventRouteWaypoint
-                         { Order = w.Order, Latitude = w.Latitude, Longitude = w.Longitude })
-                                    .ToList() ?? []
-                      } : null
-                     );
+                 cmd.Title, cmd.Description, cmd.DifficultyLevel,
+                 cmd.Latitude, cmd.Longitude, cmd.LocationName,
+                 cmd.EventDate, cmd.MaxParticipants,
+                 cmd.DistanceKm, cmd.CoverImageUrl,
+                 cmd.IsPublic,
+                 cmd.Pace,                           
+                 cmd.Route is not null ? new EventRoute
+                 {
+                    StartLatitude = cmd.Route.StartLatitude,
+                    StartLongitude = cmd.Route.StartLongitude,
+                    StartAddress = cmd.Route.StartAddress,
+                    EndLatitude = cmd.Route.EndLatitude,
+                    EndLongitude = cmd.Route.EndLongitude,
+                    EndAddress = cmd.Route.EndAddress,
+                    DistanceMeters = cmd.Route.DistanceMeters,
+                    EstimatedDurationSeconds = cmd.Route.EstimatedDurationSeconds,
+                    Waypoints = cmd.Route.Waypoints?
+                        .Select(w => new EventRouteWaypoint
+                       { Order = w.Order, Latitude = w.Latitude, Longitude = w.Longitude })
+                         .ToList() ?? []
+                       } : null
+             );
 
             await _eventRepo.UpdateAsync(ev, ct);
             return Result<bool>.Success(true);

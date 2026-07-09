@@ -39,7 +39,9 @@ namespace AZM.Application.Events.Handlers
                     Id = e.OrganizerId,
                     FullName = $"{e.Organizer.FirstName} {e.Organizer.LastName}".Trim(),
                 },
-                IsJoined = true
+                IsJoined = true,
+                Pace = e.Pace,
+                IsOrganizer = false, 
             });
 
             return Result<IEnumerable<EventFeedItemDto>>.Success(items);

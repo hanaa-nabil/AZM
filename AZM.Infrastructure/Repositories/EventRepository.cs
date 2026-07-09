@@ -25,6 +25,19 @@ namespace AZM.Infrastructure.Repositories
                 .Include(e => e.Participants)
                     .ThenInclude(p => p.User)
                 .FirstOrDefaultAsync(e => e.Id == id, ct);
+        public async Task<List<Event>> GetEventsToStartAsync(DateTime asOfUtc, CancellationToken ct)
+        {
+            return await _db.Events
+                .Where(e => e.Status == EventStatus.Upcoming && e.EventDate <= asOfUtc)
+                .ToListAsync(ct);
+        }
+
+        public async Task<List<Event>> GetEventsToCompleteAsync(DateTime cutoffUtc, CancellationToken ct)
+        {
+            return await _db.Events
+                .Where(e => e.Status == EventStatus.Ongoing && e.EventDate <= cutoffUtc)
+                .ToListAsync(ct);
+        }
 
         // ── Feed ──────────────────────────────────────────────────────────────────
 

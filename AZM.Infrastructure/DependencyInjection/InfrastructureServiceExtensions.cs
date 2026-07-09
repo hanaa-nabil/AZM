@@ -1,5 +1,6 @@
 ﻿using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;
+using AZM.Infrastructure.BackgroundJobs;
 using AZM.Infrastructure.DbContext;
 using AZM.Infrastructure.Identity;
 using AZM.Infrastructure.Notifications;
@@ -79,6 +80,8 @@ namespace AZM.Infrastructure.DependencyInjection
             services.AddScoped<IPhotoService, CloudinaryPhotoService>();
             services.AddScoped<IPasswordHasher<OtpCode>, PasswordHasher<OtpCode>>();
             services.AddHttpClient<IFirebaseAuthService, FirebaseAuthService>();
+            services.AddScoped<EventReminderJob>();
+            services.AddScoped<EventStatusUpdateJob>();
 
             return services;
         }

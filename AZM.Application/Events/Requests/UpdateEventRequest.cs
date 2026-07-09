@@ -12,6 +12,7 @@ namespace AZM.Api.Requests
        DateTime EventDate,
        int MaxParticipants,
        double? DistanceKm,
+       Pace Pace,
        string? CoverImageUrl,
        bool IsPublic = true,
        EventRouteRequest? Route = null

@@ -11,6 +11,7 @@ namespace AZM.Api.Requests
         double Longitude,
         string LocationName,
         DateTime EventDate,
+        Pace Pace ,
         int MaxParticipants = 0,
         double? DistanceKm = null,
         string? CoverImageUrl = null,

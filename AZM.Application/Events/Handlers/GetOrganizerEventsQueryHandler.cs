@@ -56,7 +56,9 @@ namespace AZM.Application.Events.Handlers
                 FullName = $"{e.Organizer.FirstName} {e.Organizer.LastName}".Trim(),
                 AvatarUrl = null
             },
-            IsJoined = isJoined
+            IsJoined = isJoined,
+            Pace = e.Pace,
+            IsOrganizer = true, 
         };
     }
 }

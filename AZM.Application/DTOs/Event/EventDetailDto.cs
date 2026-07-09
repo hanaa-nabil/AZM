@@ -11,5 +11,6 @@ namespace AZM.Application.DTOs.Event
     {
         public string? RouteImageUrl { get; init; }
         public IEnumerable<ParticipantDto> Participants { get; init; } = [];
+        public EventRouteDto? Route { get; init; }
     }
 }

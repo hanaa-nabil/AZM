@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AZM.Domain.Enums;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -26,5 +27,7 @@ namespace AZM.Application.DTOs.Event
         public string? CoverImageUrl { get; init; }
         public OrganizerSummaryDto Organizer { get; init; } = null!;
         public bool IsJoined { get; init; }
+        public Pace Pace { get; init; }
+        public bool IsOrganizer { get; init; }
     }
 }

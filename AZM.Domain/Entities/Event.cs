@@ -1,10 +1,4 @@
 ﻿using AZM.Domain.Enums;
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AZM.Domain.Entities
 {
@@ -19,6 +13,7 @@ namespace AZM.Domain.Entities
         public bool IsPublic { get; private set; } = true;
         public EventRoute? Route { get; private set; }
         public DateTime? ReminderSentAt { get; set; }
+        public Pace Pace { get; private set; }
 
         // Location (provided by Flutter as coordinates)
         public double Latitude { get; private set; }
@@ -52,21 +47,13 @@ namespace AZM.Domain.Entities
         private Event() { }
 
         public static Event Create(
-            string title,
-            string description,
-            SportType sportType,
-            DifficultyLevel difficultyLevel,
-            double latitude,
-            double longitude,
-            string locationName,
-            DateTime eventDate,
-            Guid organizerId,
-            int maxParticipants = 0,
-            double? distanceKm = null,
-            string? routeImageUrl = null,
-            string? coverImageUrl = null,
-                bool isPublic = true,
-                EventRoute? route = null)
+     string title, string description, SportType sportType,
+     DifficultyLevel difficultyLevel, double latitude, double longitude,
+     string locationName, DateTime eventDate, Guid organizerId,
+     int maxParticipants = 0, double? distanceKm = null,
+     string? routeImageUrl = null, string? coverImageUrl = null,
+     bool isPublic = true, EventRoute? route = null,
+     Pace pace = default)  
         {
             return new Event
             {
@@ -92,18 +79,11 @@ namespace AZM.Domain.Entities
         }
 
         public void Update(
-            string title,
-            string description,
-            DifficultyLevel difficultyLevel,
-            double latitude,
-            double longitude,
-            string locationName,
-            DateTime eventDate,
-            int maxParticipants,
-            double? distanceKm,
-            string? coverImageUrl,
-            bool isPublic,
-            EventRoute? route = null)
+         string title, string description, DifficultyLevel difficultyLevel,
+         double latitude, double longitude, string locationName,
+         DateTime eventDate, int maxParticipants, double? distanceKm,
+         string? coverImageUrl, bool isPublic, Pace pace,
+         EventRoute? route = null)
         {
             Title = title;
             Description = description;
@@ -116,6 +96,7 @@ namespace AZM.Domain.Entities
             DistanceKm = distanceKm;
             CoverImageUrl = coverImageUrl;
             IsPublic = isPublic;
+            Pace = pace;
             if (route != null) Route = route;
             UpdatedAt = DateTime.UtcNow;
         }

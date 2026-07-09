@@ -33,11 +33,25 @@ namespace AZM.Application.Events.Handlers
             if (ev.OrganizerId != request.RequestingUserId)
                 return Result<bool>.Failure("Only the organizer can update this event");
 
-            EventRoute? route = null;
+            EventRoute? route = request.Route is not null ? new EventRoute
+            {
+                StartLatitude = request.Route.StartLatitude,
+                StartLongitude = request.Route.StartLongitude,
+                StartAddress = request.Route.StartAddress,
+                EndLatitude = request.Route.EndLatitude,
+                EndLongitude = request.Route.EndLongitude,
+                EndAddress = request.Route.EndAddress,
+                DistanceMeters = request.Route.DistanceMeters,
+                EstimatedDurationSeconds = request.Route.EstimatedDurationSeconds,
+                Waypoints = request.Route.Waypoints?
+                  .Select(w => new EventRouteWaypoint { Order = w.Order, Latitude = w.Latitude, Longitude = w.Longitude })
+                  .ToList() ?? []
+            } : null;
 
             ev.Update(request.Title, request.Description, request.DifficultyLevel,
                 request.Latitude, request.Longitude, request.LocationName, request.EventDate,
-                request.MaxParticipants, request.DistanceKm, request.CoverImageUrl, request.IsPublic, route);
+                request.MaxParticipants, request.DistanceKm, request.CoverImageUrl, request.IsPublic,
+                request.Pace, route); 
 
             await _eventRepo.UpdateAsync(ev, cancellationToken);
 

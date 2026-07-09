@@ -138,12 +138,12 @@ namespace AZM.Api.Controllers
             }
 
             var cmd = new CreateEventCommand(
-                request.Title, request.Description,
-                request.SportType, request.DifficultyLevel,
-                request.Latitude, request.Longitude, request.LocationName,
-                request.EventDate, CurrentUserId!.Value,
-                request.MaxParticipants, request.DistanceKm, request.CoverImageUrl,
-                request.IsPublic, routeDto);
+                 request.Title, request.Description,
+                 request.SportType, request.DifficultyLevel,
+                 request.Latitude, request.Longitude, request.LocationName,
+                 request.EventDate, CurrentUserId!.Value,
+                 request.MaxParticipants, request.DistanceKm, request.Pace,
+                 request.CoverImageUrl, request.IsPublic, routeDto);
 
             var result = await _mediator.Send(cmd);
             if (!result.IsSuccess) return BadRequest(result.Error);
@@ -170,14 +170,22 @@ namespace AZM.Api.Controllers
             }
 
             var cmd = new UpdateEventCommand(
-                id, CurrentUserId!.Value,
-                request.Title, request.Description, request.DifficultyLevel,
-                request.Latitude, request.Longitude, request.LocationName,
-                request.EventDate, request.MaxParticipants,
-                request.DistanceKm, request.CoverImageUrl,
-                request.IsPublic, routeDto);
-
-            var result = await _mediator.Send(cmd);
+                EventId: id,
+                RequestingUserId: CurrentUserId!.Value,
+                Title: request.Title,
+                Description: request.Description,
+                DifficultyLevel: request.DifficultyLevel,
+                Latitude: request.Latitude,
+                Longitude: request.Longitude,
+                LocationName: request.LocationName,
+                EventDate: request.EventDate,
+                MaxParticipants: request.MaxParticipants,
+                DistanceKm: request.DistanceKm,
+                Pace: request.Pace,        
+                CoverImageUrl: request.CoverImageUrl,
+                IsPublic: request.IsPublic,
+                Route: routeDto);
+                var result = await _mediator.Send(cmd);
             return result.IsSuccess ? NoContent() : BadRequest(result.Error);
         }
 

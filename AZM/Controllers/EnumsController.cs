@@ -8,39 +8,50 @@ namespace AZM.Api.Controllers
     [ApiController]
     public class EnumsController : ControllerBase
     {
-        /// <summary>Returns all sport types with their integer values.</summary>
         [HttpGet("sport-types")]
-        public IActionResult GetSportTypes()
-            => Ok(Enum.GetValues<SportType>()
-                .Select(e => new { value = (int)e, name = e.ToString() }));
+        public IActionResult GetSportTypes() => Ok(ToDto<SportType>());
 
-        /// <summary>Returns all event statuses.</summary>
-        [HttpGet("event-statuses")]
-        public IActionResult GetEventStatuses()
-            => Ok(Enum.GetValues<EventStatus>()
-                .Select(e => new { value = (int)e, name = e.ToString() }));
-
-        /// <summary>Returns all difficulty levels.</summary>
         [HttpGet("difficulty-levels")]
-        public IActionResult GetDifficultyLevels()
-            => Ok(Enum.GetValues<DifficultyLevel>()
-                .Select(e => new { value = (int)e, name = e.ToString() }));
+        public IActionResult GetDifficultyLevels() => Ok(ToDto<DifficultyLevel>());
 
-        /// <summary>Returns all genders.</summary>
+        [HttpGet("paces")]
+        public IActionResult GetPaces() => Ok(ToDto<Pace>());
+
+        [HttpGet("participant-statuses")]
+        public IActionResult GetParticipantStatuses() => Ok(ToDto<ParticipantStatus>());
+
         [HttpGet("genders")]
-        public IActionResult GetGenders()
-            => Ok(Enum.GetValues<Gender>()
-                .Select(e => new { value = (int)e, name = e.ToString() }));
+        public IActionResult GetGenders() => Ok(ToDto<Gender>());
 
-        /// <summary>All enums in one call — useful for app startup.</summary>
-        [HttpGet]
-        public IActionResult GetAll() => Ok(new
+        [HttpGet("event-statuses")]
+        public IActionResult GetEventStatuses() => Ok(ToDto<EventStatus>());
+
+        /// <summary>
+        /// Convenience endpoint: returns all enums in one call, useful for a
+        /// single "app config" fetch on client startup.
+        /// </summary>
+        [HttpGet("all")]
+        public IActionResult GetAll()
         {
-            sportTypes = Enum.GetValues<SportType>().Select(e => new { value = (int)e, name = e.ToString() }),
-            eventStatuses = Enum.GetValues<EventStatus>().Select(e => new { value = (int)e, name = e.ToString() }),
-            difficultyLevels = Enum.GetValues<DifficultyLevel>().Select(e => new { value = (int)e, name = e.ToString() }),
-            genders = Enum.GetValues<Gender>().Select(e => new { value = (int)e, name = e.ToString() }),
-        });
+            return Ok(new
+            {
+                sportTypes = ToDto<SportType>(),
+                difficultyLevels = ToDto<DifficultyLevel>(),
+                paces = ToDto<Pace>(),
+                participantStatuses = ToDto<ParticipantStatus>(),
+                genders = ToDto<Gender>(),
+                eventStatuses = ToDto<EventStatus>()
+            });
+        }
+
+        private static List<EnumDto> ToDto<TEnum>() where TEnum : struct, Enum
+        {
+            return Enum.GetValues<TEnum>()
+                .Select(e => new EnumDto(Convert.ToInt32(e), e.ToString()))
+                .ToList();
+        }
     }
+
+    public record EnumDto(int Value, string Name);
 }
 

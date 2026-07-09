@@ -59,7 +59,17 @@ namespace AZM.Application.Events.Handlers
                         AvatarUrl = null,
                         JoinedAt = p.JoinedAt,
                         Status = p.Status.ToString()
-                    })
+                    }),
+                Pace = ev.Pace,
+
+                IsOrganizer = q.RequestingUserId.HasValue && ev.OrganizerId == q.RequestingUserId.Value,
+
+                Route = ev.Route is not null ? new EventRouteDto(
+                     ev.Route.StartLatitude, ev.Route.StartLongitude, ev.Route.StartAddress,
+                     ev.Route.EndLatitude, ev.Route.EndLongitude, ev.Route.EndAddress,
+                     ev.Route.DistanceMeters, ev.Route.EstimatedDurationSeconds,
+                     ev.Route.Waypoints?.Select(w => new WaypointDto(w.Order, w.Latitude, w.Longitude)).ToList()
+                                                                  ) : null,
             };
 
             return Result<EventDetailDto>.Success(dto);
