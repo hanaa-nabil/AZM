@@ -18,6 +18,7 @@ namespace AZM.Domain.Entities
         public DateTime EarnedAtUtc { get; set; } = DateTime.UtcNow;
 
         public Guid UserId { get; set; }  
-        public User? User { get; set; }
+        public Guid AchievementDefinitionId { get; set; }
+        public AchievementDefinition AchievementDefinition { get; set; } = default!;
     }
 }

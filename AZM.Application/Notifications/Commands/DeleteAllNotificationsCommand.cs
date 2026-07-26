@@ -7,6 +7,5 @@ using System.Threading.Tasks;
 
 namespace AZM.Application.Notifications.Commands
 {
-    public record MarkNotificationReadCommand(Guid NotificationId, Guid UserId) : IRequest;
-
+    public record DeleteAllNotificationsCommand(Guid UserId) : IRequest;
 }

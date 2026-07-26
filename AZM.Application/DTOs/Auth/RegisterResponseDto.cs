@@ -7,5 +7,8 @@ namespace AZM.Application.DTOs.Auth
         public bool EmailVerificationRequired { get; set; }
         public bool PhoneNumberRequired { get; set; }
         public string? Message { get; set; }
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+        public DateTime BirthDate { get; set; }
     }
 }

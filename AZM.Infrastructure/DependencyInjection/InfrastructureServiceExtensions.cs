@@ -81,7 +81,9 @@ namespace AZM.Infrastructure.DependencyInjection
             services.AddScoped<IPasswordHasher<OtpCode>, PasswordHasher<OtpCode>>();
             services.AddHttpClient<IFirebaseAuthService, FirebaseAuthService>();
             services.AddScoped<EventReminderJob>();
-            services.AddScoped<EventStatusUpdateJob>();
+            services.AddScoped<EventStatusUpdateJob>(); 
+            services.AddScoped<IAchievementRepository, AchievementRepository>();
+            services.AddScoped<StreakExpiryCheckJob>();
 
             return services;
         }

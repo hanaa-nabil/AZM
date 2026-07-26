@@ -16,5 +16,6 @@ namespace AZM.Domain.Interfaces
         Task<User?> GetByIdWithDetailsAsync(Guid userId);
         Task UpdateAsync(User user);
         Task<bool> UpdateUsernameAsync(Guid userId, string newUsername);
+        Task<List<UserProfile>> GetUsersWithStreakLastActiveAsync(DateOnly date);
     }
 }

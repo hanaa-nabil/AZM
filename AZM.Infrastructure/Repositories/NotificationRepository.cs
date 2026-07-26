@@ -1,12 +1,8 @@
 ﻿using AZM.Domain.Entities;
+using AZM.Domain.Enums;
 using AZM.Domain.Interfaces;
 using AZM.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AZM.Infrastructure.Repositories
 {
@@ -54,6 +50,32 @@ namespace AZM.Infrastructure.Repositories
             await _context.Notifications
                 .Where(n => n.RecipientId == userId && !n.IsRead)
                 .ExecuteUpdateAsync(s => s.SetProperty(n => n.IsRead, true), ct);
+        }
+
+        public async Task MarkAllReadAsync(Guid userId)
+        {
+            await _context.Notifications
+                .Where(n => n.RecipientId == userId && !n.IsRead)
+                .ExecuteUpdateAsync(setters => setters.SetProperty(n => n.IsRead, true));
+        }
+
+        public async Task DeleteAllAsync(Guid userId)
+        {
+            await _context.Notifications
+                .Where(n => n.RecipientId == userId)
+                .ExecuteDeleteAsync();
+        }
+
+        public async Task<bool> ExistsForDateAsync(Guid userId, NotificationType type, DateOnly date)
+        {
+            var start = date.ToDateTime(TimeOnly.MinValue);
+            var end = start.AddDays(1);
+
+            return await _context.Notifications.AnyAsync(n =>
+                n.RecipientId == userId &&
+                n.Type == type &&
+                n.CreatedAt >= start &&
+                n.CreatedAt < end);
         }
     }
 }

@@ -31,7 +31,9 @@ namespace AZM.Application.Users.Handlers
             return new UserProfileDto
             {
                 Id = user.Id,
-                FullName = user.FullName,
+                Email = user.Email,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
                 Username = user.UserName ?? string.Empty,
                 Bio = user.Profile?.Bio,
                 ProfilePhotoUrl = user.ProfilePhotoUrl ?? _photoService.GetInitialsAvatarUrl(initials, user.Id),

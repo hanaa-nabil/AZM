@@ -70,5 +70,12 @@ namespace AZM.Infrastructure.Repositories
             var result = await _userManager.SetUserNameAsync(user, newUsername);
             return result.Succeeded;
         }
+        public async Task<List<UserProfile>> GetUsersWithStreakLastActiveAsync(DateOnly date)
+        {
+            return await _db.UserProfiles
+                .Where(p => p.LastActiveDate == date && p.CurrentStreak > 0)
+                .ToListAsync();
+        }
+   
     }
 }

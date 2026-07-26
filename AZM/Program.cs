@@ -1,8 +1,10 @@
+using AZM.Api.Middleware;
 using AZM.Application.Auth.Handlers;
 using AZM.Infrastructure.BackgroundJobs;
 using AZM.Infrastructure.DependencyInjection;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -46,7 +48,7 @@ namespace AZM.Api
                         Encoding.UTF8.GetBytes(jwtSection["SecretKey"]!))
                 };
             });
-
+           
             builder.Services.AddAuthorization();
 
             // Rate Limiting
@@ -79,6 +81,23 @@ namespace AZM.Api
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             });
             builder.Services.AddEndpointsApiExplorer();
+           
+            builder.Services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var firstError = context.ModelState
+                        .Where(e => e.Value?.Errors.Count > 0)
+                        .SelectMany(e => e.Value!.Errors)
+                        .Select(e => e.ErrorMessage)
+                        .FirstOrDefault() ?? "Invalid request.";
+
+                    return new BadRequestObjectResult(new { error = firstError });
+                };
+            });
+
+            builder.Services.AddEndpointsApiExplorer();
+
             builder.Services.AddSwaggerGen(options =>
             {
                 options.SwaggerDoc("v1", new() { Title = "AZM API", Version = "v1" });
@@ -107,6 +126,7 @@ namespace AZM.Api
                 });
             });
 
+
             var app = builder.Build();
 
             // Seed Roles
@@ -128,7 +148,7 @@ namespace AZM.Api
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseHangfireDashboard("/hangfire");
-
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
             RecurringJob.AddOrUpdate<EventReminderJob>(
                 "event-reminders",
                 job => job.RunAsync(),

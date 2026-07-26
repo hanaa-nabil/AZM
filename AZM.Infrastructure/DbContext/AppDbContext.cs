@@ -16,10 +16,10 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<EventRouteWaypoint> EventRouteWaypoints { get; set; } = null!;
 
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
-        public DbSet<Achievement> Achievements { get; set; } = null!;
         public DbSet<OtpCode> OtpCodes { get; set; } = null!;   
         public DbSet<UserSport> UserSports { get; set; } = null!;
-
+        public DbSet<AchievementDefinition> AchievementDefinitions => Set<AchievementDefinition>();
+        public DbSet<Achievement> Achievements => Set<Achievement>();
         public DbSet<Notification> Notifications => Set<Notification>();
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -44,12 +44,30 @@ namespace AZM.Infrastructure.DbContext
                 .WithOne(u => u.Profile)
                 .HasForeignKey<UserProfile>(p => p.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
+            // Achievement -> AchievementDefinition (many-to-one)
+            builder.Entity<Achievement>()
+    .HasOne<User>()
+    .WithMany(u => u.Achievements) // remove ".WithMany(u => u.Achievements)" args if User has no such collection — use .HasForeignKey below only
+    .HasForeignKey(a => a.UserId)
+    .OnDelete(DeleteBehavior.Cascade);
 
             builder.Entity<Achievement>()
-                .HasOne(a => a.User)
-                .WithMany(u => u.Achievements)
-                .HasForeignKey(a => a.UserId)
+                .HasOne(a => a.AchievementDefinition)
+                .WithMany()
+                .HasForeignKey(a => a.AchievementDefinitionId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<Achievement>()
+                .HasIndex(a => new { a.UserId, a.AchievementDefinitionId })
+                .IsUnique();
+
+            builder.Entity<AchievementDefinition>()
+                .HasIndex(d => d.Code)
+                .IsUnique();
+
+            builder.Entity<Notification>()
+                .HasIndex(n => new { n.RecipientId, n.Type, n.CreatedAt });
+
 
             // Event <-> User creator (no cascade)
             builder.Entity<Event>()

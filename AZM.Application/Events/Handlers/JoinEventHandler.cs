@@ -10,9 +10,12 @@ namespace AZM.Application.Events.Handlers
     public class JoinEventHandler : IRequestHandler<JoinEventCommand, Result<bool>>
     {
         private readonly IEventRepository _eventRepo;
-
-        public JoinEventHandler(IEventRepository eventRepo) => _eventRepo = eventRepo;
-
+        private readonly IUserRepository _userRepository;
+        public JoinEventHandler(IEventRepository eventRepository, IUserRepository userRepository /* + others */)
+        {
+            _eventRepo= eventRepository;
+            _userRepository = userRepository;
+        }
         public async Task<Result<bool>> Handle(JoinEventCommand cmd, CancellationToken ct)
         {
             var ev = await _eventRepo.GetByIdAsync(cmd.EventId, ct);
@@ -45,7 +48,12 @@ namespace AZM.Application.Events.Handlers
                 var participant = EventParticipant.Create(cmd.EventId, cmd.UserId);
                 await _eventRepo.AddParticipantAsync(participant, ct);
             }
-
+            var user = await _userRepository.GetByIdWithDetailsAsync(cmd.UserId);
+            if (user?.Profile is not null)
+            {
+                user.Profile.RegisterActivity(DateOnly.FromDateTime(DateTime.UtcNow));
+                await _userRepository.UpdateAsync(user);
+            }
             return Result<bool>.Success(true);
         }
     }

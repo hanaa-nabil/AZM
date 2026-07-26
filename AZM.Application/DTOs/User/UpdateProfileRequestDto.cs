@@ -1,4 +1,6 @@
-﻿using System;
+﻿using AZM.Domain.Enums;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,5 +15,9 @@ namespace AZM.Application.DTOs.User
         public string? Bio { get; set; }
         public string? Username { get; set; }
         public string? Location { get; set; }
+        public List<Sport>? SportsToAdd { get; set; }
+        public List<Sport>? SportsToRemove { get; set; }
+        public IFormFile? Photo { get; set; }          
+        public bool RemovePhoto { get; set; } = false;
     }
 }

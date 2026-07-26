@@ -4,8 +4,8 @@ using AZM.Application.Users.Queries;
 using AZM.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace AZM.Api.Controllers
 {
@@ -21,11 +21,8 @@ namespace AZM.Api.Controllers
             _mediator = mediator;
         }
 
-        // ASSUMPTION: matches the JwtRegisteredClaimNames.Sub fix you applied in EventsController
-        // for CurrentUserId. Swap this to whatever shared helper/base-controller property
-        // you're using there so both controllers resolve the user id identically.
         private Guid CurrentUserId =>
-            Guid.Parse(User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)?.Value
+            Guid.Parse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value
                 ?? throw new UnauthorizedAccessException("User id claim missing."));
 
         [HttpGet("me")]
@@ -36,49 +33,32 @@ namespace AZM.Api.Controllers
         }
 
         [HttpPut("me")]
-        public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromBody] UpdateProfileRequestDto request)
+        [RequestSizeLimit(5_000_000)] 
+        public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromForm] UpdateProfileRequestDto request)
         {
             var result = await _mediator.Send(new UpdateProfileCommand(CurrentUserId, request));
             return Ok(result);
         }
 
-        [HttpPost("me/sports")]
-        public async Task<IActionResult> AddSport(Sport sport)
+        [HttpGet("streak")]
+        public async Task<IActionResult> GetMyStreak()
         {
-            if (!Enum.IsDefined(typeof(Sport), sport))
-             return BadRequest("Invalid sport value.");
-
-            await _mediator.Send(new AddUserSportCommand(CurrentUserId, sport));
-            return NoContent();
+            var result = await _mediator.Send(new GetMyStreakQuery(CurrentUserId));
+            return Ok(result);
         }
 
-        [HttpDelete("me/sports/{sport}")]
-        public async Task<IActionResult> RemoveSport(Sport sport)
+        [HttpPost("streak/freeze")]
+        public async Task<IActionResult> UseStreakFreeze()
         {
-
-            if (!Enum.IsDefined(typeof(Sport), sport))
-                return BadRequest("Invalid sport value.");
-
-            await _mediator.Send(new RemoveUserSportCommand(CurrentUserId, sport));
-            return NoContent();
+            var success = await _mediator.Send(new UseStreakFreezeCommand(CurrentUserId));
+            return success ? Ok() : BadRequest(new { message = "No streak freezes available." });
         }
 
-        [HttpPost("me/photo")]
-        [RequestSizeLimit(5_000_000)] 
-        public async Task<IActionResult> UploadPhoto(IFormFile photo)
+        [HttpGet("achievements")]
+        public async Task<IActionResult> GetMyAchievements()
         {
-            if (photo is null || photo.Length == 0)
-                return BadRequest("No photo provided.");
-
-            var url = await _mediator.Send(new UploadProfilePhotoCommand(CurrentUserId, photo));
-            return Ok(new { profilePhotoUrl = url });
-        }
-
-        [HttpDelete("me/photo")]
-        public async Task<IActionResult> RemovePhoto()
-        {
-            await _mediator.Send(new RemoveProfilePhotoCommand(CurrentUserId));
-            return NoContent();
+            var result = await _mediator.Send(new GetMyAchievementsQuery(CurrentUserId));
+            return Ok(result);
         }
     }
 }

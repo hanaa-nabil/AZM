@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AZM.Api.Controllers
 {
@@ -29,6 +30,23 @@ namespace AZM.Api.Controllers
         {
             var userId = Guid.Parse(User.FindFirst("sub")!.Value);
             await _mediator.Send(new MarkNotificationReadCommand(id, userId));
+            return NoContent();
+        }
+
+       
+        [HttpPost("mark-all-read")]
+        public async Task<IActionResult> MarkAllRead()
+        {
+            var userId = Guid.Parse(User.FindFirst("sub")!.Value);
+            await _mediator.Send(new MarkAllNotificationsReadCommand(userId));
+            return NoContent();
+        }
+
+        [HttpDelete("all")]
+        public async Task<IActionResult> DeleteAll()
+        {
+            var userId = Guid.Parse(User.FindFirst("sub")!.Value);
+            await _mediator.Send(new DeleteAllNotificationsCommand(userId));
             return NoContent();
         }
     }

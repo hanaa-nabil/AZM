@@ -15,6 +15,11 @@ namespace AZM.Domain.Enums
         ParticipantJoined,
         ParticipantLeft,
         RemovedFromEvent,
-        WaitlistPromoted
+        WaitlistPromoted,
+        StreakDanger ,
+        StreakMilestone,
+        StreakBroken ,
+        StreakFreezeUsed ,
+        BadgeEarned 
     }
 }

@@ -38,6 +38,12 @@ namespace AZM.Infrastructure.Repositories
                 .Where(e => e.Status == EventStatus.Ongoing && e.EventDate <= cutoffUtc)
                 .ToListAsync(ct);
         }
+        public async Task DeleteByOrganizerAsync(Guid organizerId, CancellationToken ct = default)
+        {
+            await _db.Events
+                .Where(e => e.OrganizerId == organizerId)
+                .ExecuteDeleteAsync(ct);
+        }
 
         // ── Feed ──────────────────────────────────────────────────────────────────
 

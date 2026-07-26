@@ -2,6 +2,7 @@
 using AZM.Application.DTOs.Auth;
 using AZM.Domain.Entities;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 
@@ -57,32 +58,20 @@ namespace AZM.Api.Controllers
                 : StatusCode(result.StatusCode, new { error = result.Error });
         }
 
-        /// <summary>
-        /// Step 3 — Add phone number after email is verified.
-        /// Returns userId + email. No token yet.
-        /// </summary>
-        [HttpPost("add-phone")]
-        public async Task<IActionResult> AddPhone([FromBody] AddPhoneRequestDto dto)
-        {
-            var result = await _mediator.Send(new AddPhoneCommand(dto));
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : StatusCode(result.StatusCode, new { error = result.Error });
-        }
-
+       
         /// <summary>
         /// Step 4 — Complete profile: select favourite sports (1 or more) and optionally upload a photo.
         /// Final step — issues JWT token upon success.
         /// Applies to both email and Google registered users.
         /// </summary>
-        [HttpPost("complete-profile")]
-        public async Task<IActionResult> CompleteProfile([FromBody] CompleteProfileRequestDto dto)
-        {
-            var result = await _mediator.Send(new CompleteProfileCommand(dto));
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : StatusCode(result.StatusCode, new { error = result.Error });
-        }
+        //[HttpPost("complete-profile")]
+        //public async Task<IActionResult> CompleteProfile([FromBody] CompleteProfileRequestDto dto)
+        //{
+        //    var result = await _mediator.Send(new CompleteProfileCommand(dto));
+        //    return result.IsSuccess
+        //        ? Ok(result.Data)
+        //        : StatusCode(result.StatusCode, new { error = result.Error });
+        //}
 
         /// <summary>
         /// Sign in with email and password.
@@ -147,10 +136,24 @@ namespace AZM.Api.Controllers
         /// Google Step 2 — Add phone number for new Google accounts.
         /// Returns userId + email. Proceed to complete-profile next.
         /// </summary>
-        [HttpPost("complete-registration")]
-        public async Task<IActionResult> CompleteRegistration([FromBody] SocialCompleteRegistrationDto dto)
+        //[HttpPost("complete-registration")]
+        //public async Task<IActionResult> CompleteRegistration([FromBody] SocialCompleteRegistrationDto dto)
+        //{
+        //    var result = await _mediator.Send(new SocialCompleteRegistrationCommand(dto));
+        //    return result.IsSuccess
+        //        ? Ok(result.Data)
+        //        : StatusCode(result.StatusCode, new { error = result.Error });
+        //}
+
+
+        /// <summary>
+        /// Step 3 — Add phone number after email is verified.
+        /// Returns userId + email. No token yet.
+        /// </summary>
+        [HttpPost("add-phone")]
+        public async Task<IActionResult> AddPhone([FromBody] AddPhoneRequestDto dto)
         {
-            var result = await _mediator.Send(new SocialCompleteRegistrationCommand(dto));
+            var result = await _mediator.Send(new AddPhoneCommand(dto));
             return result.IsSuccess
                 ? Ok(result.Data)
                 : StatusCode(result.StatusCode, new { error = result.Error });
@@ -167,6 +170,16 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(new VerifyPhoneCommand(dto));
             return result.IsSuccess
                 ? Ok(new { message = "Phone number verified successfully." })
+                : StatusCode(result.StatusCode, new { error = result.Error });
+        }
+        [HttpDelete("account")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAccount()
+        {
+            var userId = Guid.Parse(User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)!.Value);
+            var result = await _mediator.Send(new DeleteAccountCommand(userId));
+            return result.IsSuccess
+                ? Ok(new { message = "Account deleted successfully." })
                 : StatusCode(result.StatusCode, new { error = result.Error });
         }
     }

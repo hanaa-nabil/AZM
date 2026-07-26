@@ -99,10 +99,14 @@ namespace AZM.Application.Auth.Handlers
             {
                 UserId = user.Id.ToString(),
                 Email = user.Email!,
-                EmailVerificationRequired = true,   // ← add this
-                PhoneNumberRequired = true,          // ← add this
+                FirstName = firstName,
+                LastName = lastName,
+                BirthDate = dto.BirthDate,
+                EmailVerificationRequired = true,  
+                PhoneNumberRequired = true,        
             Message = "Please check your email for the verification code."
             }, 201);
+           
         }
     }
 }

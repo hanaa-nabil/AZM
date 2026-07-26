@@ -10,8 +10,10 @@ namespace AZM.Application.DTOs.User
     public class UserProfileDto
     {
         public Guid Id { get; set; }
-        public string FullName { get; set; } = string.Empty;
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
         public string Username { get; set; } = string.Empty;
+        public string Email { get; set; }
         public string? Bio { get; set; }
         public string? ProfilePhotoUrl { get; set; }
         public bool IsIdVerified { get; set; }

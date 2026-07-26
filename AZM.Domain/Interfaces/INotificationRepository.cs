@@ -1,4 +1,5 @@
 ﻿using AZM.Domain.Entities;
+using AZM.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,8 @@ namespace AZM.Domain.Interfaces
         Task<List<Notification>> GetForUserAsync(Guid userId, int page, int pageSize, CancellationToken ct = default);
         Task<int> GetUnreadCountAsync(Guid userId, CancellationToken ct = default);
         Task MarkAsReadAsync(Guid notificationId, Guid userId, CancellationToken ct = default);
-        Task MarkAllAsReadAsync(Guid userId, CancellationToken ct = default);
+        Task DeleteAllAsync(Guid userId);
+        Task<bool> ExistsForDateAsync(Guid userId, NotificationType type, DateOnly date);
+        Task MarkAllReadAsync(Guid userId);
     }
 }
