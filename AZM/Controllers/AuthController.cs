@@ -77,15 +77,23 @@ namespace AZM.Api.Controllers
         /// Sign in with email and password.
         /// Returns a JWT token on success.
         /// </summary>
+     
         [HttpPost("login")]
         [EnableRateLimiting("registration")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto dto)
         {
             var result = await _mediator.Send(new LoginCommand(dto));
-            return result.IsSuccess
-                ? Ok(result.Data)
-                : StatusCode(result.StatusCode, new { error = result.Error });
+
+            if (result.IsSuccess)
+                return Ok(result.Data);
+
+            return StatusCode(result.StatusCode, new
+            {
+                error = result.Error,
+                emailConfirmed = result.Data?.EmailConfirmed
+            });
         }
+
 
         /// <summary>
         /// Request a password-reset OTP. Always returns 200 to avoid leaking account existence.
@@ -172,6 +180,19 @@ namespace AZM.Api.Controllers
                 ? Ok(new { message = "Phone number verified successfully." })
                 : StatusCode(result.StatusCode, new { error = result.Error });
         }
+
+        [HttpPost("logout")]
+        [Authorize]
+        public async Task<IActionResult> Logout([FromBody] LogoutRequestDto dto)
+        {
+            var userId = Guid.Parse(User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)!.Value);
+            var result = await _mediator.Send(new LogoutCommand(userId, dto));
+            return result.IsSuccess
+                ? Ok(new { message = "Logged out successfully." })
+                : StatusCode(result.StatusCode, new { error = result.Error });
+        }
+
+
         [HttpDelete("account")]
         [Authorize]
         public async Task<IActionResult> DeleteAccount()

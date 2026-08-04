@@ -22,5 +22,8 @@ namespace AZM.Application.DTOs.User
         public int EventsJoinedCount { get; set; }
         public int EventsCompletedCount { get; set; }
         public double TotalDistanceMeters { get; set; }
+        public DateTime BirthDate { get; set; }
+        public Gender Gender { get; set; }
+        public DateTime CreatedAtUtc { get; set; }
     }
 }

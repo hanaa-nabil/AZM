@@ -70,6 +70,7 @@ namespace AZM.Application.Auth.Handlers
                 Gender = dto.Gender,
                 EmailConfirmed = false,
                 IsActive = true,
+                CreatedAtUtc = DateTime.UtcNow,
                 Profile = new UserProfile()
             };
 

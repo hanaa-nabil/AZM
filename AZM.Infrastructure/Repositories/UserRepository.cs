@@ -76,6 +76,20 @@ namespace AZM.Infrastructure.Repositories
                 .Where(p => p.LastActiveDate == date && p.CurrentStreak > 0)
                 .ToListAsync();
         }
-   
+        public async Task ClearFcmTokenAsync(Guid userId, string fcmToken)
+        {
+            var user = await _db.Users.FindAsync(userId);
+            if (user is null)
+                return;
+
+            // Only clear if the token matches what's stored — avoids wiping a
+            // different device's active token if this user is logged in on multiple devices.
+            if (user.FcmToken == fcmToken)
+            {
+                user.FcmToken = string.Empty;
+                await _db.SaveChangesAsync();
+            }
+        }
+
     }
 }

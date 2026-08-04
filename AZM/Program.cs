@@ -79,7 +79,10 @@ namespace AZM.Api
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
                 options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                options.JsonSerializerOptions.DefaultIgnoreCondition =JsonIgnoreCondition.WhenWritingNull;
             });
+
+
             builder.Services.AddEndpointsApiExplorer();
            
             builder.Services.Configure<ApiBehaviorOptions>(options =>

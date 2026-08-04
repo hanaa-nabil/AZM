@@ -21,6 +21,8 @@
 
         public static Result<T> Failure(string error, int statusCode = 400)
             => new(false, default, error, statusCode);
+        public static Result<T> Failure(string error, int statusCode, T? data)
+            => new(false, data, error, statusCode);
     }
 
     public class Result

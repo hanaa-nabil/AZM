@@ -49,15 +49,20 @@ namespace AZM.Application.Auth.Handlers
             if (!passwordValid)
                 return Result<AuthResponseDto>.Failure("Invalid email or password.", 401);
 
-            // 5. Require email confirmation before granting a token
+            // 5. Credentials are valid — but only issue a token if email is verified.
+            //    Unverified users get a 200 with no token, so the app can route
+            //    them straight to OTP verification instead of a hard login failure.
             if (!user.EmailConfirmed)
+            {
                 return Result<AuthResponseDto>.Failure(
-                    "Please verify your email address before signing in.", 403);
+                    "Please verify your email before signing in.",
+                    403,
+                    new AuthResponseDto { EmailConfirmed = false });
+            }
 
-            // 6. Issue JWT
+            // 6. Issue JWT — only reached once EmailConfirmed is true
             var roles = await _userManager.GetRolesAsync(user);
             var (token, expiresAtUtc) = _tokenService.GenerateJwtToken(user, roles);
-
             user.LastLoginAtUtc = DateTime.UtcNow;
             await _userManager.UpdateAsync(user);
 
@@ -71,7 +76,9 @@ namespace AZM.Application.Auth.Handlers
                 TokenType = "Bearer",
                 IsRegistrationComplete = true,
                 RequiresPhone = false,
-                EmailConfirmed = user.EmailConfirmed
+                EmailConfirmed = true,
+                IsVerified = true,
+                Message = "Login successful."
             });
         }
     }

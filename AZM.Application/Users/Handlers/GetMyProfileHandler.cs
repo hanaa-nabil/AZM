@@ -13,20 +13,16 @@ namespace AZM.Application.Users.Handlers
     public class GetMyProfileHandler : IRequestHandler<GetMyProfileQuery, UserProfileDto>
     {
         private readonly IUserRepository _userRepository;
-        private readonly IPhotoService _photoService;
-        public GetMyProfileHandler(IUserRepository userRepository, IPhotoService photoService)
+
+        public GetMyProfileHandler(IUserRepository userRepository)
         {
             _userRepository = userRepository;
-            _photoService = photoService;
         }
 
         public async Task<UserProfileDto> Handle(GetMyProfileQuery request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetByIdWithDetailsAsync(request.UserId)
                 ?? throw new KeyNotFoundException("User not found.");
-
-            var initials = $"{(user.FirstName.Length > 0 ? user.FirstName[0] : ' ')}{(user.LastName.Length > 0 ? user.LastName[0] : ' ')}".Trim().ToUpperInvariant();
-
 
             return new UserProfileDto
             {
@@ -36,13 +32,16 @@ namespace AZM.Application.Users.Handlers
                 LastName = user.LastName,
                 Username = user.UserName ?? string.Empty,
                 Bio = user.Profile?.Bio,
-                ProfilePhotoUrl = user.ProfilePhotoUrl ?? _photoService.GetInitialsAvatarUrl(initials, user.Id),
+                ProfilePhotoUrl = user.ProfilePhotoUrl, 
                 IsIdVerified = user.IsIdVerified,
                 Sports = user.Sports.Select(s => s.Sport).ToList(),
                 EventsJoinedCount = user.Profile?.EventsJoinedCount ?? 0,
                 EventsCompletedCount = user.Profile?.EventsCompletedCount ?? 0,
                 TotalDistanceMeters = user.Profile?.TotalDistanceMeters ?? 0,
-                Location = user.Profile?.Location
+                Location = user.Profile?.Location,
+                BirthDate = user.BirthDate,
+                Gender = user.Gender,
+                CreatedAtUtc = user.CreatedAtUtc,
             };
         }
     }

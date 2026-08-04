@@ -85,7 +85,7 @@ namespace AZM.Application.Users.Handlers
                 Username = updatedUser.UserName ?? string.Empty,
                 Bio = updatedUser.Profile?.Bio,
                 Location = updatedUser.Profile?.Location,
-                ProfilePhotoUrl = updatedUser.ProfilePhotoUrl ?? _photoService.GetInitialsAvatarUrl(initials, updatedUser.Id),
+                ProfilePhotoUrl = updatedUser.ProfilePhotoUrl ,
                 IsIdVerified = updatedUser.IsIdVerified,
                 Sports = updatedUser.Sports.Select(s => s.Sport).ToList(),
                 EventsJoinedCount = updatedUser.Profile?.EventsJoinedCount ?? 0,

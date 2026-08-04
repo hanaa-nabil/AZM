@@ -9,7 +9,7 @@ namespace AZM.Domain.Interfaces
         Task<User?> GetByEmailAsync(string email);
         Task<User?> GetByIdAsync(string id);
         Task UpdateFcmTokenAsync(Guid userId, string fcmToken);
-
+        Task ClearFcmTokenAsync(Guid userId, string fcmToken);
         Task<bool> UsernameExistsAsync(string username);
         Task RemoveUserSportsAsync(Guid userId);
 
