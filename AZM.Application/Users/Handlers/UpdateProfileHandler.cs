@@ -38,6 +38,37 @@ namespace AZM.Application.Users.Handlers
                     throw new InvalidOperationException("Failed to update username.");
             }
 
+            // Gender — no restriction, updates freely
+            if (dto.Gender.HasValue)
+                user.Gender = dto.Gender.Value;
+
+            // BirthDate — throttled to once every 60 days
+            if (dto.BirthDate.HasValue)
+            {
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+                var newBirthDate = DateOnly.FromDateTime(dto.BirthDate.Value);
+
+                if (newBirthDate >= today)
+                    throw new InvalidOperationException("Birth date cannot be today or in the future.");
+
+                if (newBirthDate < today.AddYears(-100))
+                    throw new InvalidOperationException("Please enter a valid birth date.");
+
+                if (user.LastBirthDateChangeUtc.HasValue)
+                {
+                    var nextAllowedChange = user.LastBirthDateChangeUtc.Value.AddDays(60);
+                    if (DateTime.UtcNow < nextAllowedChange)
+                    {
+                        var daysRemaining = (nextAllowedChange - DateTime.UtcNow).Days;
+                        throw new InvalidOperationException(
+                            $"Birth date can only be changed once every 60 days. Try again in {daysRemaining} day(s).");
+                    }
+                }
+
+                user.BirthDate = dto.BirthDate.Value;
+                user.LastBirthDateChangeUtc = DateTime.UtcNow;
+            }
+
             user.Profile ??= new UserProfile { UserId = user.Id };
             if (dto.Bio is not null)
                 user.Profile.Bio = dto.Bio;
@@ -47,7 +78,6 @@ namespace AZM.Application.Users.Handlers
 
             await _userRepository.UpdateAsync(user);
 
-            // --- Sports: remove first, then add (avoids collision if same sport appears in both by mistake) ---
             if (dto.SportsToRemove is { Count: > 0 })
             {
                 foreach (var sport in dto.SportsToRemove)
@@ -86,7 +116,10 @@ namespace AZM.Application.Users.Handlers
                 Sports = updatedUser.Sports.Select(s => s.Sport).ToList(),
                 EventsJoinedCount = updatedUser.Profile?.EventsJoinedCount ?? 0,
                 EventsCompletedCount = updatedUser.Profile?.EventsCompletedCount ?? 0,
-                TotalDistanceMeters = updatedUser.Profile?.TotalDistanceMeters ?? 0
+                TotalDistanceMeters = updatedUser.Profile?.TotalDistanceMeters ?? 0,
+                BirthDate = updatedUser.BirthDate,
+                Gender = updatedUser.Gender,
+                CreatedAtUtc = updatedUser.CreatedAtUtc
             };
         }
     }

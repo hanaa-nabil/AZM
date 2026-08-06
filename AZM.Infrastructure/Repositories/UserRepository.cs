@@ -81,14 +81,43 @@ namespace AZM.Infrastructure.Repositories
             var user = await _db.Users.FindAsync(userId);
             if (user is null)
                 return;
-
-            // Only clear if the token matches what's stored — avoids wiping a
-            // different device's active token if this user is logged in on multiple devices.
+            
             if (user.FcmToken == fcmToken)
             {
                 user.FcmToken = string.Empty;
                 await _db.SaveChangesAsync();
             }
+        
+        }
+        public async Task RecordDailyActivityAsync(Guid userId, DateOnly date)
+        {
+            var existing = await _db.UserDailyActivities
+                .FirstOrDefaultAsync(a => a.UserId == userId && a.Date == date);
+
+            if (existing is not null)
+            {
+                existing.IsActive = true;
+            }
+            else
+            {
+                _db.UserDailyActivities.Add(new UserDailyActivity
+                {
+                    UserId = userId,
+                    Date = date,
+                    IsActive = true
+                });
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
+        public async Task<List<UserDailyActivity>> GetRecentActivityAsync(Guid userId, int days)
+        {
+            var since = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-(days - 1));
+
+            return await _db.UserDailyActivities
+                .Where(a => a.UserId == userId && a.Date >= since)
+                .ToListAsync();
         }
 
     }

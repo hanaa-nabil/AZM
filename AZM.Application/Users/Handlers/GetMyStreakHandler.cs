@@ -7,7 +7,8 @@ namespace AZM.Application.Users.Handlers
 {
     public class GetMyStreakHandler : IRequestHandler<GetMyStreakQuery, StreakDto>
     {
-        private static readonly int[] Milestones = { 3, 7, 14, 30, 100 };
+        private const int DaysToShow = 7; // matches a week-strip UI
+
         private readonly IUserRepository _userRepository;
 
         public GetMyStreakHandler(IUserRepository userRepository)
@@ -23,18 +24,27 @@ namespace AZM.Application.Users.Handlers
             var profile = user.Profile
                 ?? throw new InvalidOperationException("User has no profile.");
 
+            var recentActivity = await _userRepository.GetRecentActivityAsync(request.UserId, DaysToShow);
+            var activityByDate = recentActivity.ToDictionary(a => a.Date, a => a.IsActive);
+
             var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            var nextMilestone = Milestones.FirstOrDefault(m => m > profile.CurrentStreak, 0);
+            var days = new List<StreakDayDto>();
+
+            for (int i = DaysToShow - 1; i >= 0; i--)
+            {
+                var date = today.AddDays(-i);
+                days.Add(new StreakDayDto
+                {
+                    Date = date.ToString("yyyy-MM-dd"),
+                    IsActive = activityByDate.TryGetValue(date, out var isActive) && isActive
+                });
+            }
 
             return new StreakDto
             {
-                CurrentStreak = profile.CurrentStreak,
-                LongestStreak = profile.LongestStreak,
-                FreezesAvailable = profile.StreakFreezesAvailable,
-                NextMilestone = nextMilestone,
-                LastActiveDate = profile.LastActiveDate,
-                IsAtRiskToday = profile.LastActiveDate.HasValue
-                    && profile.LastActiveDate.Value == today.AddDays(-1)
+                StreakCount = profile.CurrentStreak,
+                FreezeCount = profile.StreakFreezesAvailable,
+                Days = days
             };
         }
     }

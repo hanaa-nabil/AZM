@@ -5,5 +5,5 @@ using System;
 
 namespace AZM.Application.Auth.Commands
 {
-    public record LogoutCommand(Guid UserId) : IRequest<Result>;
+    public record LogoutCommand(Guid UserId, LogoutRequestDto Dto) : IRequest<Result>;
 }

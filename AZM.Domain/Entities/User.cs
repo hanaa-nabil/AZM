@@ -39,6 +39,7 @@ namespace AZM.Domain.Entities
         public string FullName => $"{FirstName} {LastName}".Trim();
 
         public bool IsPendingPhoneVerification { get; set; } = false;
+        public DateTime? LastBirthDateChangeUtc { get; set; }
 
     }
 }

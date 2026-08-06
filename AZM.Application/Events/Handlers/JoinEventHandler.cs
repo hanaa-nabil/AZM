@@ -51,10 +51,13 @@ namespace AZM.Application.Events.Handlers
             var user = await _userRepository.GetByIdWithDetailsAsync(cmd.UserId);
             if (user?.Profile is not null)
             {
-                user.Profile.RegisterActivity(DateOnly.FromDateTime(DateTime.UtcNow));
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+                user.Profile.RegisterActivity(today);
                 await _userRepository.UpdateAsync(user);
+                await _userRepository.RecordDailyActivityAsync(cmd.UserId, today);
             }
             return Result<bool>.Success(true);
+
         }
     }
 }

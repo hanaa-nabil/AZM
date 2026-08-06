@@ -19,5 +19,7 @@ namespace AZM.Application.DTOs.User
         public List<Sport>? SportsToRemove { get; set; }
         public IFormFile? Photo { get; set; }          
         public bool RemovePhoto { get; set; } = false;
+        public DateTime? BirthDate { get; set; }
+        public Gender? Gender { get; set; }
     }
 }

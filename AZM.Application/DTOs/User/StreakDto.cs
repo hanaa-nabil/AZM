@@ -2,17 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace AZM.Application.DTOs.User
 {
+  
     public class StreakDto
     {
-        public int CurrentStreak { get; set; }
-        public int LongestStreak { get; set; }
-        public int FreezesAvailable { get; set; }
-        public int NextMilestone { get; set; }
-        public DateOnly? LastActiveDate { get; set; }
-        public bool IsAtRiskToday { get; set; } 
+        [JsonPropertyName("streak_count")]
+        public int StreakCount { get; set; }
+
+        [JsonPropertyName("freeze_count")]
+        public int FreezeCount { get; set; }
+
+        [JsonPropertyName("days")]
+        public List<StreakDayDto> Days { get; set; } = new();
     }
 }

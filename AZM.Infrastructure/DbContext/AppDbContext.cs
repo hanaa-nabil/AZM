@@ -21,6 +21,8 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<AchievementDefinition> AchievementDefinitions => Set<AchievementDefinition>();
         public DbSet<Achievement> Achievements => Set<Achievement>();
         public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<UserDailyActivity> UserDailyActivities => Set<UserDailyActivity>();
+
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -110,6 +112,10 @@ namespace AZM.Infrastructure.DbContext
             // OtpCode index
             builder.Entity<OtpCode>()
                 .HasIndex(o => o.Email);
+
+            builder.Entity<UserDailyActivity>()
+               .HasIndex(a => new { a.UserId, a.Date })
+               .IsUnique();
         }
     }
 }
