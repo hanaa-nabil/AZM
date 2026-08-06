@@ -186,7 +186,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> Logout([FromBody] LogoutRequestDto dto)
         {
             var userId = Guid.Parse(User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)!.Value);
-            var result = await _mediator.Send(new LogoutCommand(userId, dto));
+            var result = await _mediator.Send(new LogoutCommand(userId));
             return result.IsSuccess
                 ? Ok(new { message = "Logged out successfully." })
                 : StatusCode(result.StatusCode, new { error = result.Error });

@@ -9,13 +9,11 @@ namespace AZM.Application.Users.Handlers
     public class UpdateProfileHandler : IRequestHandler<UpdateProfileCommand, UserProfileDto>
     {
         private readonly IUserRepository _userRepository;
-        private readonly IPhotoService _photoService;
         private readonly IMediator _mediator;
 
-        public UpdateProfileHandler(IUserRepository userRepository, IPhotoService photoService, IMediator mediator)
+        public UpdateProfileHandler(IUserRepository userRepository, IMediator mediator)
         {
             _userRepository = userRepository;
-            _photoService = photoService;
             _mediator = mediator;
         }
 
@@ -24,7 +22,6 @@ namespace AZM.Application.Users.Handlers
             var user = await _userRepository.GetByIdWithDetailsAsync(request.UserId)
                 ?? throw new KeyNotFoundException("User not found.");
 
-            var initials = $"{(user.FirstName.Length > 0 ? user.FirstName[0] : ' ')}{(user.LastName.Length > 0 ? user.LastName[0] : ' ')}".Trim().ToUpperInvariant();
             var dto = request.Request;
 
             if (!string.IsNullOrWhiteSpace(dto.FirstName))
@@ -63,7 +60,6 @@ namespace AZM.Application.Users.Handlers
                     await _mediator.Send(new AddUserSportCommand(request.UserId, sport), cancellationToken);
             }
 
-            // --- Photo: mutually exclusive — remove wins if both somehow set ---
             if (dto.RemovePhoto)
             {
                 await _mediator.Send(new RemoveProfilePhotoCommand(request.UserId), cancellationToken);
@@ -85,7 +81,7 @@ namespace AZM.Application.Users.Handlers
                 Username = updatedUser.UserName ?? string.Empty,
                 Bio = updatedUser.Profile?.Bio,
                 Location = updatedUser.Profile?.Location,
-                ProfilePhotoUrl = updatedUser.ProfilePhotoUrl ,
+                ProfilePhotoUrl = updatedUser.ProfilePhotoUrl,
                 IsIdVerified = updatedUser.IsIdVerified,
                 Sports = updatedUser.Sports.Select(s => s.Sport).ToList(),
                 EventsJoinedCount = updatedUser.Profile?.EventsJoinedCount ?? 0,

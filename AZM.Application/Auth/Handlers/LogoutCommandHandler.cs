@@ -21,8 +21,10 @@ namespace AZM.Application.Auth.Handlers
 
         public async Task<Result> Handle(LogoutCommand request, CancellationToken cancellationToken)
         {
-            if (!string.IsNullOrWhiteSpace(request.Dto.FcmToken))
-                await _userRepository.ClearFcmTokenAsync(request.UserId, request.Dto.FcmToken);
+            // Clears the stored FCM token so this device stops receiving push
+            // notifications after logout. The JWT itself isn't revoked (stateless) —
+            // the client is responsible for discarding it locally.
+            await _userRepository.UpdateFcmTokenAsync(request.UserId, string.Empty);
 
             return Result.Success();
         }
