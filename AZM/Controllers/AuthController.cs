@@ -181,6 +181,30 @@ namespace AZM.Api.Controllers
                 : StatusCode(result.StatusCode, new { error = result.Error });
         }
 
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto dto)
+        {
+            var result = await _mediator.Send(new RefreshTokenCommand(dto));
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : StatusCode(result.StatusCode, new { error = result.Error });
+        }
+
+
+
+        [HttpPost("update-fcm-token")]
+        [Authorize]
+        public async Task<IActionResult> UpdateFcmToken([FromBody] UpdateFcmTokenRequestDto dto)
+        {
+            var userId = Guid.Parse(User.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub)!.Value);
+            var result = await _mediator.Send(new UpdateFcmTokenCommand(userId, dto.FcmToken));
+            return result.IsSuccess
+                ? Ok(new { message = "FCM token updated." })
+                : StatusCode(result.StatusCode, new { error = result.Error });
+        }
+
+
+
         [HttpPost("logout")]
         [Authorize]
         public async Task<IActionResult> Logout([FromBody] LogoutRequestDto dto)

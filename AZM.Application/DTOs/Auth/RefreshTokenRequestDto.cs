@@ -6,9 +6,8 @@ using System.Threading.Tasks;
 
 namespace AZM.Application.DTOs.Auth
 {
-    public class LogoutRequestDto
+    public class RefreshTokenRequestDto
     {
-        public string FcmToken { get; set; } = string.Empty;
-        public string? RefreshToken { get; set; }
+        public string RefreshToken { get; set; } = string.Empty;
     }
 }

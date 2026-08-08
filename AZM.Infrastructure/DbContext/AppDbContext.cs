@@ -22,6 +22,7 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<Achievement> Achievements => Set<Achievement>();
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<UserDailyActivity> UserDailyActivities => Set<UserDailyActivity>();
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -116,6 +117,10 @@ namespace AZM.Infrastructure.DbContext
             builder.Entity<UserDailyActivity>()
                .HasIndex(a => new { a.UserId, a.Date })
                .IsUnique();
+            builder.Entity<RefreshToken>()
+               .HasIndex(r => r.Token)
+               .IsUnique();
+
         }
-    }
+}
 }

@@ -42,6 +42,7 @@ namespace AZM.Application.Users.Handlers
                 BirthDate = user.BirthDate,
                 Gender = user.Gender,
                 CreatedAtUtc = user.CreatedAtUtc,
+                FcmToken = user.FcmToken
             };
         }
     }

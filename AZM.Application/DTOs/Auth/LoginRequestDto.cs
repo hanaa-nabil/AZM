@@ -12,5 +12,6 @@ namespace AZM.Application.DTOs.Auth
         [Required]
         [DefaultValue("Test@1234")]
         public string Password { get; set; } = string.Empty;
+        public string? FcmToken { get; set; }
     }
 }

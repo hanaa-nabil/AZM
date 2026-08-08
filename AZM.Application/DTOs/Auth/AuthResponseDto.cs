@@ -14,5 +14,7 @@
         public string? TokenType { get; set; } 
         public string? Message { get; set; } 
         public bool? IsVerified { get; set; }
+        public string? RefreshToken { get; set; }
+        public DateTime? RefreshTokenExpiresAtUtc { get; set; }
     }
 }

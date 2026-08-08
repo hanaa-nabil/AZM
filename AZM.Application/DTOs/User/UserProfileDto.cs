@@ -25,5 +25,6 @@ namespace AZM.Application.DTOs.User
         public DateTime BirthDate { get; set; }
         public Gender Gender { get; set; }
         public DateTime CreatedAtUtc { get; set; }
+        public string? FcmToken { get; set; }
     }
 }
