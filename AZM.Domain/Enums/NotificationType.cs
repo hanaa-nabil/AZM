@@ -20,6 +20,10 @@ namespace AZM.Domain.Enums
         StreakMilestone,
         StreakBroken ,
         StreakFreezeUsed ,
-        BadgeEarned 
+        BadgeEarned ,
+        NewFollower,
+        FollowedUserPublishedEvent,
+        FollowedUserJoinedEvent,
+        FollowedUserEarnedBadge
     }
 }

@@ -24,7 +24,8 @@ namespace AZM.Infrastructure.Services
                 Type = type,
                 Title = title,
                 Body = body,
-                RelatedEventId = relatedEventId
+                RelatedEventId = relatedEventId,
+                CreatedAt = DateTime.UtcNow,
             };
 
             await _repo.AddAsync(notification, ct);
@@ -41,7 +42,8 @@ namespace AZM.Infrastructure.Services
                 Type = type,
                 Title = title,
                 Body = body,
-                RelatedEventId = relatedEventId
+                RelatedEventId = relatedEventId,
+                CreatedAt = DateTime.UtcNow,
             });
 
             await _repo.AddRangeAsync(notifications, ct);

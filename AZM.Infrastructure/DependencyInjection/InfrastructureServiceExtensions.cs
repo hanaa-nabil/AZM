@@ -85,6 +85,8 @@ namespace AZM.Infrastructure.DependencyInjection
             services.AddScoped<IAchievementRepository, AchievementRepository>();
             services.AddScoped<StreakExpiryCheckJob>();
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+            services.AddScoped<IFollowRepository, FollowRepository>();
             return services;
         }
 

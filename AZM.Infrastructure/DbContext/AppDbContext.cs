@@ -23,7 +23,7 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<Notification> Notifications => Set<Notification>();
         public DbSet<UserDailyActivity> UserDailyActivities => Set<UserDailyActivity>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
-
+        public DbSet<Follow> Follows => Set<Follow>();
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -121,6 +121,10 @@ namespace AZM.Infrastructure.DbContext
                .HasIndex(r => r.Token)
                .IsUnique();
 
+
+            builder.Entity<Follow>()
+                .HasIndex(f => new { f.FollowerId, f.FollowingId })
+                .IsUnique();
         }
 }
 }
