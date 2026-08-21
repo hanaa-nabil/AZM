@@ -68,8 +68,10 @@ namespace AZM.Application.Events.Handlers
                      ev.Route.StartLatitude, ev.Route.StartLongitude, ev.Route.StartAddress,
                      ev.Route.EndLatitude, ev.Route.EndLongitude, ev.Route.EndAddress,
                      ev.Route.DistanceMeters, ev.Route.EstimatedDurationSeconds,
-                     ev.Route.Waypoints?.Select(w => new WaypointDto(w.Order, w.Latitude, w.Longitude)).ToList()
-                                                                  ) : null,
+                     ev.Route.Polyline
+                     ) : null,
+
+               
             };
 
             return Result<EventDetailDto>.Success(dto);

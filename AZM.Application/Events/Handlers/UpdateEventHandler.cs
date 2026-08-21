@@ -36,10 +36,8 @@ namespace AZM.Application.Events.Handlers
                     EndAddress = cmd.Route.EndAddress,
                     DistanceMeters = cmd.Route.DistanceMeters,
                     EstimatedDurationSeconds = cmd.Route.EstimatedDurationSeconds,
-                    Waypoints = cmd.Route.Waypoints?
-                        .Select(w => new EventRouteWaypoint
-                       { Order = w.Order, Latitude = w.Latitude, Longitude = w.Longitude })
-                         .ToList() ?? []
+                    Polyline = cmd.Route.Polyline
+                        
                        } : null
              );
 

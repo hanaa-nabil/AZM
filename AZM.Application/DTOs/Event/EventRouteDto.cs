@@ -15,6 +15,6 @@ namespace AZM.Application.DTOs.Event
         string? EndAddress,
         double? DistanceMeters,
         int? EstimatedDurationSeconds,
-        List<WaypointDto>? Waypoints
+        string? Polyline
     );
 }

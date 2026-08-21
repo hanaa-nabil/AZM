@@ -21,8 +21,8 @@ namespace AZM.Domain.Entities
         public double? DistanceMeters { get; set; }
         public int? EstimatedDurationSeconds { get; set; }
 
-        public ICollection<EventRouteWaypoint> Waypoints { get; set; } = new List<EventRouteWaypoint>();
 
+        public string? Polyline { get; set; } 
         public Guid EventId { get; set; }
         public Event? Event { get; set; }
     }

@@ -3,11 +3,6 @@ using AZM.Application.DTOs.Participants;
 using AZM.Application.Events.Queries;
 using AZM.Domain.Interfaces;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AZM.Application.Events.Handlers
 {
@@ -28,7 +23,7 @@ namespace AZM.Application.Events.Handlers
                 {
                     UserId = p.UserId,
                     FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
-                    AvatarUrl = null,
+                    AvatarUrl = p.User.ProfilePhotoUrl,
                     JoinedAt = p.JoinedAt,
                     Status = p.Status.ToString()
                 });

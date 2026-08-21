@@ -10,5 +10,6 @@ namespace AZM.Application.Events.Queries
        double Longitude,
        double RadiusKm = 10,
        Guid? RequestingUserId = null
-   ) : IRequest<Result<IEnumerable<EventFeedItemDto>>>;
+   ) : IRequest<Result<IEnumerable<NearbyEventDto>>>;
+
 }

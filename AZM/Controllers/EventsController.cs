@@ -119,22 +119,14 @@ namespace AZM.Api.Controllers
         [Authorize]
         public async Task<IActionResult> Create([FromBody] CreateEventRequest request)
         {
-            // Map WaypointRequest → WaypointDto
             EventRouteDto? routeDto = null;
             if (request.Route is not null)
             {
                 routeDto = new EventRouteDto(
-                    request.Route.StartLatitude,
-                    request.Route.StartLongitude,
-                    request.Route.StartAddress,
-                    request.Route.EndLatitude,
-                    request.Route.EndLongitude,
-                    request.Route.EndAddress,
-                    request.Route.DistanceMeters,
-                    request.Route.EstimatedDurationSeconds,
-                    request.Route.Waypoints?
-                        .Select(w => new WaypointDto(w.Order, w.Latitude, w.Longitude))
-                        .ToList());
+                    request.Route.StartLatitude, request.Route.StartLongitude, request.Route.StartAddress,
+                    request.Route.EndLatitude, request.Route.EndLongitude, request.Route.EndAddress,
+                    request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds,
+                    request.Route.Polyline);
             }
 
             var cmd = new CreateEventCommand(
@@ -159,14 +151,10 @@ namespace AZM.Api.Controllers
             if (request.Route is not null)
             {
                 routeDto = new EventRouteDto(
-                    request.Route.StartLatitude, request.Route.StartLongitude,
-                    request.Route.StartAddress,
-                    request.Route.EndLatitude, request.Route.EndLongitude,
-                    request.Route.EndAddress,
+                    request.Route.StartLatitude, request.Route.StartLongitude, request.Route.StartAddress,
+                    request.Route.EndLatitude, request.Route.EndLongitude, request.Route.EndAddress,
                     request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds,
-                    request.Route.Waypoints?
-                        .Select(w => new WaypointDto(w.Order, w.Latitude, w.Longitude))
-                        .ToList());
+                    request.Route.Polyline);
             }
 
             var cmd = new UpdateEventCommand(

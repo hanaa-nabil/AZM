@@ -9,6 +9,6 @@
       string? EndAddress,
       double? DistanceMeters,
       int? EstimatedDurationSeconds,
-      List<WaypointRequest>? Waypoints = null
+      string? Polyline
   );
 }

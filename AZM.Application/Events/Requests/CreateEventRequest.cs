@@ -12,10 +12,11 @@ namespace AZM.Api.Requests
         string LocationName,
         DateTime EventDate,
         Pace Pace ,
+        string? Polyline,
         int MaxParticipants = 0,
         double? DistanceKm = null,
         string? CoverImageUrl = null,
-        bool IsPublic = true,         
-        EventRouteRequest? Route = null 
+        bool IsPublic = true,
+        EventRouteRequest? Route = null
     );
 }

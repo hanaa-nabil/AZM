@@ -5,11 +5,6 @@ using AZM.Domain.Entities;
 using AZM.Domain.Enums;
 using AZM.Domain.Interfaces;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AZM.Application.Events.Handlers
 {
@@ -43,9 +38,7 @@ namespace AZM.Application.Events.Handlers
                 EndAddress = request.Route.EndAddress,
                 DistanceMeters = request.Route.DistanceMeters,
                 EstimatedDurationSeconds = request.Route.EstimatedDurationSeconds,
-                Waypoints = request.Route.Waypoints?
-                  .Select(w => new EventRouteWaypoint { Order = w.Order, Latitude = w.Latitude, Longitude = w.Longitude })
-                  .ToList() ?? []
+                Polyline = request.Route.Polyline
             } : null;
 
             ev.Update(request.Title, request.Description, request.DifficultyLevel,

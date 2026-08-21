@@ -13,7 +13,7 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<EventParticipant> EventParticipants { get; set; } = null!;
 
         public DbSet<EventRoute> EventRoutes { get; set; } = null!;
-        public DbSet<EventRouteWaypoint> EventRouteWaypoints { get; set; } = null!;
+        //public DbSet<EventRouteWaypoint> EventRouteWaypoints { get; set; } = null!;
 
         public DbSet<UserProfile> UserProfiles { get; set; } = null!;
         public DbSet<OtpCode> OtpCodes { get; set; } = null!;   
@@ -92,12 +92,6 @@ namespace AZM.Infrastructure.DbContext
                 .HasDefaultValue(true);
 
 
-            // EventRoute <-> EventRouteWaypoint (1-to-many)
-            builder.Entity<EventRouteWaypoint>()
-                .HasOne(w => w.EventRoute)
-                .WithMany(r => r.Waypoints)
-                .HasForeignKey(w => w.EventRouteId)
-                .OnDelete(DeleteBehavior.Cascade);
 
             // User <-> UserSport (1-to-many)
             builder.Entity<UserSport>()
