@@ -14,6 +14,7 @@ namespace AZM.Application.Auth.Handlers
         private readonly IUserRepository _userRepository;
         private readonly ITokenService _tokenService;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
+
         public LoginCommandHandler(
             UserManager<User> userManager,
             IUserRepository userRepository,
@@ -31,7 +32,6 @@ namespace AZM.Application.Auth.Handlers
          CancellationToken cancellationToken)
         {
             var email = request.Dto.Email.Trim().ToLowerInvariant();
-
             var user = await _userRepository.GetByEmailAsync(email);
             if (user is null)
                 return Result<AuthResponseDto>.Failure("Invalid email or password.", 401);
@@ -40,7 +40,13 @@ namespace AZM.Application.Auth.Handlers
                 return Result<AuthResponseDto>.Failure(
                     "This account uses Google Sign-In. Please sign in with Google.", 400);
 
-            if (!user.IsActive)
+            // Account inactive — could be a genuine deactivation, or a soft-deleted
+            // account still inside its 30-day grace period. Only the latter is
+            // recoverable; check DeletedAtUtc + window before rejecting outright.
+            var isWithinGracePeriod = user.DeletedAtUtc.HasValue
+                && user.DeletedAtUtc.Value.AddDays(30) > DateTime.UtcNow;
+
+            if (!user.IsActive && !isWithinGracePeriod)
                 return Result<AuthResponseDto>.Failure("Your account has been deactivated.", 403);
 
             var passwordValid = await _userManager.CheckPasswordAsync(user, request.Dto.Password);
@@ -53,6 +59,15 @@ namespace AZM.Application.Auth.Handlers
                     "Please verify your email before signing in.",
                     403,
                     new AuthResponseDto { EmailConfirmed = false });
+            }
+
+            // Reactivate a soft-deleted account on successful login within the grace period
+            var wasReactivated = false;
+            if (user.DeletedAtUtc.HasValue)
+            {
+                user.IsActive = true;
+                user.DeletedAtUtc = null;
+                wasReactivated = true;
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -85,7 +100,9 @@ namespace AZM.Application.Auth.Handlers
                 RequiresPhone = false,
                 EmailConfirmed = true,
                 IsVerified = true,
-                Message = "Login successful."
+                Message = wasReactivated
+                    ? "Welcome back! Your account has been restored."
+                    : "Login successful."
             });
         }
     }

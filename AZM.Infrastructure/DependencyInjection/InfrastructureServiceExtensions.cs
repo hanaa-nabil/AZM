@@ -87,6 +87,8 @@ namespace AZM.Infrastructure.DependencyInjection
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             services.AddScoped<IFollowRepository, FollowRepository>();
+
+            services.AddScoped<AccountPurgeJob>();
             return services;
         }
 

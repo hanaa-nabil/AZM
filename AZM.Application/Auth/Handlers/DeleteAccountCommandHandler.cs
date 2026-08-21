@@ -15,12 +15,10 @@ namespace AZM.Application.Auth.Handlers
     public class DeleteAccountCommandHandler : IRequestHandler<DeleteAccountCommand, Result<object>>
     {
         private readonly UserManager<User> _userManager;
-        private readonly IEventRepository _eventRepository;
 
-        public DeleteAccountCommandHandler(UserManager<User> userManager, IEventRepository eventRepository)
+        public DeleteAccountCommandHandler(UserManager<User> userManager)
         {
             _userManager = userManager;
-            _eventRepository = eventRepository;
         }
 
         public async Task<Result<object>> Handle(DeleteAccountCommand request, CancellationToken cancellationToken)
@@ -29,9 +27,10 @@ namespace AZM.Application.Auth.Handlers
             if (user is null)
                 return Result<object>.Failure("Account not found.", 404);
 
-            await _eventRepository.DeleteByOrganizerAsync(request.UserId, cancellationToken);
+            user.IsActive = false;
+            user.DeletedAtUtc = DateTime.UtcNow;
 
-            var result = await _userManager.DeleteAsync(user);
+            var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
             {
                 var errors = string.Join(" ", result.Errors.Select(e => e.Description));
@@ -42,4 +41,3 @@ namespace AZM.Application.Auth.Handlers
         }
     }
 }
-

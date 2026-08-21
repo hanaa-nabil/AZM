@@ -163,6 +163,13 @@ namespace AZM.Api
                 job => job.RunAsync(),
                 Cron.Minutely);
 
+
+
+            RecurringJob.AddOrUpdate<AccountPurgeJob>(
+               "account-purge",
+               job => job.RunAsync(),
+               Cron.Daily); // once a day is plenty for a 30-day window
+
             app.MapControllers();
             app.Run();
         }

@@ -40,6 +40,7 @@ namespace AZM.Domain.Entities
 
         public bool IsPendingPhoneVerification { get; set; } = false;
         public DateTime? LastBirthDateChangeUtc { get; set; }
+        public DateTime? DeletedAtUtc { get; set; }
 
     }
 }
