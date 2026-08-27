@@ -16,7 +16,8 @@ namespace AZM.Application.Events.Commands
     DateTime EventDate, 
     Guid OrganizerId,
     int MaxParticipants, 
-    double? DistanceKm, Pace Pace,
+    double? DistanceKm,
+    Pace Pace,
     string? CoverImageUrl,
     bool IsPublic = true,
     EventRouteDto? Route = null

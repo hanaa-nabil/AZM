@@ -10,5 +10,6 @@ namespace AZM.Application.DTOs.Participants
         public string? AvatarUrl { get; init; }
         public DateTime JoinedAt { get; init; }
         public string Status { get; init; } = string.Empty;
+        public bool IsVerified { get; set; }
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.RateLimiting;
 
@@ -33,22 +34,52 @@ namespace AZM.Api
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-            .AddJwtBearer(options =>
-            {
-                options.MapInboundClaims = false;
-                options.TokenValidationParameters = new TokenValidationParameters
-                {
-                    ValidateIssuer = true,
-                    ValidateAudience = true,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = jwtSection["Issuer"],
-                    ValidAudience = jwtSection["Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(jwtSection["SecretKey"]!))
-                };
-            });
-           
+            
+             .AddJwtBearer(options =>
+             {
+                 options.MapInboundClaims = false;
+                 options.TokenValidationParameters = new TokenValidationParameters
+                 {
+                     ValidateIssuer = true,
+                     ValidateAudience = true,
+                     ValidateLifetime = true,
+                     ValidateIssuerSigningKey = true,
+                     ValidIssuer = jwtSection["Issuer"],
+                     ValidAudience = jwtSection["Audience"],
+                     IssuerSigningKey = new SymmetricSecurityKey(
+                         Encoding.UTF8.GetBytes(jwtSection["SecretKey"]!))
+                 };
+
+                 options.Events = new JwtBearerEvents
+                 {
+                     OnChallenge = async context =>
+                     {
+                         context.HandleResponse();
+
+                         var message = context.AuthenticateFailure switch
+                         {
+                             SecurityTokenExpiredException => "Your session has expired. Please log in again.",
+                             SecurityTokenInvalidSignatureException => "Invalid token.",
+                             null when context.Request.Headers.Authorization.Count == 0
+                                 => "You are not authenticated.",
+                             _ => "Invalid or expired token."
+                         };
+
+                         context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                         context.Response.ContentType = "application/json";
+                         var json = JsonSerializer.Serialize(new { error = message });
+                         await context.Response.WriteAsync(json);
+                     },
+                     OnForbidden = async context =>
+                     {
+                         context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                         context.Response.ContentType = "application/json";
+                         var json = JsonSerializer.Serialize(new { error = "You do not have permission to perform this action." });
+                         await context.Response.WriteAsync(json);
+                     }
+                 };
+             });
+
             builder.Services.AddAuthorization();
 
             // Rate Limiting
@@ -146,12 +177,13 @@ namespace AZM.Api
                 });
             }
             app.UseHttpsRedirection();
+
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseCors("DefaultCorsPolicy");
             app.UseRateLimiter();
             app.UseAuthentication();
             app.UseAuthorization();
             app.UseHangfireDashboard("/hangfire");
-            app.UseMiddleware<ExceptionHandlingMiddleware>();
             RecurringJob.AddOrUpdate<EventReminderJob>(
                 "event-reminders",
                 job => job.RunAsync(),

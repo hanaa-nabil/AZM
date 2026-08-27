@@ -37,12 +37,22 @@ namespace AZM.Application.Events.Handlers
             }
 
             var ev = Event.Create(
-                cmd.Title, cmd.Description, cmd.SportType, cmd.DifficultyLevel,
-                cmd.Latitude, cmd.Longitude, cmd.LocationName,
-                cmd.EventDate, cmd.OrganizerId,
-                cmd.MaxParticipants, cmd.DistanceKm,
-                null, cmd.CoverImageUrl,
-                cmd.IsPublic, route);
+                 title: cmd.Title,
+                 description: cmd.Description,
+                 sportType: cmd.SportType,
+                 difficultyLevel: cmd.DifficultyLevel,
+                 latitude: cmd.Latitude,
+                 longitude: cmd.Longitude,
+                 locationName: cmd.LocationName,
+                 eventDate: cmd.EventDate,
+                 organizerId: cmd.OrganizerId,
+                 maxParticipants: cmd.MaxParticipants,
+                 distanceKm: cmd.DistanceKm,
+                 routeImageUrl: null,
+                 coverImageUrl: cmd.CoverImageUrl,
+                 isPublic: cmd.IsPublic,
+                 route: route,
+                 pace: cmd.Pace);
 
             await _eventRepo.AddAsync(ev, ct);
             return Result<Guid>.Success(ev.Id);

@@ -23,8 +23,10 @@ namespace AZM.Infrastructure.Repositories
             => await _db.Events
                 .Include(e => e.Organizer)
                 .Include(e => e.Participants)
-                    .ThenInclude(p => p.User)
+                .ThenInclude(p => p.User)
+                .Include(e => e.Route)
                 .FirstOrDefaultAsync(e => e.Id == id, ct);
+
         public async Task<List<Event>> GetEventsToStartAsync(DateTime asOfUtc, CancellationToken ct)
         {
             return await _db.Events

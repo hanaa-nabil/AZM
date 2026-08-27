@@ -1,29 +1,24 @@
-﻿
-using AZM.Application.Common;
+﻿using AZM.Application.Common;
 using AZM.Application.DTOs.Event;
 using AZM.Application.DTOs.Participants;
 using AZM.Application.Events.Queries;
 using AZM.Domain.Interfaces;
 using MediatR;
-
 namespace AZM.Application.Events.Handlers
 {
     public class GetEventByIdHandler : IRequestHandler<GetEventByIdQuery, Result<EventDetailDto>>
     {
         private readonly IEventRepository _eventRepo;
-
         public GetEventByIdHandler(IEventRepository eventRepo) => _eventRepo = eventRepo;
-
         public async Task<Result<EventDetailDto>> Handle(GetEventByIdQuery q, CancellationToken ct)
         {
             var ev = await _eventRepo.GetByIdWithParticipantsAsync(q.EventId, ct);
             if (ev is null) return Result<EventDetailDto>.Failure("Event not found.");
-
             bool isJoined = q.RequestingUserId.HasValue &&
-                ev.Participants.Any(p =>
+                (ev.Participants.Any(p =>
                     p.UserId == q.RequestingUserId.Value &&
-                    p.Status == Domain.Enums.ParticipantStatus.Joined);
-
+                    p.Status == Domain.Enums.ParticipantStatus.Joined)
+                    || ev.OrganizerId == q.RequestingUserId.Value);
             var dto = new EventDetailDto
             {
                 Id = ev.Id,
@@ -47,7 +42,8 @@ namespace AZM.Application.Events.Handlers
                 {
                     Id = ev.OrganizerId,
                     FullName = $"{ev.Organizer.FirstName} {ev.Organizer.LastName}".Trim(),
-                    AvatarUrl = null
+                    AvatarUrl = ev.Organizer.ProfilePhotoUrl,
+                    IsVerified = ev.Organizer.IsIdVerified && ev.Organizer.IsFaceVerified
                 },
                 IsJoined = isJoined,
                 Participants = ev.Participants
@@ -56,14 +52,13 @@ namespace AZM.Application.Events.Handlers
                     {
                         UserId = p.UserId,
                         FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
-                        AvatarUrl = null,
+                        AvatarUrl = p.User.ProfilePhotoUrl,
+                        IsVerified = p.User.IsIdVerified && p.User.IsFaceVerified,
                         JoinedAt = p.JoinedAt,
                         Status = p.Status.ToString()
                     }),
                 Pace = ev.Pace,
-
                 IsOrganizer = q.RequestingUserId.HasValue && ev.OrganizerId == q.RequestingUserId.Value,
-
                 Route = ev.Route is not null ? new EventRouteDto(
                      ev.Route.StartLatitude, ev.Route.StartLongitude, ev.Route.StartAddress,
                      ev.Route.EndLatitude, ev.Route.EndLongitude, ev.Route.EndAddress,
@@ -71,9 +66,7 @@ namespace AZM.Application.Events.Handlers
                      ev.Route.Polyline
                      ) : null,
 
-               
             };
-
             return Result<EventDetailDto>.Success(dto);
         }
     }

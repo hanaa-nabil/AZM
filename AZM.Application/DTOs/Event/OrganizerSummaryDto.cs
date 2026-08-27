@@ -11,5 +11,6 @@ namespace AZM.Application.DTOs.Event
         public Guid Id { get; init; }
         public string FullName { get; init; } = string.Empty;
         public string? AvatarUrl { get; init; }
+        public bool IsVerified { get; set; }
     }
 }
