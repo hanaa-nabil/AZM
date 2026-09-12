@@ -37,8 +37,7 @@ namespace AZM.Application.Events.Handlers
                 EndLongitude = request.Route.EndLongitude,
                 EndAddress = request.Route.EndAddress,
                 DistanceMeters = request.Route.DistanceMeters,
-                EstimatedDurationSeconds = request.Route.EstimatedDurationSeconds,
-                Polyline = request.Route.Polyline
+                EstimatedDurationSeconds = request.Route.EstimatedDurationSeconds
             } : null;
 
             ev.Update(request.Title, request.Description, request.DifficultyLevel,

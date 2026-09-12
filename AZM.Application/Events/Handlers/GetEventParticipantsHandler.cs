@@ -21,7 +21,7 @@ namespace AZM.Application.Events.Handlers
                 .Where(p => p.Status == Domain.Enums.ParticipantStatus.Joined)
                 .Select(p => new ParticipantDto
                 {
-                    UserId = p.UserId,
+                    Id = p.UserId,
                     FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
                     AvatarUrl = p.User.ProfilePhotoUrl,
                     JoinedAt = p.JoinedAt,

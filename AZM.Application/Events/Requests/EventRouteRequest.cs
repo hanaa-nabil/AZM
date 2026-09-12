@@ -8,7 +8,7 @@
       double EndLongitude,
       string? EndAddress,
       double? DistanceMeters,
-      int? EstimatedDurationSeconds,
-      string? Polyline
+      int? EstimatedDurationSeconds
+      
   );
 }

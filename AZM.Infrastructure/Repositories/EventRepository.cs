@@ -47,6 +47,20 @@ namespace AZM.Infrastructure.Repositories
                 .ExecuteDeleteAsync(ct);
         }
 
+
+        public async Task<Dictionary<Guid, List<EventParticipant>>> GetParticipantsForEventsAsync(
+    IEnumerable<Guid> eventIds, CancellationToken ct = default)
+        {
+            var ids = eventIds.ToList();
+            var participants = await _db.EventParticipants
+                .Where(p => ids.Contains(p.EventId))
+                .Include(p => p.User)
+                .ToListAsync(ct);
+
+            return participants
+                .GroupBy(p => p.EventId)
+                .ToDictionary(g => g.Key, g => g.ToList());
+        }
         // ── Feed ──────────────────────────────────────────────────────────────────
 
         public async Task<(IEnumerable<Event> Events, int TotalCount)> GetFeedAsync(

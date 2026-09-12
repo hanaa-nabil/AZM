@@ -1,6 +1,5 @@
 ﻿using AZM.Domain.Entities;
 using AZM.Domain.Enums;
-using System.Reflection.PortableExecutable;
 
 namespace AZM.Domain.Interfaces
 {
@@ -25,12 +24,13 @@ namespace AZM.Domain.Interfaces
         // Participant specific
         Task<EventParticipant?> GetParticipantAsync(Guid eventId, Guid userId, CancellationToken ct = default);
         Task<IEnumerable<EventParticipant>> GetParticipantsAsync(Guid eventId, CancellationToken ct = default);
+        Task<Dictionary<Guid, List<EventParticipant>>> GetParticipantsForEventsAsync(
+            IEnumerable<Guid> eventIds, CancellationToken ct = default);
         Task AddParticipantAsync(EventParticipant participant, CancellationToken ct = default);
         Task UpdateParticipantAsync(EventParticipant participant, CancellationToken ct = default);
         Task<bool> IsParticipantAsync(Guid eventId, Guid userId, CancellationToken ct = default);
         Task<int> GetParticipantCountAsync(Guid eventId, CancellationToken ct = default);
         Task MarkReminderSentAsync(Guid eventId, CancellationToken ct = default);
-
         Task<List<Event>> GetEventsToStartAsync(DateTime asOfUtc, CancellationToken ct);
         Task<List<Event>> GetEventsToCompleteAsync(DateTime cutoffUtc, CancellationToken ct);
         Task DeleteByOrganizerAsync(Guid organizerId, CancellationToken ct = default);

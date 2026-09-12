@@ -1,4 +1,5 @@
-﻿using AZM.Domain.Enums;
+﻿using AZM.Application.DTOs.Participants;
+using AZM.Domain.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,5 +30,6 @@ namespace AZM.Application.DTOs.Event
         public bool IsJoined { get; init; }
         public Pace Pace { get; init; }
         public bool IsOrganizer { get; init; }
+        public List<ParticipantDto> Participants { get; set; } = new();
     }
 }

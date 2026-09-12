@@ -18,7 +18,6 @@ namespace AZM.Application.Events.Handlers
             if (cmd.Title.Length < 3)
                 return Result<Guid>.Failure("Title must be at least 3 characters.");
 
-            // Build route entity if provided
             EventRoute? route = null;
             if (cmd.Route is not null)
             {
@@ -31,8 +30,7 @@ namespace AZM.Application.Events.Handlers
                     EndLongitude = cmd.Route.EndLongitude,
                     EndAddress = cmd.Route.EndAddress,
                     DistanceMeters = cmd.Route.DistanceMeters,
-                    EstimatedDurationSeconds = cmd.Route.EstimatedDurationSeconds,
-                    Polyline = cmd.Route.Polyline
+                    EstimatedDurationSeconds = cmd.Route.EstimatedDurationSeconds
                 };
             }
 
@@ -47,7 +45,6 @@ namespace AZM.Application.Events.Handlers
                  eventDate: cmd.EventDate,
                  organizerId: cmd.OrganizerId,
                  maxParticipants: cmd.MaxParticipants,
-                 distanceKm: cmd.DistanceKm,
                  routeImageUrl: null,
                  coverImageUrl: cmd.CoverImageUrl,
                  isPublic: cmd.IsPublic,

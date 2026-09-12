@@ -5,7 +5,7 @@ namespace AZM.Application.DTOs.Participants
 {
     public class ParticipantDto
     {
-        public Guid UserId { get; init; }
+        public Guid Id { get; init; }
         public string FullName { get; init; } = string.Empty;
         public string? AvatarUrl { get; init; }
         public DateTime JoinedAt { get; init; }

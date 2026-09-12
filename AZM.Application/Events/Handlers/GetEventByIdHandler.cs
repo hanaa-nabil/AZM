@@ -50,7 +50,7 @@ namespace AZM.Application.Events.Handlers
                     .Where(p => p.Status == Domain.Enums.ParticipantStatus.Joined)
                     .Select(p => new ParticipantDto
                     {
-                        UserId = p.UserId,
+                        Id = p.UserId,
                         FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
                         AvatarUrl = p.User.ProfilePhotoUrl,
                         IsVerified = p.User.IsIdVerified && p.User.IsFaceVerified,
@@ -62,8 +62,7 @@ namespace AZM.Application.Events.Handlers
                 Route = ev.Route is not null ? new EventRouteDto(
                      ev.Route.StartLatitude, ev.Route.StartLongitude, ev.Route.StartAddress,
                      ev.Route.EndLatitude, ev.Route.EndLongitude, ev.Route.EndAddress,
-                     ev.Route.DistanceMeters, ev.Route.EstimatedDurationSeconds,
-                     ev.Route.Polyline
+                     ev.Route.DistanceMeters, ev.Route.EstimatedDurationSeconds
                      ) : null,
 
             };

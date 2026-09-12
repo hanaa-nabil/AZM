@@ -1,7 +1,9 @@
 ﻿using AZM.Application.Common;
 using AZM.Application.DTOs.Event;
+using AZM.Application.DTOs.Participants;
 using AZM.Application.Events.Queries;
 using AZM.Domain.Entities;
+using AZM.Domain.Enums;
 using AZM.Domain.Interfaces;
 using MediatR;
 
@@ -20,19 +22,17 @@ namespace AZM.Application.Events.Handlers
         {
             var events = await _eventRepo.GetByOrganizerAsync(request.OrganizerId, ct);
 
-            HashSet<Guid> joinedIds = [];
-            if (request.RequestingUserId.HasValue)
+            var items = new List<EventFeedItemDto>();
+            foreach (var e in events)
             {
-                var joined = await _eventRepo.GetUserJoinedEventsAsync(
-                    request.RequestingUserId.Value, ct);
-                joinedIds = joined.Select(e => e.Id).ToHashSet();
+                var participants = await _eventRepo.GetParticipantsAsync(e.Id, ct);
+                items.Add(MapToFeedItem(e, participants));
             }
 
-            var items = events.Select(e => MapToFeedItem(e, joinedIds.Contains(e.Id)));
             return Result<IEnumerable<EventFeedItemDto>>.Success(items);
         }
 
-        private static EventFeedItemDto MapToFeedItem(Event e, bool isJoined) => new()
+        private static EventFeedItemDto MapToFeedItem(Event e, IEnumerable<EventParticipant> participants) => new()
         {
             Id = e.Id,
             Title = e.Title,
@@ -56,9 +56,21 @@ namespace AZM.Application.Events.Handlers
                 FullName = $"{e.Organizer.FirstName} {e.Organizer.LastName}".Trim(),
                 AvatarUrl = null
             },
-            IsJoined = isJoined,
+            Participants = participants
+               .Where(p => p.Status == ParticipantStatus.Joined)
+                   .Select(p => new ParticipantDto
+                    {
+                    Id = p.UserId,
+                    FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
+                    AvatarUrl = p.User.ProfilePhotoUrl,
+                    IsVerified = p.User.IsIdVerified && p.User.IsFaceVerified,
+                    JoinedAt = p.JoinedAt,
+                    Status = p.Status.ToString()
+                    })
+                      .ToList(),
+            IsJoined = true,
             Pace = e.Pace,
-            IsOrganizer = true, 
+            IsOrganizer = true,
         };
     }
 }

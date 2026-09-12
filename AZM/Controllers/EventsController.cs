@@ -125,8 +125,7 @@ namespace AZM.Api.Controllers
                 routeDto = new EventRouteDto(
                     request.Route.StartLatitude, request.Route.StartLongitude, request.Route.StartAddress,
                     request.Route.EndLatitude, request.Route.EndLongitude, request.Route.EndAddress,
-                    request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds,
-                    request.Route.Polyline);
+                    request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds);
             }
 
             var cmd = new CreateEventCommand(
@@ -134,7 +133,7 @@ namespace AZM.Api.Controllers
                  request.SportType, request.DifficultyLevel,
                  request.Latitude, request.Longitude, request.LocationName,
                  request.EventDate, CurrentUserId!.Value,
-                 request.MaxParticipants, request.DistanceKm, request.Pace,
+                 request.MaxParticipants,  request.Pace,
                  request.CoverImageUrl, request.IsPublic, routeDto);
 
             var result = await _mediator.Send(cmd);
@@ -153,8 +152,7 @@ namespace AZM.Api.Controllers
                 routeDto = new EventRouteDto(
                     request.Route.StartLatitude, request.Route.StartLongitude, request.Route.StartAddress,
                     request.Route.EndLatitude, request.Route.EndLongitude, request.Route.EndAddress,
-                    request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds,
-                    request.Route.Polyline);
+                    request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds);
             }
 
             var cmd = new UpdateEventCommand(
