@@ -16,5 +16,6 @@ namespace AZM.Api.Requests
         string? CoverImageUrl = null,
         bool IsPublic = true,
         EventRouteRequest? Route = null
+
     );
 }

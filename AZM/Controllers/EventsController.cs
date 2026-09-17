@@ -125,7 +125,7 @@ namespace AZM.Api.Controllers
                 routeDto = new EventRouteDto(
                     request.Route.StartLatitude, request.Route.StartLongitude, request.Route.StartAddress,
                     request.Route.EndLatitude, request.Route.EndLongitude, request.Route.EndAddress,
-                    request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds);
+                    request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds, request.Route.Polyline);
             }
 
             var cmd = new CreateEventCommand(
@@ -152,7 +152,7 @@ namespace AZM.Api.Controllers
                 routeDto = new EventRouteDto(
                     request.Route.StartLatitude, request.Route.StartLongitude, request.Route.StartAddress,
                     request.Route.EndLatitude, request.Route.EndLongitude, request.Route.EndAddress,
-                    request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds);
+                    request.Route.DistanceMeters, request.Route.EstimatedDurationSeconds,request.Route.Polyline);
             }
 
             var cmd = new UpdateEventCommand(

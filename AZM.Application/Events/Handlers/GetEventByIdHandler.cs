@@ -62,7 +62,7 @@ namespace AZM.Application.Events.Handlers
                 Route = ev.Route is not null ? new EventRouteDto(
                      ev.Route.StartLatitude, ev.Route.StartLongitude, ev.Route.StartAddress,
                      ev.Route.EndLatitude, ev.Route.EndLongitude, ev.Route.EndAddress,
-                     ev.Route.DistanceMeters, ev.Route.EstimatedDurationSeconds
+                     ev.Route.DistanceMeters, ev.Route.EstimatedDurationSeconds, ev.Route.Polyline
                      ) : null,
 
             };

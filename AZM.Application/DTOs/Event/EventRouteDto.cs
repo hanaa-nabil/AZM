@@ -14,6 +14,7 @@ namespace AZM.Application.DTOs.Event
         double EndLongitude,
         string? EndAddress,
         double? DistanceMeters,
-        int? EstimatedDurationSeconds
+        int? EstimatedDurationSeconds,
+        string Polyline
     );
 }

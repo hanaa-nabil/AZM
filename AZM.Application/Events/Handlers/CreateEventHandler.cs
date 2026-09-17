@@ -30,7 +30,8 @@ namespace AZM.Application.Events.Handlers
                     EndLongitude = cmd.Route.EndLongitude,
                     EndAddress = cmd.Route.EndAddress,
                     DistanceMeters = cmd.Route.DistanceMeters,
-                    EstimatedDurationSeconds = cmd.Route.EstimatedDurationSeconds
+                    EstimatedDurationSeconds = cmd.Route.EstimatedDurationSeconds,
+                    Polyline = cmd.Route.Polyline
                 };
             }
 
