@@ -14,16 +14,21 @@ namespace AZM.Application.Users.Handlers
     public class GetMyProfileHandler : IRequestHandler<GetMyProfileQuery, UserProfileDto>
     {
         private readonly IUserRepository _userRepository;
+        private readonly IFollowRepository _followRepository;
 
-        public GetMyProfileHandler(IUserRepository userRepository)
+        public GetMyProfileHandler(IUserRepository userRepository, IFollowRepository followRepository)
         {
             _userRepository = userRepository;
+            _followRepository = followRepository;
         }
 
         public async Task<UserProfileDto> Handle(GetMyProfileQuery request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetByIdWithDetailsAsync(request.UserId)
                 ?? throw new KeyNotFoundException("User not found.");
+
+            var followersCount = await _followRepository.GetFollowersCountAsync(user.Id);
+            var followingCount = await _followRepository.GetFollowingCountAsync(user.Id);
 
             return new UserProfileDto
             {
@@ -33,7 +38,7 @@ namespace AZM.Application.Users.Handlers
                 LastName = user.LastName,
                 Username = user.UserName ?? string.Empty,
                 Bio = user.Profile?.Bio,
-                ProfilePhotoUrl = user.ProfilePhotoUrl, 
+                ProfilePhotoUrl = user.ProfilePhotoUrl,
                 IsIdVerified = user.IsIdVerified,
                 Sports = user.Sports.Select(s => s.Sport).ToList(),
                 EventsJoinedCount = user.Profile?.EventsJoinedCount ?? 0,
@@ -44,7 +49,9 @@ namespace AZM.Application.Users.Handlers
                 BirthDate = user.BirthDate,
                 Gender = user.Gender,
                 CreatedAtUtc = user.CreatedAtUtc,
-                FcmToken = user.FcmToken
+                FcmToken = user.FcmToken,
+                FollowersCount = followersCount,
+                FollowingCount = followingCount
             };
         }
     }

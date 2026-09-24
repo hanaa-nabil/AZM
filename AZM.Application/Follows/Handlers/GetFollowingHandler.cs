@@ -27,7 +27,7 @@ namespace AZM.Application.Follows.Handlers
                 Id = u.Id,
                 FullName = u.FullName,
                 Username = u.UserName ?? string.Empty,
-                ProfilePhotoUrl = u.ProfilePhotoUrl,
+                AvatarUrl = u.ProfilePhotoUrl,
                 IsFollowedByMe = true
             }).ToList();
         }

@@ -27,7 +27,7 @@ namespace AZM.Application.Users.Handlers
                 LastName = user.LastName,
                 Username = user.UserName,
                 Bio = profile.Bio,
-                ProfilePhotoUrl = profile.AvatarUrl,
+                ProfilePhotoUrl = user.ProfilePhotoUrl,
                 IsIdVerified = user.IsIdVerified,
                 Sports = user.Sports.Select(us => us.Sport).ToList(),
                 Location = profile.Location,

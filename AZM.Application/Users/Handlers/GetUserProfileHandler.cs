@@ -8,8 +8,13 @@ namespace AZM.Application.Users.Handlers
     public class GetUserProfileHandler : IRequestHandler<GetUserProfileQuery, UserProfileDto>
     {
         private readonly IUserRepository _userRepository;
+        private readonly IFollowRepository _followRepository;
 
-        public GetUserProfileHandler(IUserRepository userRepository) => _userRepository = userRepository;
+        public GetUserProfileHandler(IUserRepository userRepository, IFollowRepository followRepository)
+        {
+            _userRepository = userRepository;
+            _followRepository = followRepository;
+        }
 
         public async Task<UserProfileDto> Handle(GetUserProfileQuery request, CancellationToken ct)
         {
@@ -19,6 +24,12 @@ namespace AZM.Application.Users.Handlers
             var profile = user.Profile
                 ?? throw new InvalidOperationException("User has no profile.");
 
+            var followersCount = await _followRepository.GetFollowersCountAsync(user.Id);
+            var followingCount = await _followRepository.GetFollowingCountAsync(user.Id);
+            bool? isFollowedByMe = request.ViewerId.HasValue
+                ? await _followRepository.IsFollowingAsync(request.ViewerId.Value, user.Id)
+                : null;
+
             return new UserProfileDto
             {
                 Id = user.Id,
@@ -26,7 +37,7 @@ namespace AZM.Application.Users.Handlers
                 LastName = user.LastName,
                 Username = user.UserName,
                 Bio = profile.Bio,
-                ProfilePhotoUrl = profile.AvatarUrl,
+                ProfilePhotoUrl = user.ProfilePhotoUrl,
                 BirthDate = user.BirthDate,
                 IsIdVerified = user.IsIdVerified,
                 Sports = user.Sports.Select(us => us.Sport).ToList(),
@@ -35,7 +46,10 @@ namespace AZM.Application.Users.Handlers
                 EventsCompletedCount = profile.EventsCompletedCount,
                 TotalDistanceMeters = profile.TotalDistanceMeters,
                 Gender = user.Gender,
-                CreatedAtUtc = user.CreatedAtUtc
+                CreatedAtUtc = user.CreatedAtUtc,
+                FollowersCount = followersCount,
+                FollowingCount = followingCount,
+                IsFollowedByMe = isFollowedByMe
             };
         }
     }

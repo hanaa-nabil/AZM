@@ -77,16 +77,18 @@ namespace AZM.Api.Controllers
         [HttpGet("{userId:guid}")]
         public async Task<ActionResult<UserProfileDto>> GetUserProfile(Guid userId)
         {
-            var result = await _mediator.Send(new GetUserProfileQuery(userId));
+            Guid? viewerId = Guid.TryParse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var id) ? id : null;
+            var result = await _mediator.Send(new GetUserProfileQuery(userId, viewerId));
             return Ok(result);
         }
 
         [HttpGet("username/{username}")]
-        [AllowAnonymous]
         public async Task<ActionResult<UserProfileDto>> GetUserProfileByUsername(string username)
         {
-            var result = await _mediator.Send(new GetUserProfileByUsernameQuery(username));
+            Guid? viewerId = Guid.TryParse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var id) ? id : null;
+            var result = await _mediator.Send(new GetUserProfileByUsernameQuery(username, viewerId));
             return Ok(result);
         }
+    
     }
 }

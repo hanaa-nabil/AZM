@@ -27,8 +27,15 @@ namespace AZM.Application.Users.Handlers
 
             user.Profile.TotalStepCount += request.Steps;
             user.Profile.TotalDistanceMeters += request.DistanceMeters;
-            await _userRepository.UpdateAsync(user);
 
+            if (request.Steps > 0 || request.DistanceMeters > 0)
+            {
+                var today = DateOnly.FromDateTime(DateTime.UtcNow);
+                user.Profile.RegisterActivity(today);
+                await _userRepository.RecordDailyActivityAsync(request.UserId, today);
+            }
+
+            await _userRepository.UpdateAsync(user);
             return Result<bool>.Success(true);
         }
     }

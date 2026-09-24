@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace AZM.Application.Users.Queries
 {
-    public record GetUserProfileQuery(Guid TargetUserId) : IRequest<UserProfileDto>;
+    public record GetUserProfileQuery(Guid TargetUserId, Guid? ViewerId) : IRequest<UserProfileDto>;
 }
