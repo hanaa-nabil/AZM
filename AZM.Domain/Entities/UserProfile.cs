@@ -12,6 +12,7 @@ namespace AZM.Domain.Entities
         public int EventsJoinedCount { get; set; }
         public int EventsCompletedCount { get; set; }
         public double TotalDistanceMeters { get; set; }
+        public int TotalStepCount { get; set; }
         public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
         public int CurrentStreak { get; private set; }
         public int LongestStreak { get; private set; }

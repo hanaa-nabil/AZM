@@ -60,7 +60,19 @@ namespace AZM.Api.Controllers
         //    var result = await _mediator.Send(new GetMyAchievementsQuery(CurrentUserId));
         //    return Ok(result);
         //}
-       
+
+        [HttpPost("activity")]
+        public async Task<IActionResult> UpdateActivityStats([FromBody] UpdateActivityStatsRequest request)
+        {
+            var result = await _mediator.Send(new UpdateActivityStatsCommand(CurrentUserId, request.Steps, request.DistanceMeters));
+            return result.IsSuccess ? Ok(new { message = "Activity stats updated." }) : BadRequest(result.Error);
+        }
+        [HttpGet("{userId:guid}/events")]
+        public async Task<IActionResult> GetUserEvents(Guid userId)
+        {
+            var result = await _mediator.Send(new GetUserEventsQuery(userId));
+            return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+        }
 
         [HttpGet("{userId:guid}")]
         public async Task<ActionResult<UserProfileDto>> GetUserProfile(Guid userId)

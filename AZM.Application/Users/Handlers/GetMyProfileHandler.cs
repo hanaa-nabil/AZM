@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AZM.Application.Users.Handlers
 {
@@ -38,6 +39,7 @@ namespace AZM.Application.Users.Handlers
                 EventsJoinedCount = user.Profile?.EventsJoinedCount ?? 0,
                 EventsCompletedCount = user.Profile?.EventsCompletedCount ?? 0,
                 TotalDistanceMeters = user.Profile?.TotalDistanceMeters ?? 0,
+                TotalStepCount = user.Profile?.TotalStepCount ?? 0,
                 Location = user.Profile?.Location,
                 BirthDate = user.BirthDate,
                 Gender = user.Gender,
