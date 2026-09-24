@@ -2,6 +2,7 @@
 using AZM.Application.DTOs.Event;
 using AZM.Application.Events.Commands;
 using AZM.Application.Events.Queries;
+using AZM.Application.Users.Queries;
 using AZM.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -215,6 +216,20 @@ namespace AZM.Api.Controllers
         {
             var result = await _mediator.Send(new LeaveEventCommand(id, CurrentUserId!.Value));
             return result.IsSuccess ? Ok(new { message = "Left successfully." }) : BadRequest(result.Error);
+        }
+
+        [HttpGet("{userId:guid}/events/counts")]
+        public async Task<IActionResult> GetUserEventCountsBySport(Guid userId)
+        {
+            var result = await _mediator.Send(new GetUserEventCountsBySportQuery(userId));
+            return Ok(result);
+        }
+        [HttpPost("{id:guid}/republish")]
+        [Authorize]
+        public async Task<IActionResult> Republish(Guid id)
+        {
+            var result = await _mediator.Send(new RepublishEventCommand(id, CurrentUserId!.Value));
+            return result.IsSuccess ? NoContent() : BadRequest(result.Error);
         }
     }
 
