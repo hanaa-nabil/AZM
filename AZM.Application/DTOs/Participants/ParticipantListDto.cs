@@ -1,4 +1,6 @@
-﻿namespace AZM.Application.DTOs.Participants
+﻿using AZM.Application.DTOs.Event;
+
+namespace AZM.Application.DTOs.Participants
 {
     public record ParticipantListDto
     {
@@ -6,5 +8,6 @@
         public string EventTitle { get; init; } = string.Empty;
         public int TotalJoined { get; init; }
         public IEnumerable<ParticipantDto> Participants { get; init; } = [];
+        public OrganizerSummaryDto Organizer { get; set; } = default!;
     }
 }

@@ -43,6 +43,7 @@ namespace AZM.Application.Events.Handlers
                     Id = ev.OrganizerId,
                     FullName = $"{ev.Organizer.FirstName} {ev.Organizer.LastName}".Trim(),
                     AvatarUrl = ev.Organizer.ProfilePhotoUrl,
+                    Username = ev.Organizer.UserName ?? string.Empty,
                     IsVerified = ev.Organizer.IsIdVerified && ev.Organizer.IsFaceVerified
                 },
                 IsJoined = isJoined,

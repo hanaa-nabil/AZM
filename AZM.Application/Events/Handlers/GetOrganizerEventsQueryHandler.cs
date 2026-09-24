@@ -54,7 +54,8 @@ namespace AZM.Application.Events.Handlers
             {
                 Id = e.OrganizerId,
                 FullName = $"{e.Organizer.FirstName} {e.Organizer.LastName}".Trim(),
-                AvatarUrl = null
+                Username = e.Organizer.UserName ?? string.Empty,
+                AvatarUrl = e.Organizer.ProfilePhotoUrl
             },
             Participants = participants
                .Where(p => p.Status == ParticipantStatus.Joined)
@@ -68,6 +69,12 @@ namespace AZM.Application.Events.Handlers
                     Status = p.Status.ToString()
                     })
                       .ToList(),
+
+            Route = e.Route is not null ? new EventRouteDto(
+                    e.Route.StartLatitude, e.Route.StartLongitude, e.Route.StartAddress,
+                    e.Route.EndLatitude, e.Route.EndLongitude, e.Route.EndAddress,
+                    e.Route.DistanceMeters, e.Route.EstimatedDurationSeconds, e.Route.Polyline
+                     ) : null,
             IsJoined = true,
             Pace = e.Pace,
             IsOrganizer = true,

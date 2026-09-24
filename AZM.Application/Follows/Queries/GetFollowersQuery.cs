@@ -8,5 +8,5 @@ using System.Threading.Tasks;
 
 namespace AZM.Application.Follows.Queries
 {
-    public record GetFollowersQuery(Guid UserId) : IRequest<List<FollowUserDto>>;
+    public record GetFollowersQuery(Guid UserId, Guid? ViewerId) : IRequest<List<FollowUserDto>>;
 }

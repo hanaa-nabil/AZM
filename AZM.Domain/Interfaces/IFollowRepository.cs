@@ -17,5 +17,7 @@ namespace AZM.Domain.Interfaces
         Task<List<User>> GetFollowingAsync(Guid userId);
         Task<int> GetFollowersCountAsync(Guid userId);
         Task<int> GetFollowingCountAsync(Guid userId);
+
+        Task<HashSet<Guid>> GetFollowingIdsAsync(Guid userId, IEnumerable<Guid> candidateIds);
     }
 }

@@ -177,13 +177,13 @@ namespace AZM.Api.Controllers
 
         // ── Publish / Cancel ──────────────────────────────────────────────────────
 
-        [HttpPost("{id:guid}/publish")]
-        [Authorize]
-        public async Task<IActionResult> Publish(Guid id)
-        {
-            var result = await _mediator.Send(new PublishEventCommand(id, CurrentUserId!.Value));
-            return result.IsSuccess ? NoContent() : BadRequest(result.Error);
-        }
+        //[HttpPost("{id:guid}/publish")]
+        //[Authorize]
+        //public async Task<IActionResult> Publish(Guid id)
+        //{
+        //    var result = await _mediator.Send(new PublishEventCommand(id, CurrentUserId!.Value));
+        //    return result.IsSuccess ? NoContent() : BadRequest(result.Error);
+        //}
 
         [HttpPost("{id:guid}/cancel")]
         [Authorize]

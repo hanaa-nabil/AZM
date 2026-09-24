@@ -88,11 +88,11 @@ namespace AZM.Application.Auth.Handlers
                 var otp = await _otpService.GenerateAndStoreOtpAsync(email);
                 await _emailService.SendOtpEmailAsync(email, firstName, otp);
             }
-            catch
+            catch(Exception ex)
             {
                 await _userManager.DeleteAsync(user);
                 return Result<RegisterResponseDto>.Failure(
-                    "Failed to send verification email. Please try again.", 500);
+                    $"Failed to send verification email: {ex.Message}", 500);
             }
 
             // 6. Return userId + email only — JWT is issued after the full flow is complete

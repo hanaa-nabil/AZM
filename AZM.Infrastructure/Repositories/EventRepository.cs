@@ -72,6 +72,7 @@ namespace AZM.Infrastructure.Repositories
             var query = _db.Events
                 .Include(e => e.Organizer)
                 .Include(e => e.Participants)
+                .Include(e => e.Route)
                 .AsQueryable();
 
             if (sportType.HasValue)
@@ -132,14 +133,15 @@ namespace AZM.Infrastructure.Repositories
             => await _db.Events
                 .Include(e => e.Organizer)
                 .Include(e => e.Participants)
+                .Include(e => e.Route)
                 .Where(e => e.OrganizerId == organizerId)
                 .OrderByDescending(e => e.EventDate)
                 .ToListAsync(ct);
-       
         public async Task<IEnumerable<Event>> GetUserJoinedEventsAsync(Guid userId, CancellationToken ct = default)
             => await _db.Events
                 .Include(e => e.Organizer)
                 .Include(e => e.Participants)
+                .Include(e => e.Route)
                 .Where(e => e.Participants.Any(p =>
                     p.UserId == userId &&
                     p.Status == ParticipantStatus.Joined))

@@ -31,5 +31,6 @@ namespace AZM.Application.DTOs.Event
         public Pace Pace { get; init; }
         public bool IsOrganizer { get; init; }
         public List<ParticipantDto> Participants { get; set; } = new();
+        public EventRouteDto? Route { get; set; }
     }
 }

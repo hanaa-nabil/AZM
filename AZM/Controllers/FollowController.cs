@@ -30,7 +30,14 @@ namespace AZM.Api.Controllers
                 ? Ok(new { message = "Followed successfully." })
                 : StatusCode(result.StatusCode, new { error = result.Error });
         }
-
+        [HttpPost("username/{username}")]
+        public async Task<IActionResult> FollowByUsername(string username)
+        {
+            var result = await _mediator.Send(new FollowUserByUsernameCommand(CurrentUserId, username));
+            return result.IsSuccess
+                ? Ok(new { message = "Followed successfully." })
+                : StatusCode(result.StatusCode, new { error = result.Error });
+        }
         [HttpDelete("{userId:guid}")]
         public async Task<IActionResult> Unfollow(Guid userId)
         {
@@ -43,21 +50,21 @@ namespace AZM.Api.Controllers
         [HttpGet("followers")]
         public async Task<IActionResult> GetMyFollowers()
         {
-            var result = await _mediator.Send(new GetFollowersQuery(CurrentUserId));
+            var result = await _mediator.Send(new GetFollowersQuery(CurrentUserId, CurrentUserId));
             return Ok(result);
         }
 
         [HttpGet("following")]
         public async Task<IActionResult> GetMyFollowing()
         {
-            var result = await _mediator.Send(new GetFollowingQuery(CurrentUserId));
+            var result = await _mediator.Send(new GetFollowingQuery(CurrentUserId, CurrentUserId));
             return Ok(result);
         }
 
         [HttpGet("followers/{userId:guid}")]
         public async Task<IActionResult> GetFollowersOf(Guid userId)
         {
-            var result = await _mediator.Send(new GetFollowersQuery(userId));
+            var result = await _mediator.Send(new GetFollowersQuery(userId, CurrentUserId));
             return Ok(result);
         }
     }

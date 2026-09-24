@@ -119,6 +119,12 @@ namespace AZM.Infrastructure.Repositories
                 .Where(a => a.UserId == userId && a.Date >= since)
                 .ToListAsync();
         }
+        
+        public async Task<User?> GetByUsernameWithDetailsAsync(string username, CancellationToken ct = default)
+            => await _db.Users
+                .Include(u => u.Profile)
+                .Include(u => u.Sports)
+                .FirstOrDefaultAsync(u => u.UserName == username, ct);
 
     }
 }

@@ -43,6 +43,8 @@ namespace AZM.Application.Events.Handlers
                     {
                         Id = e.OrganizerId,
                         FullName = $"{e.Organizer.FirstName} {e.Organizer.LastName}".Trim(),
+                        Username = e.Organizer.UserName ?? string.Empty,
+                        AvatarUrl = e.Organizer.ProfilePhotoUrl
                     },
                     //Participants = participants.Select(p => new ParticipantDto
                     //{
@@ -57,15 +59,24 @@ namespace AZM.Application.Events.Handlers
                     {
                         Id = p.UserId,
                         FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
+                        Username = p.User.UserName ?? string.Empty,
                         AvatarUrl = p.User.ProfilePhotoUrl,
                         IsVerified = p.User.IsIdVerified && p.User.IsFaceVerified,
                         JoinedAt = p.JoinedAt,
                         Status = p.Status.ToString()
                     }).ToList(),
+                   
+                    Route = e.Route is not null ? new EventRouteDto(
+                            e.Route.StartLatitude, e.Route.StartLongitude, e.Route.StartAddress,
+                            e.Route.EndLatitude, e.Route.EndLongitude, e.Route.EndAddress,
+                            e.Route.DistanceMeters, e.Route.EstimatedDurationSeconds, e.Route.Polyline
+                             ) : null,
                     IsJoined = true,
                     Pace = e.Pace,
                     IsOrganizer = false,
-                });
+               
+                }
+                );
             }
 
             return Result<IEnumerable<EventFeedItemDto>>.Success(items);

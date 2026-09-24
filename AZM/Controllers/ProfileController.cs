@@ -54,10 +54,26 @@ namespace AZM.Api.Controllers
             return success ? Ok() : BadRequest(new { message = "No streak freezes available." });
         }
 
-        [HttpGet("achievements")]
-        public async Task<IActionResult> GetMyAchievements()
+        //[HttpGet("achievements")]
+        //public async Task<IActionResult> GetMyAchievements()
+        //{
+        //    var result = await _mediator.Send(new GetMyAchievementsQuery(CurrentUserId));
+        //    return Ok(result);
+        //}
+       
+
+        [HttpGet("{userId:guid}")]
+        public async Task<ActionResult<UserProfileDto>> GetUserProfile(Guid userId)
         {
-            var result = await _mediator.Send(new GetMyAchievementsQuery(CurrentUserId));
+            var result = await _mediator.Send(new GetUserProfileQuery(userId));
+            return Ok(result);
+        }
+
+        [HttpGet("username/{username}")]
+        [AllowAnonymous]
+        public async Task<ActionResult<UserProfileDto>> GetUserProfileByUsername(string username)
+        {
+            var result = await _mediator.Send(new GetUserProfileByUsernameQuery(username));
             return Ok(result);
         }
     }

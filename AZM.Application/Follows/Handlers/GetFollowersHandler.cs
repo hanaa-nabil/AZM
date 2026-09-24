@@ -14,20 +14,23 @@ namespace AZM.Application.Follows.Handlers
     {
         private readonly IFollowRepository _followRepository;
 
-        public GetFollowersHandler(IFollowRepository followRepository)
-        {
-            _followRepository = followRepository;
-        }
+        public GetFollowersHandler(IFollowRepository followRepository) => _followRepository = followRepository;
 
         public async Task<List<FollowUserDto>> Handle(GetFollowersQuery request, CancellationToken cancellationToken)
         {
             var followers = await _followRepository.GetFollowersAsync(request.UserId);
+
+            HashSet<Guid> viewerFollowingIds = request.ViewerId.HasValue
+                ? await _followRepository.GetFollowingIdsAsync(request.ViewerId.Value, followers.Select(u => u.Id))
+                : new HashSet<Guid>();
+
             return followers.Select(u => new FollowUserDto
             {
                 Id = u.Id,
                 FullName = u.FullName,
                 Username = u.UserName ?? string.Empty,
-                ProfilePhotoUrl = u.ProfilePhotoUrl
+                ProfilePhotoUrl = u.ProfilePhotoUrl,
+                IsFollowedByMe = viewerFollowingIds.Contains(u.Id)
             }).ToList();
         }
     }

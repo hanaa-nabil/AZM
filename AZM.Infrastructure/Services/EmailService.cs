@@ -3,6 +3,7 @@ using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
 using MimeKit;
+using System.Text.RegularExpressions;
 
 namespace AZM.Infrastructure.Services
 {
@@ -14,7 +15,8 @@ namespace AZM.Infrastructure.Services
         {
             _config = config;
         }
-        private async Task SendEmailAsync(string toEmail, string subject, string htmlBody)
+
+        private async Task SendEmailAsync(string toEmail, string subject, string htmlBody, string preheader = "")
         {
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress(
@@ -22,7 +24,19 @@ namespace AZM.Infrastructure.Services
                 _config["Email:SenderEmail"]));
             message.To.Add(MailboxAddress.Parse(toEmail));
             message.Subject = subject;
-            message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
+
+            // Plain-text fallback: strips HTML tags for clients that block/can't render
+            // HTML, and significantly improves spam-filter scoring (a HTML-only email
+            // with no text part is a common spam signal).
+            var plainText = Regex.Replace(htmlBody, "<.*?>", " ");
+            plainText = Regex.Replace(plainText, @"\s+", " ").Trim();
+
+            var bodyBuilder = new BodyBuilder
+            {
+                HtmlBody = htmlBody,
+                TextBody = plainText
+            };
+            message.Body = bodyBuilder.ToMessageBody();
 
             using var client = new SmtpClient();
             await client.ConnectAsync(
@@ -36,142 +50,146 @@ namespace AZM.Infrastructure.Services
             await client.DisconnectAsync(true);
         }
 
+        // Shared wrapper — header/footer are identical across all three emails,
+        // so this keeps the color/layout consistent in one place instead of
+        // three copies that can drift out of sync.
+        private static string Wrap(string preheader, string contentHtml) => $@"
+<!DOCTYPE html>
+<html lang='en' xmlns='http://www.w3.org/1999/xhtml' xmlns:v='urn:schemas-microsoft-com:vml' xmlns:o='urn:schemas-microsoft-com:office:office'>
+<head>
+<meta charset='utf-8'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge'>
+<meta name='color-scheme' content='dark'>
+<meta name='supported-color-schemes' content='dark'>
+<!--[if mso]>
+<noscript><xml><o:OfficeDocumentSettings><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml></noscript>
+<![endif]-->
+<style>
+  body, table, td {{ font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }}
+  @media only screen and (max-width: 600px) {{
+    .email-container {{ width: 100% !important; }}
+    .email-padding {{ padding-left: 20px !important; padding-right: 20px !important; }}
+    .otp-text {{ font-size: 30px !important; letter-spacing: 8px !important; }}
+  }}
+</style>
+</head>
+<body style='margin:0;padding:0;background:#080f18;'>
+<div style='display:none;max-height:0;overflow:hidden;mso-hide:all;'>{preheader}</div>
+<table width='100%' cellpadding='0' cellspacing='0' role='presentation' style='background:#080f18;'>
+  <tr><td align='center' style='padding:32px 16px;'>
+    <table class='email-container' width='560' cellpadding='0' cellspacing='0' role='presentation'
+           style='background:#0A1220;border-radius:10px;border:1px solid #1a2d3e;overflow:hidden;max-width:560px;width:100%;'>
+
+      <tr><td style='background:#0d1e2c;padding:20px 32px;border-bottom:1px solid #1a2d3e;'>
+        <span style='font-size:22px;font-weight:800;color:#00D4C8;letter-spacing:1px;'>AZM</span>
+      </td></tr>
+
+      <tr><td class='email-padding' style='padding:36px 32px;'>
+        {contentHtml}
+      </td></tr>
+
+      <tr><td style='background:#080f18;padding:16px 32px;border-top:1px solid #1a2d3e;text-align:center;'>
+        <p style='color:#3a5060;font-size:11px;margin:0;'>AZM &middot; The athlete&apos;s platform</p>
+        <p style='color:#2a3a48;font-size:10px;margin:8px 0 0;'>You're receiving this because this email was used to sign up for AZM.</p>
+      </td></tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>";
+
         public async Task SendOtpEmailAsync(string toEmail, string firstName, string otp)
         {
             var formattedOtp = string.Join(" ", otp.ToCharArray());
             var subject = "Your AZM verification code";
-            var body = $@"
-<!DOCTYPE html><html><body style='margin:0;padding:0;'>
-<table width='100%' cellpadding='0' cellspacing='0' 
-       style='background:#080f18;min-height:100%;'>
-  <tr><td align='center' style='padding:32px 16px;background:#080f18;'>
-<table width='560' cellpadding='0' cellspacing='0' style='background:#0A1220;border-radius:10px;border:1px solid #1a2d3e;overflow:hidden;'>
-
-  <tr><td style='background:#0d1e2c;padding:20px 32px;border-bottom:1px solid #1a2d3e;'>
-    <span style='font-size:22px;font-weight:800;color:#00D4C8;letter-spacing:1px;'>AZM</span>
-  </td></tr>
-
-  <tr><td style='padding:36px 32px;'>
+            var content = $@"
     <h1 style='color:#e2eaf2;font-size:22px;font-weight:700;margin:0 0 8px;'>Verify your email</h1>
     <p style='color:#637a90;font-size:14px;margin:0 0 28px;line-height:1.5;'>Hi {firstName}, use the code below to confirm your AZM account.</p>
 
-    <table width='100%' cellpadding='0' cellspacing='0' style='background:#0d1e2c;border:1px solid #1a3548;border-radius:10px;'>
+    <table width='100%' cellpadding='0' cellspacing='0' role='presentation' style='background:#0d1e2c;border:1px solid #1a3548;border-radius:10px;'>
       <tr><td style='padding:24px;text-align:center;'>
         <p style='color:#637a90;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 14px;'>Your verification code</p>
-        <p style='color:#00D4C8;font-size:38px;font-weight:800;letter-spacing:14px;font-family:Courier New,monospace;margin:0;padding-left:14px;'>{formattedOtp}</p>
+        <p class='otp-text' style='color:#00D4C8;font-size:38px;font-weight:800;letter-spacing:14px;font-family:Courier New,monospace;margin:0;padding-left:14px;'>{formattedOtp}</p>
         <p style='color:#4a6070;font-size:12px;margin:12px 0 0;'>Expires in 10 minutes</p>
       </td></tr>
     </table>
 
-    <table width='100%' cellpadding='0' cellspacing='0' style='margin:20px 0;'>
+    <table width='100%' cellpadding='0' cellspacing='0' role='presentation' style='margin:20px 0;'>
       <tr><td style='background:rgba(0,212,200,0.07);border-left:3px solid #00D4C8;border-radius:0 6px 6px 0;padding:12px 16px;'>
         <p style='color:#637a90;font-size:13px;margin:0;line-height:1.5;'>Enter this code in the AZM app to confirm your email and continue setting up your profile.</p>
       </td></tr>
     </table>
 
-    <p style='color:#3a5060;font-size:12px;text-align:center;margin:20px 0 0;'>Didn't request this? You can safely ignore this email.</p>
-  </td></tr>
+    <p style='color:#3a5060;font-size:12px;text-align:center;margin:20px 0 0;'>Didn't request this? You can safely ignore this email — no account will be created.</p>";
 
-  <tr><td style='background:#080f18;padding:16px 32px;border-top:1px solid #1a2d3e;text-align:center;'>
-    <p style='color:#3a5060;font-size:11px;margin:0;'>AZM &middot; The athlete&apos;s platform</p>
-  </td></tr>
-
-</table></td></tr></table>
-</body></html>";
-            await SendEmailAsync(toEmail, subject, body);
+            await SendEmailAsync(toEmail, subject, Wrap($"Your AZM verification code is {otp}", content), $"Your AZM verification code is {otp}");
         }
 
         public async Task SendWelcomeEmailAsync(string toEmail, string firstName)
         {
             var subject = "Welcome to AZM!";
-            var body = $@"
-<!DOCTYPE html><html><body style='margin:0;padding:0;'>
-<table width='100%' cellpadding='0' cellspacing='0' 
-       style='background:#080f18;min-height:100%;'>
-  <tr><td align='center' style='padding:32px 16px;background:#080f18;'>
-<table width='560' cellpadding='0' cellspacing='0' style='background:#0A1220;border-radius:10px;border:1px solid #1a2d3e;overflow:hidden;'>
-
-  <tr><td style='background:#0d1e2c;padding:20px 32px;border-bottom:1px solid #1a2d3e;'>
-    <span style='font-size:22px;font-weight:800;color:#00D4C8;letter-spacing:1px;'>AZM</span>
-  </td></tr>
-
-  <tr><td style='padding:36px 32px;'>
-    <table cellpadding='0' cellspacing='0' style='margin-bottom:8px;'><tr>
+            var appUrl = _config["Email:AppDeepLink"] ?? "https://azm.runasp.net"; // fallback if not configured
+            var content = $@"
+    <table cellpadding='0' cellspacing='0' role='presentation' style='margin-bottom:8px;'><tr>
       <td style='background:rgba(0,212,200,0.12);border:1px solid rgba(0,212,200,0.25);border-radius:20px;padding:5px 14px;font-size:12px;color:#00D4C8;font-weight:600;letter-spacing:0.5px;'>&#10022; Account verified</td>
     </tr></table>
 
     <h1 style='color:#e2eaf2;font-size:22px;font-weight:700;margin:12px 0 8px;'>Welcome to the squad, {firstName}!</h1>
     <p style='color:#637a90;font-size:14px;margin:0 0 28px;line-height:1.5;'>Your account is active. Start discovering events and athletes near you.</p>
 
-    <table width='100%' cellpadding='0' cellspacing='0'><tr>
-      <td width='33%' style='padding:4px;'><table width='100%' style='background:#0d1e2c;border:1px solid #1a3548;border-radius:8px;'><tr><td style='padding:14px 10px;text-align:center;'><div style='font-size:22px;margin-bottom:6px;'>🏃</div><div style='color:#637a90;font-size:11px;'>Find events</div></td></tr></table></td>
-      <td width='33%' style='padding:4px;'><table width='100%' style='background:#0d1e2c;border:1px solid #1a3548;border-radius:8px;'><tr><td style='padding:14px 10px;text-align:center;'><div style='font-size:22px;margin-bottom:6px;'>🤝</div><div style='color:#637a90;font-size:11px;'>Join teams</div></td></tr></table></td>
-      <td width='33%' style='padding:4px;'><table width='100%' style='background:#0d1e2c;border:1px solid #1a3548;border-radius:8px;'><tr><td style='padding:14px 10px;text-align:center;'><div style='font-size:22px;margin-bottom:6px;'>📍</div><div style='color:#637a90;font-size:11px;'>Near you</div></td></tr></table></td>
+    <table width='100%' cellpadding='0' cellspacing='0' role='presentation'><tr>
+      <td width='33%' style='padding:4px;'><table width='100%' role='presentation' style='background:#0d1e2c;border:1px solid #1a3548;border-radius:8px;'><tr><td style='padding:14px 10px;text-align:center;'><div style='font-size:22px;margin-bottom:6px;'>&#127939;</div><div style='color:#637a90;font-size:11px;'>Find events</div></td></tr></table></td>
+      <td width='33%' style='padding:4px;'><table width='100%' role='presentation' style='background:#0d1e2c;border:1px solid #1a3548;border-radius:8px;'><tr><td style='padding:14px 10px;text-align:center;'><div style='font-size:22px;margin-bottom:6px;'>&#129309;</div><div style='color:#637a90;font-size:11px;'>Join teams</div></td></tr></table></td>
+      <td width='33%' style='padding:4px;'><table width='100%' role='presentation' style='background:#0d1e2c;border:1px solid #1a3548;border-radius:8px;'><tr><td style='padding:14px 10px;text-align:center;'><div style='font-size:22px;margin-bottom:6px;'>&#128205;</div><div style='color:#637a90;font-size:11px;'>Near you</div></td></tr></table></td>
     </tr></table>
 
-    <table cellpadding='0' cellspacing='0' style='margin:28px auto 0;'><tr>
+    <!--[if mso]>
+    <v:roundrect xmlns:v='urn:schemas-microsoft-com:vml' xmlns:w='urn:schemas-microsoft-com:office:word' href='{appUrl}' style='height:48px;v-text-anchor:middle;width:220px;' arcsize='50%' fillcolor='#00D4C8' stroke='f'>
+    <center style='color:#0A1220;font-family:sans-serif;font-weight:bold;font-size:15px;'>Open AZM</center>
+    </v:roundrect>
+    <![endif]-->
+    <!--[if !mso]><!-->
+    <table cellpadding='0' cellspacing='0' role='presentation' style='margin:28px auto 0;'><tr>
       <td style='background:#00D4C8;border-radius:50px;padding:14px 36px;'>
-        <a href='#' style='color:#0A1220;font-weight:700;font-size:15px;text-decoration:none;'>Open AZM →</a>
+        <a href='{appUrl}' style='color:#0A1220;font-weight:700;font-size:15px;text-decoration:none;'>Open AZM &rarr;</a>
       </td>
     </tr></table>
-  </td></tr>
+    <!--<![endif]-->";
 
-  <tr><td style='background:#080f18;padding:16px 32px;border-top:1px solid #1a2d3e;text-align:center;'>
-    <p style='color:#3a5060;font-size:11px;margin:0;'>AZM &middot; The athlete&apos;s platform</p>
-  </td></tr>
-
-</table></td></tr></table>
-</body></html>";
-            await SendEmailAsync(toEmail, subject, body);
+            await SendEmailAsync(toEmail, subject, Wrap($"Welcome to AZM, {firstName}! Your account is verified and ready to go.", content), $"Welcome to AZM, {firstName}!");
         }
 
         public async Task SendPasswordResetOtpAsync(string toEmail, string firstName, string otp)
         {
             var formattedOtp = string.Join(" ", otp.ToCharArray());
             var subject = "Reset your AZM password";
-            var body = $@"
-<!DOCTYPE html><html><body style='margin:0;padding:0;'>
-<table width='100%' cellpadding='0' cellspacing='0' 
-       style='background:#080f18;min-height:100%;'>
-  <tr><td align='center' style='padding:32px 16px;background:#080f18;'>
-<table width='560' cellpadding='0' cellspacing='0' style='background:#0A1220;border-radius:10px;border:1px solid #1a2d3e;overflow:hidden;'>
-
-  <tr><td style='background:#0d1e2c;padding:20px 32px;border-bottom:1px solid #1a2d3e;'>
-    <span style='font-size:22px;font-weight:800;color:#00D4C8;letter-spacing:1px;'>AZM</span>
-  </td></tr>
-
-  <tr><td style='padding:36px 32px;'>
+            var content = $@"
     <h1 style='color:#e2eaf2;font-size:22px;font-weight:700;margin:0 0 8px;'>Reset your password</h1>
     <p style='color:#637a90;font-size:14px;margin:0 0 28px;line-height:1.5;'>Hi {firstName}, we received a request to reset your AZM password.</p>
 
-    <table width='100%' cellpadding='0' cellspacing='0' style='background:#0d1e2c;border:1px solid #1a3548;border-radius:10px;'>
+    <table width='100%' cellpadding='0' cellspacing='0' role='presentation' style='background:#0d1e2c;border:1px solid #1a3548;border-radius:10px;'>
       <tr><td style='padding:24px;text-align:center;'>
         <p style='color:#637a90;font-size:11px;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 14px;'>Password reset code</p>
-        <p style='color:#00D4C8;font-size:38px;font-weight:800;letter-spacing:14px;font-family:Courier New,monospace;margin:0;padding-left:14px;'>{formattedOtp}</p>
+        <p class='otp-text' style='color:#00D4C8;font-size:38px;font-weight:800;letter-spacing:14px;font-family:Courier New,monospace;margin:0;padding-left:14px;'>{formattedOtp}</p>
         <p style='color:#4a6070;font-size:12px;margin:12px 0 0;'>Expires in 10 minutes</p>
       </td></tr>
     </table>
 
-    <table width='100%' cellpadding='0' cellspacing='0' style='margin:20px 0;'>
+    <table width='100%' cellpadding='0' cellspacing='0' role='presentation' style='margin:20px 0;'>
       <tr><td style='background:rgba(0,212,200,0.07);border-left:3px solid #00D4C8;border-radius:0 6px 6px 0;padding:12px 16px;'>
         <p style='color:#637a90;font-size:13px;margin:0;line-height:1.5;'>Enter this code in the AZM app on the password reset screen.</p>
       </td></tr>
     </table>
 
-    <table width='100%' cellpadding='0' cellspacing='0' style='background:rgba(255,100,50,0.07);border:1px solid rgba(255,100,50,0.2);border-radius:8px;'>
+    <table width='100%' cellpadding='0' cellspacing='0' role='presentation' style='background:rgba(255,100,50,0.07);border:1px solid rgba(255,100,50,0.2);border-radius:8px;'>
       <tr><td style='padding:14px;'>
-        <p style='color:#8a6050;font-size:12px;margin:0;line-height:1.5;'>⚠️ Didn't request this? Your account may be at risk — consider changing your password immediately.</p>
+        <p style='color:#8a6050;font-size:12px;margin:0;line-height:1.5;'>&#9888;&#65039; Didn't request this? Your account may be at risk — consider changing your password immediately.</p>
       </td></tr>
-    </table>
-  </td></tr>
+    </table>";
 
-  <tr><td style='background:#080f18;padding:16px 32px;border-top:1px solid #1a2d3e;text-align:center;'>
-    <p style='color:#3a5060;font-size:11px;margin:0;'>AZM &middot; The athlete&apos;s platform</p>
-  </td></tr>
-
-</table></td></tr></table>
-</body></html>";
-            await SendEmailAsync(toEmail, subject, body);
+            await SendEmailAsync(toEmail, subject, Wrap($"Your AZM password reset code is {otp}", content), $"Your AZM password reset code is {otp}");
         }
     }
 }

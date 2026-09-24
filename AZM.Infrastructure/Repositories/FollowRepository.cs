@@ -84,5 +84,16 @@ namespace AZM.Infrastructure.Repositories
         {
             return await _context.Follows.CountAsync(f => f.FollowerId == userId);
         }
+
+     
+        public async Task<HashSet<Guid>> GetFollowingIdsAsync(Guid userId, IEnumerable<Guid> candidateIds)
+        {
+            var ids = candidateIds.ToList();
+            var following = await _context.Follows
+                .Where(f => f.FollowerId == userId && ids.Contains(f.FollowingId))
+                .Select(f => f.FollowingId)
+                .ToListAsync();
+            return following.ToHashSet();
+        }
     }
 }

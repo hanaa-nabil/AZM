@@ -12,7 +12,7 @@ namespace AZM.Domain.Interfaces
         Task ClearFcmTokenAsync(Guid userId, string fcmToken);
         Task<bool> UsernameExistsAsync(string username);
         Task RemoveUserSportsAsync(Guid userId);
-
+        Task<User?> GetByUsernameWithDetailsAsync(string username, CancellationToken ct = default);
         Task<User?> GetByIdWithDetailsAsync(Guid userId);
         Task UpdateAsync(User user);
         Task<bool> UpdateUsernameAsync(Guid userId, string newUsername);

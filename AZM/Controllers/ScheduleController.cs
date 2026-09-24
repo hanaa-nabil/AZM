@@ -42,21 +42,18 @@ namespace AZM.Api.Controllers
         /// <summary>
         /// "Hosted" tab — upcoming events the user is organizing.
         /// </summary>
+      
         [HttpGet("hosted")]
         public async Task<IActionResult> GetHosted()
         {
             var result = await _mediator.Send(new GetOrganizerEventsQuery(CurrentUserId, CurrentUserId));
             if (!result.IsSuccess) return BadRequest(result.Error);
 
-            var upcoming = result.Data!
-                .Where(e => e.EventDate >= DateTime.UtcNow && e.Status == "Upcoming")
-                .OrderBy(e => e.EventDate);
+            var all = result.Data!
+                .OrderByDescending(e => e.EventDate); 
 
-            return Ok(upcoming);
+            return Ok(all);
         }
-
-     
-
-      
     }
+
 }
