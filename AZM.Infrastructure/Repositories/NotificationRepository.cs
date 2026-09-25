@@ -24,14 +24,14 @@ namespace AZM.Infrastructure.Repositories
             await _context.SaveChangesAsync(ct);
         }
 
-        public Task<List<Notification>> GetForUserAsync(Guid userId, int page, int pageSize, CancellationToken ct = default)
-            => _context.Notifications
+        public async Task<List<Notification>> GetForUserAsync(Guid userId, int page, int pageSize, CancellationToken ct = default)
+            => await _context.Notifications
+                .Include(n => n.Actor)
                 .Where(n => n.RecipientId == userId)
                 .OrderByDescending(n => n.CreatedAt)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync(ct);
-
         public Task<int> GetUnreadCountAsync(Guid userId, CancellationToken ct = default)
             => _context.Notifications.CountAsync(n => n.RecipientId == userId && !n.IsRead, ct);
 

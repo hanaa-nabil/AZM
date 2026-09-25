@@ -36,12 +36,13 @@ namespace AZM.Application.Notifications.Handlers
             var name = organizer?.FullName ?? "Someone you follow";
 
             await _notificationService.SendBulkAsync(
-                followerIds,
-                NotificationType.FollowedUserPublishedEvent,
-                "New event",
-                $"{name} just published a new event.",
-                relatedEventId: notification.EventId,
-                ct: cancellationToken);
+                          followerIds,
+                          NotificationType.FollowedUserPublishedEvent,
+                         "New event",
+                         $"{name} just published a new event.",
+                         relatedEventId: notification.EventId,
+                         actorId: notification.OrganizerId,
+                         ct: cancellationToken);
         }
     }
 }

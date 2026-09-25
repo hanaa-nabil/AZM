@@ -16,11 +16,12 @@ namespace AZM.Infrastructure.Services
         }
 
         public async Task SendAsync(Guid recipientId, NotificationType type, string title, string body,
-            Guid? relatedEventId = null, CancellationToken ct = default)
+     Guid? relatedEventId = null, Guid? actorId = null, CancellationToken ct = default)
         {
             var notification = new Domain.Entities.Notification
             {
                 RecipientId = recipientId,
+                ActorId = actorId,
                 Type = type,
                 Title = title,
                 Body = body,
@@ -33,12 +34,13 @@ namespace AZM.Infrastructure.Services
         }
 
         public async Task SendBulkAsync(IEnumerable<Guid> recipientIds, NotificationType type, string title, string body,
-            Guid? relatedEventId = null, CancellationToken ct = default)
+            Guid? relatedEventId = null, Guid? actorId = null, CancellationToken ct = default)
         {
             var ids = recipientIds.ToList();
             var notifications = ids.Select(id => new Domain.Entities.Notification
             {
                 RecipientId = id,
+                ActorId = actorId,
                 Type = type,
                 Title = title,
                 Body = body,
@@ -60,7 +62,7 @@ namespace AZM.Infrastructure.Services
             var message = new Message
             {
                 Token = user.FcmToken,
-                Notification = new FirebaseAdmin.Messaging.Notification { Title = title, Body = body }
+                Notification = new Notification { Title = title, Body = body }
             };
 
             try

@@ -19,9 +19,23 @@ namespace AZM.Application.Notifications.Queries
         {
             var notifications = await _repo.GetForUserAsync(request.UserId, request.Page, request.PageSize, ct);
 
-            return notifications.Select(n => new NotificationDto(
-                n.Id, n.Type.ToString(), n.Title, n.Body, n.RelatedEventId, n.IsRead, n.CreatedAt
-            )).ToList();
+            return notifications.Select(n => new NotificationDto
+            {
+                Id = n.Id,
+                Type = n.Type.ToString(),
+                Title = n.Title,
+                Body = n.Body,
+                RelatedEventId = n.RelatedEventId,
+                IsRead = n.IsRead,
+                CreatedAt = n.CreatedAt,
+                Actor = n.Actor is null ? null : new NotificationActorDto
+                {
+                    Id = n.Actor.Id,
+                    FullName = n.Actor.FullName,
+                    Username = n.Actor.UserName ?? string.Empty,
+                    ProfilePhotoUrl = n.Actor.ProfilePhotoUrl
+                }
+            }).ToList();
         }
     }
 }

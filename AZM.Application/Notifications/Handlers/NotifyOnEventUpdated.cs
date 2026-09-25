@@ -20,6 +20,6 @@ namespace AZM.Application.Notifications.Handler
                 "Event updated",
                 "An event you joined has changed — check the details",
                 e.EventId,
-                cancellationToken);
+                ct: cancellationToken);
     }
 }

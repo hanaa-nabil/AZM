@@ -89,6 +89,7 @@ namespace AZM.Infrastructure.DependencyInjection
             services.AddScoped<IFollowRepository, FollowRepository>();
 
             services.AddScoped<AccountPurgeJob>();
+            services.AddHostedService<EventCompletionBackgroundService>();
             return services;
         }
 

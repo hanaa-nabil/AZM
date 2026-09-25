@@ -19,6 +19,6 @@ namespace AZM.Application.Notifications.Handler
                 "Event published",
                 "Your event is now live",
                 e.EventId,
-                cancellationToken);
+                ct: cancellationToken);
     }
 }

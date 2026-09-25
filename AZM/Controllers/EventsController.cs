@@ -173,25 +173,16 @@ namespace AZM.Api.Controllers
                 IsPublic: request.IsPublic,
                 Route: routeDto);
                 var result = await _mediator.Send(cmd);
-            return result.IsSuccess ? NoContent() : BadRequest(result.Error);
+            return result.IsSuccess ? NoContent() : BadRequest(new { message = result.Error });
         }
 
-        // ── Publish / Cancel ──────────────────────────────────────────────────────
-
-        //[HttpPost("{id:guid}/publish")]
-        //[Authorize]
-        //public async Task<IActionResult> Publish(Guid id)
-        //{
-        //    var result = await _mediator.Send(new PublishEventCommand(id, CurrentUserId!.Value));
-        //    return result.IsSuccess ? NoContent() : BadRequest(result.Error);
-        //}
-
+        
         [HttpPost("{id:guid}/cancel")]
         [Authorize]
         public async Task<IActionResult> Cancel(Guid id)
         {
             var result = await _mediator.Send(new CancelEventCommand(id, CurrentUserId!.Value));
-            return result.IsSuccess ? NoContent() : BadRequest(result.Error);
+            return result.IsSuccess ? NoContent() : BadRequest(new { message = result.Error });
         }
 
         // ── Join / Leave ──────────────────────────────────────────────────────────
@@ -204,7 +195,8 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> Join(Guid id)
         {
             var result = await _mediator.Send(new JoinEventCommand(id, CurrentUserId!.Value));
-            return result.IsSuccess ? Ok(new { message = "Joined successfully." }) : BadRequest(result.Error);
+            return result.IsSuccess ? Ok(new { message = "Joined successfully." }) : BadRequest(new { message = result.Error });
+
         }
 
         /// <summary>
@@ -215,7 +207,8 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> Leave(Guid id)
         {
             var result = await _mediator.Send(new LeaveEventCommand(id, CurrentUserId!.Value));
-            return result.IsSuccess ? Ok(new { message = "Left successfully." }) : BadRequest(result.Error);
+
+            return result.IsSuccess ? Ok(new { message = "Left successfully." }) : BadRequest(new { message = result.Error });
         }
 
         [HttpGet("{userId:guid}/events/counts")]
@@ -229,7 +222,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> Republish(Guid id)
         {
             var result = await _mediator.Send(new RepublishEventCommand(id, CurrentUserId!.Value));
-            return result.IsSuccess ? NoContent() : BadRequest(result.Error);
+            return result.IsSuccess ? NoContent() : BadRequest(new { message = result.Error });
         }
     }
 

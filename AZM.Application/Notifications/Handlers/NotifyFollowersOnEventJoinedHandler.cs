@@ -41,10 +41,11 @@ namespace AZM.Application.Notifications.Handlers
             await _notificationService.SendBulkAsync(
                 followerIds,
                 NotificationType.FollowedUserJoinedEvent,
-                "Friend joined an event",
-                $"{name} just joined an event.",
-                relatedEventId: notification.EventId,
-                ct: cancellationToken);
+               "Friend joined an event",
+               $"{name} just joined an event.",
+               relatedEventId: notification.EventId,
+               actorId: notification.ParticipantId,
+                      ct: cancellationToken);
         }
     }
 }

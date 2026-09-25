@@ -2,7 +2,6 @@
 using AZM.Application.Events.Queries;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -23,14 +22,11 @@ namespace AZM.Api.Controllers
                 ? id
                 : throw new UnauthorizedAccessException("User id claim missing.");
 
-        /// <summary>
-        /// "Attending" tab — upcoming events the user has joined.
-        /// </summary>
         [HttpGet("attending")]
         public async Task<IActionResult> GetAttending()
         {
             var result = await _mediator.Send(new GetMyJoinedEventsQuery(CurrentUserId));
-            if (!result.IsSuccess) return BadRequest(result.Error);
+            if (!result.IsSuccess) return BadRequest(new { message = result.Error });
 
             var upcoming = result.Data!
                 .Where(e => e.EventDate >= DateTime.UtcNow && e.Status == "Upcoming")
@@ -39,21 +35,16 @@ namespace AZM.Api.Controllers
             return Ok(upcoming);
         }
 
-        /// <summary>
-        /// "Hosted" tab — upcoming events the user is organizing.
-        /// </summary>
-      
         [HttpGet("hosted")]
         public async Task<IActionResult> GetHosted()
         {
             var result = await _mediator.Send(new GetOrganizerEventsQuery(CurrentUserId, CurrentUserId));
-            if (!result.IsSuccess) return BadRequest(result.Error);
+            if (!result.IsSuccess) return BadRequest(new { message = result.Error });
 
             var all = result.Data!
-                .OrderByDescending(e => e.EventDate); 
+                .OrderByDescending(e => e.EventDate);
 
             return Ok(all);
         }
     }
-
 }

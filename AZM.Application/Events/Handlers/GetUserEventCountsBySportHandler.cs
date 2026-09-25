@@ -19,12 +19,14 @@ namespace AZM.Application.Events.Handlers
         public async Task<List<SportEventCountDto>> Handle(GetUserEventCountsBySportQuery request, CancellationToken ct)
         {
             var joined = await _eventRepo.GetUserJoinedEventsAsync(request.UserId, ct);
-            var organized = await _eventRepo.GetByOrganizerAsync(request.UserId, ct);
 
-            var combined = joined.Concat(organized)
-                .DistinctBy(e => e.Id);
+            // Only count events where this user's own participation is marked completed
+            var completed = joined.Where(e =>
+                e.Participants.Any(p =>
+                    p.UserId == request.UserId &&
+                    p.HasCompletedActivity));
 
-            return combined
+            return completed
                 .GroupBy(e => e.SportType)
                 .Select(g => new SportEventCountDto
                 {

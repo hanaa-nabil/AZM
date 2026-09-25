@@ -15,7 +15,6 @@ namespace AZM.Api.Controllers
     public class ProfileController : ControllerBase
     {
         private readonly IMediator _mediator;
-
         public ProfileController(IMediator mediator)
         {
             _mediator = mediator;
@@ -33,7 +32,7 @@ namespace AZM.Api.Controllers
         }
 
         [HttpPut("me")]
-        [RequestSizeLimit(5_000_000)] 
+        [RequestSizeLimit(5_000_000)]
         public async Task<ActionResult<UserProfileDto>> UpdateProfile([FromForm] UpdateProfileRequestDto request)
         {
             var result = await _mediator.Send(new UpdateProfileCommand(CurrentUserId, request));
@@ -54,24 +53,24 @@ namespace AZM.Api.Controllers
             return success ? Ok() : BadRequest(new { message = "No streak freezes available." });
         }
 
-        //[HttpGet("achievements")]
-        //public async Task<IActionResult> GetMyAchievements()
-        //{
-        //    var result = await _mediator.Send(new GetMyAchievementsQuery(CurrentUserId));
-        //    return Ok(result);
-        //}
-
-        [HttpPost("activity")]
-        public async Task<IActionResult> UpdateActivityStats([FromBody] UpdateActivityStatsRequest request)
+        [HttpPost("{id:guid}/finish-event")]
+        public async Task<IActionResult> CompleteActivity(Guid id, [FromBody] CompleteEventActivityRequest request)
         {
-            var result = await _mediator.Send(new UpdateActivityStatsCommand(CurrentUserId, request.Steps, request.DistanceMeters));
-            return result.IsSuccess ? Ok(new { message = "Activity stats updated." }) : BadRequest(result.Error);
+            var result = await _mediator.Send(new CompleteEventActivityCommand(
+                CurrentUserId, id, request.Steps, request.DistanceMeters));
+
+            return result.IsSuccess
+                ? Ok(new { message = "Event completed." })
+                : BadRequest(new { message = result.Error });
         }
+
         [HttpGet("{userId:guid}/events")]
         public async Task<IActionResult> GetUserEvents(Guid userId)
         {
             var result = await _mediator.Send(new GetUserEventsQuery(userId));
-            return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+            return result.IsSuccess
+                ? Ok(result.Data)
+                : BadRequest(new { message = result.Error });
         }
 
         [HttpGet("{userId:guid}")]
@@ -89,6 +88,5 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(new GetUserProfileByUsernameQuery(username, viewerId));
             return Ok(result);
         }
-    
     }
 }

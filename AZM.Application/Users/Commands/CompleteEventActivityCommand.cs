@@ -8,5 +8,10 @@ using System.Threading.Tasks;
 
 namespace AZM.Application.Users.Commands
 {
-    public record UpdateActivityStatsCommand(Guid UserId, int Steps, double DistanceMeters) : IRequest<Result<bool>>;
+    public record CompleteEventActivityCommand(
+    Guid UserId,
+    Guid EventId,
+    int Steps,
+    double DistanceMeters
+) : IRequest<Result<bool>>;
 }

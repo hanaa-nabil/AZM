@@ -19,6 +19,6 @@ namespace AZM.Application.Notifications.Handler
                 "Removed from event",
                 "You were removed from an event",
                 e.EventId,
-                cancellationToken);
+                ct: cancellationToken);
     }
 }

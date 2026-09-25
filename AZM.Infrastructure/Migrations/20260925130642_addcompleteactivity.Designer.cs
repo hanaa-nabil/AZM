@@ -4,6 +4,7 @@ using AZM.Infrastructure.DbContext;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AZM.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260925130642_addcompleteactivity")]
+    partial class addcompleteactivity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -278,9 +281,6 @@ namespace AZM.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<Guid?>("ActorId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Body")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -305,8 +305,6 @@ namespace AZM.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ActorId");
 
                     b.HasIndex("RelatedEventId");
 
@@ -801,10 +799,6 @@ namespace AZM.Infrastructure.Migrations
 
             modelBuilder.Entity("AZM.Domain.Entities.Notification", b =>
                 {
-                    b.HasOne("AZM.Domain.Entities.User", "Actor")
-                        .WithMany()
-                        .HasForeignKey("ActorId");
-
                     b.HasOne("AZM.Domain.Entities.User", "Recipient")
                         .WithMany()
                         .HasForeignKey("RecipientId")
@@ -814,8 +808,6 @@ namespace AZM.Infrastructure.Migrations
                     b.HasOne("AZM.Domain.Entities.Event", "RelatedEvent")
                         .WithMany()
                         .HasForeignKey("RelatedEventId");
-
-                    b.Navigation("Actor");
 
                     b.Navigation("Recipient");
 

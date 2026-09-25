@@ -21,12 +21,13 @@ namespace AZM.Application.Notifications.Handler
             var participant = await _userRepository.GetByIdAsync(e.ParticipantId.ToString());
 
             await _notifications.SendAsync(
-                e.OrganizerId,
-                NotificationType.ParticipantJoined,
-                "New participant",
-                $"{participant?.FullName ?? "Someone"} joined your event.",
-                e.EventId,
-                cancellationToken);
+               e.OrganizerId,
+               NotificationType.ParticipantJoined,
+               "New participant",
+               $"{participant?.FullName ?? "Someone"} joined your event.",
+               e.EventId,
+               actorId: e.ParticipantId,
+               cancellationToken);
         }
     }
 }

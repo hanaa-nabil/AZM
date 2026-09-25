@@ -48,8 +48,8 @@ namespace AZM.Application.Follows.Handlers
                 NotificationType.NewFollower,
                 "New follower",
                 $"{follower?.FullName ?? "Someone"} started following you.",
+                actorId: request.FollowerId,
                 ct: cancellationToken);
-
             return Result.Success();
         }
     }

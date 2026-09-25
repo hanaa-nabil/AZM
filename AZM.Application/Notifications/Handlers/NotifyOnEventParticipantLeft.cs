@@ -26,6 +26,7 @@ namespace AZM.Application.Notifications.Handler
                 "Participant left",
                 $"{participant?.FullName ?? "Someone"} left your event.",
                 e.EventId,
+                actorId: e.ParticipantId,
                 cancellationToken);
         }
     }

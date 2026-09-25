@@ -1,7 +1,6 @@
 ﻿using AZM.Application.Follows.Commands;
 using AZM.Application.Follows.Queries;
 using MediatR;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -28,23 +27,25 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(new FollowUserCommand(CurrentUserId, userId));
             return result.IsSuccess
                 ? Ok(new { message = "Followed successfully." })
-                : StatusCode(result.StatusCode, new { error = result.Error });
+                : StatusCode(result.StatusCode, new { message = result.Error });
         }
+
         [HttpPost("username/{username}")]
         public async Task<IActionResult> FollowByUsername(string username)
         {
             var result = await _mediator.Send(new FollowUserByUsernameCommand(CurrentUserId, username));
             return result.IsSuccess
                 ? Ok(new { message = "Followed successfully." })
-                : StatusCode(result.StatusCode, new { error = result.Error });
+                : StatusCode(result.StatusCode, new { message = result.Error });
         }
+
         [HttpDelete("{userId:guid}")]
         public async Task<IActionResult> Unfollow(Guid userId)
         {
             var result = await _mediator.Send(new UnfollowUserCommand(CurrentUserId, userId));
             return result.IsSuccess
                 ? Ok(new { message = "Unfollowed successfully." })
-                : StatusCode(result.StatusCode, new { error = result.Error });
+                : StatusCode(result.StatusCode, new { message = result.Error });
         }
 
         [HttpGet("followers")]

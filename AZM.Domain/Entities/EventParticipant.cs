@@ -12,6 +12,8 @@ namespace AZM.Domain.Entities
         public ParticipantStatus Status { get; private set; }
         public DateTime JoinedAt { get; private set; }
         public DateTime? LeftAt { get; private set; }
+        public bool HasCompletedActivity { get; private set; }   
+        public DateTime? CompletedAt { get; private set; }      
 
         private EventParticipant() { }
 
@@ -37,6 +39,15 @@ namespace AZM.Domain.Entities
         {
             Status = ParticipantStatus.Joined;
             LeftAt = null;
+        }
+
+        public void MarkActivityCompleted()
+        {
+            if (HasCompletedActivity)
+                throw new InvalidOperationException("Activity already completed for this event.");
+
+            HasCompletedActivity = true;
+            CompletedAt = DateTime.UtcNow;
         }
     }
 }

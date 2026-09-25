@@ -17,7 +17,8 @@ namespace AZM.Domain.Entities
         public Guid? RelatedEventId { get; set; }
         public bool IsRead { get; set; }
         public DateTime CreatedAt { get; set; }
-
+        public Guid? ActorId { get; set; }
+        public User? Actor { get; set; }
         public User Recipient { get; set; } = default!;
         public Event? RelatedEvent { get; set; }
     }
