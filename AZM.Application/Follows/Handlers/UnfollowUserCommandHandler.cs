@@ -21,6 +21,10 @@ namespace AZM.Application.Follows.Handlers
 
         public async Task<Result> Handle(UnfollowUserCommand request, CancellationToken cancellationToken)
         {
+            var isFollowing = await _followRepository.IsFollowingAsync(request.FollowerId, request.FollowingId);
+            if (!isFollowing)
+                return Result.Failure("You're not following this user.", 404);
+
             await _followRepository.UnfollowAsync(request.FollowerId, request.FollowingId);
             return Result.Success();
         }

@@ -12,9 +12,11 @@ namespace AZM.Application.DTOs.Notification
         public string Type { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Body { get; set; } = string.Empty;
-        public Guid? RelatedEventId { get; set; }
         public bool IsRead { get; set; }
         public DateTime CreatedAt { get; set; }
-        public NotificationActorDto? Actor { get; set; }
+
+        public NotificationCategory Category { get; set; }
+        public NotificationActorDto? Actor { get; set; }        // present only when Category == User (or Event, if an actor also exists)
+        public Guid? RelatedEventId { get; set; }                // present only when Category == Event
     }
 }

@@ -1,11 +1,6 @@
 ﻿using AZM.Application.DTOs.Notification;
 using AZM.Domain.Interfaces;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AZM.Application.Notifications.Queries
 {
@@ -25,9 +20,18 @@ namespace AZM.Application.Notifications.Queries
                 Type = n.Type.ToString(),
                 Title = n.Title,
                 Body = n.Body,
-                RelatedEventId = n.RelatedEventId,
                 IsRead = n.IsRead,
                 CreatedAt = n.CreatedAt,
+
+                // Event takes priority when a notification has both (e.g. "X joined your event" —
+                // has an Actor AND a RelatedEventId; the primary navigation target is the event).
+                Category = n.RelatedEventId.HasValue
+                    ? NotificationCategory.Event
+                    : n.Actor is not null
+                        ? NotificationCategory.User
+                        : NotificationCategory.General,
+
+                RelatedEventId = n.RelatedEventId,
                 Actor = n.Actor is null ? null : new NotificationActorDto
                 {
                     Id = n.Actor.Id,

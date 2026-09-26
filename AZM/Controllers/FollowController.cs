@@ -48,6 +48,15 @@ namespace AZM.Api.Controllers
                 : StatusCode(result.StatusCode, new { message = result.Error });
         }
 
+        [HttpDelete("username/{username}")]
+        public async Task<IActionResult> UnfollowByUsername(string username)
+        {
+            var result = await _mediator.Send(new UnfollowUserByUsernameCommand(CurrentUserId, username));
+            return result.IsSuccess
+                ? Ok(new { message = "Unfollowed successfully." })
+                : StatusCode(result.StatusCode, new { message = result.Error });
+        }
+
         [HttpGet("followers")]
         public async Task<IActionResult> GetMyFollowers()
         {
@@ -66,6 +75,13 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> GetFollowersOf(Guid userId)
         {
             var result = await _mediator.Send(new GetFollowersQuery(userId, CurrentUserId));
+            return Ok(result);
+        }
+
+        [HttpGet("following/{userId:guid}")]
+        public async Task<IActionResult> GetFollowingOf(Guid userId)
+        {
+            var result = await _mediator.Send(new GetFollowingQuery(userId, CurrentUserId));
             return Ok(result);
         }
     }
