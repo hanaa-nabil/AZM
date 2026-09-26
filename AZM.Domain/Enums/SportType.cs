@@ -13,6 +13,10 @@ namespace AZM.Domain.Enums
         Skating = 2,
         Swimming = 3,
         Hiking = 4,
+        Yoga = 5,
+        GYM = 6,
+        Padel = 7,
+        Football = 8,
         Other = 5
     }
 }
