@@ -60,7 +60,7 @@ namespace AZM.Application.Events.Handlers
                 Description = e.Description,
                 SportType = e.SportType.ToString(),
                 DifficultyLevel = e.DifficultyLevel.ToString(),
-                Status = e.Status.ToString(),
+                Status = e.DisplayStatus.ToString(),
                 LocationName = e.LocationName,
                 Latitude = e.Latitude,
                 Longitude = e.Longitude,
@@ -85,6 +85,7 @@ namespace AZM.Application.Events.Handlers
                 {
                     Id = p.UserId,
                     FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
+                    Username = p.User.UserName,
                     AvatarUrl = p.User.ProfilePhotoUrl,
                     IsVerified = p.User.IsIdVerified && p.User.IsFaceVerified,
                     JoinedAt = p.JoinedAt,

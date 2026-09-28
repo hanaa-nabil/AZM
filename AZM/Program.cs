@@ -2,6 +2,8 @@ using AZM.Api.Middleware;
 using AZM.Application.Auth.Handlers;
 using AZM.Infrastructure.BackgroundJobs;
 using AZM.Infrastructure.DependencyInjection;
+using FirebaseAdmin;
+using Google.Apis.Auth.OAuth2;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +22,16 @@ namespace AZM.Api
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            if (FirebaseApp.DefaultInstance is null)
+            {
+                var credPath = Path.Combine(AppContext.BaseDirectory,
+                    builder.Configuration["Firebase:CredentialsPath"]!);
+
+                FirebaseApp.Create(new AppOptions
+                {
+                    Credential = GoogleCredential.FromFile(credPath)
+                });
+            }
             // Infrastructure
             builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -188,13 +200,11 @@ namespace AZM.Api
                 "event-reminders",
                 job => job.RunAsync(),
                 Cron.Minutely);
-           
 
             RecurringJob.AddOrUpdate<EventStatusUpdateJob>(
-                "event-status-update",
-                job => job.RunAsync(),
-                Cron.Minutely);
-
+               "event-status-update",
+               job => job.RunAsync(),
+                "*/5 * * * *");   
 
 
             RecurringJob.AddOrUpdate<AccountPurgeJob>(

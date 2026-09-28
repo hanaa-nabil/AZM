@@ -34,5 +34,6 @@ namespace AZM.Domain.Interfaces
         Task<List<Event>> GetEventsToStartAsync(DateTime asOfUtc, CancellationToken ct);
         Task<List<Event>> GetEventsToCompleteAsync(DateTime cutoffUtc, CancellationToken ct);
         Task DeleteByOrganizerAsync(Guid organizerId, CancellationToken ct = default);
+        Task<IEnumerable<Event>> GetEventsWithPendingRemindersAsync(TimeSpan window, CancellationToken ct = default);
     }
 }

@@ -20,6 +20,8 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.16" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="9.0.16" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
+	 <None Include="firebase-service-account.json" CopyToOutputDirectory="PreserveNewest" />
+	 
   </ItemGroup>
 
   <ItemGroup>

@@ -383,3 +383,8 @@ secrets.json
 
 # Docker secrets
 docker-compose.override.yml
+
+
+# Firebase service account keys — NEVER COMMIT
+firebase-service-account.json
+*firebase-adminsdk*.json

@@ -91,6 +91,10 @@ namespace AZM.Infrastructure.DbContext
                 .Property(e => e.IsPublic)
                 .HasDefaultValue(true);
 
+            builder.Entity<Event>()
+              .HasIndex(e => new { e.Status, e.EventDate })
+              .HasDatabaseName("IX_Events_Status_EventDate");
+
 
 
             // User <-> UserSport (1-to-many)

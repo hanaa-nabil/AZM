@@ -1,41 +1,79 @@
 using AZM.Domain.Interfaces;
-using Google.Apis.Auth;
-using Microsoft.Extensions.Configuration;
+using FirebaseAdmin;
+using FirebaseAdmin.Auth;
+using Google.Apis.Auth.OAuth2;
+using Microsoft.Extensions.Logging;
 
 namespace AZM.Infrastructure.Services
 {
     public class GoogleAuthService : ISocialAuthService
     {
-        private readonly string _clientId;
+        private readonly ILogger<GoogleAuthService> _logger;
 
-        public GoogleAuthService(IConfiguration configuration)
+        public GoogleAuthService(ILogger<GoogleAuthService> logger)
         {
-            _clientId = configuration["Google:ClientId"]
-                ?? throw new InvalidOperationException("Google ClientId is not configured.");
+            _logger = logger;
+
+            if (FirebaseApp.DefaultInstance is null)
+            {
+                _logger.LogWarning("FirebaseApp.DefaultInstance was null — attempting to initialize via Application Default Credentials.");
+                try
+                {
+                    FirebaseApp.Create(new AppOptions
+                    {
+                        Credential = GoogleCredential.GetApplicationDefault()
+                    });
+                    _logger.LogInformation("FirebaseApp initialized successfully via ADC.");
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Failed to initialize FirebaseApp via ADC. Google/Firebase sign-in will not work until this is resolved.");
+                }
+            }
         }
 
         public async Task<SocialUserInfo?> VerifyGoogleTokenAsync(string idToken)
         {
+            if (string.IsNullOrWhiteSpace(idToken))
+                return null;
+
+            if (FirebaseApp.DefaultInstance is null)
+            {
+                _logger.LogError("Cannot verify Google token — FirebaseApp is not initialized.");
+                return null;
+            }
+
             try
             {
-                var settings = new GoogleJsonWebSignature.ValidationSettings
+                var decoded = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(idToken);
+                var claims = decoded.Claims;
+
+                var email = claims.TryGetValue("email", out var e) ? e?.ToString() : null;
+                var name = claims.TryGetValue("name", out var n) ? n?.ToString() : null;
+
+                if (string.IsNullOrWhiteSpace(email))
                 {
-                    Audience = new[] { _clientId }
-                };
+                    _logger.LogWarning("Firebase token has no email claim. Uid: {Uid}", decoded.Uid);
+                    return null;
+                }
 
-                var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
-
+                var parts = (name ?? "").Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
                 return new SocialUserInfo
                 {
-                    SocialId = payload.Subject,
-                    Email = payload.Email,
-                    FirstName = payload.GivenName ?? string.Empty,
-                    LastName = payload.FamilyName ?? string.Empty
+                    SocialId = decoded.Uid,
+                    Email = email,
+                    FirstName = parts.Length > 0 ? parts[0] : "",
+                    LastName = parts.Length > 1 ? parts[1] : ""
                 };
             }
-            catch
+            catch (FirebaseAuthException ex)
             {
-                // Token is invalid, expired, or tampered with
+                _logger.LogWarning(ex, "Firebase token validation failed: {ErrorCode} — {Message}", ex.AuthErrorCode, ex.Message);
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Unexpected error verifying Firebase id token via FirebaseAdmin.Auth.");
                 return null;
             }
         }

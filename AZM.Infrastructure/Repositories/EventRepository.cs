@@ -163,6 +163,23 @@ namespace AZM.Infrastructure.Repositories
                 .OrderBy(e => e.EventDate)
                 .ToListAsync(ct);
         }
+        public async Task<IEnumerable<Event>> GetEventsWithPendingRemindersAsync(TimeSpan window, CancellationToken ct = default)
+        {
+            var now = DateTime.UtcNow;
+            var cutoff = now.Add(window);
+
+            return await _db.Events
+                .Include(e => e.Participants.Where(p =>
+                    p.Status == ParticipantStatus.Joined && p.ReminderSentAt == null))
+                .Where(e =>
+                    e.Status == EventStatus.Upcoming &&
+                    e.EventDate > now &&
+                    e.EventDate <= cutoff &&
+                    e.Participants.Any(p =>
+                        p.Status == ParticipantStatus.Joined && p.ReminderSentAt == null))
+                .OrderBy(e => e.EventDate)
+                .ToListAsync(ct);
+        }
 
         // ── CRUD ──────────────────────────────────────────────────────────────────
 

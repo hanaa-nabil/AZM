@@ -18,22 +18,30 @@ namespace AZM.Infrastructure.BackgroundJobs
 
         public async Task RunAsync()
         {
-            var events = await _eventRepo.GetStartingWithinAsync(TimeSpan.FromHours(1));
+            var events = await _eventRepo.GetEventsWithPendingRemindersAsync(TimeSpan.FromHours(1));
 
-            foreach (var ev in events.Where(e => e.ReminderSentAt == null))
+            foreach (var ev in events)
             {
-                var participantIds = ev.Participants
-                    .Where(p => p.Status == ParticipantStatus.Joined)
-                    .Select(p => p.UserId.ToString());
+                // The repository already filtered to joined participants with no reminder sent
+                var pending = ev.Participants.ToList();
+                if (pending.Count == 0) continue;
 
-                await _notifications.SendToGroupAsync(
-                    participantIds,
+                var minutesLeft = Math.Max(1, (int)Math.Ceiling((ev.EventDate - DateTime.UtcNow).TotalMinutes));
+
+                await _notifications.SendBulkAsync(
+                    pending.Select(p => p.UserId),
+                    NotificationType.EventStartingSoon,
                     "Event starting soon!",
-                    $"{ev.Title} starts in 1 hour. Get ready!");
+                    $"{ev.Title} starts in {minutesLeft} minutes. Get ready!",
+                    relatedEventId: ev.Id,
+                    actorId: ev.OrganizerId);
 
-                await _eventRepo.MarkReminderSentAsync(ev.Id);
+                foreach (var p in pending)
+                {
+                    p.MarkReminderSent();
+                    await _eventRepo.UpdateParticipantAsync(p);
+                }
             }
         }
     }
 }
-

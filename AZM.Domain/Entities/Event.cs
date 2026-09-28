@@ -105,5 +105,13 @@ namespace AZM.Domain.Entities
         public void Publish() => Status = EventStatus.Upcoming;
         public void Start() => Status = EventStatus.Ongoing;
         public void Complete() => Status = EventStatus.Completed;
+        // Event.cs
+       
+
+        public EventStatus DisplayStatus =>
+                Status != EventStatus.Upcoming ? Status
+                : EventDate <= DateTime.UtcNow ? EventStatus.Ongoing
+                : EventDate <= DateTime.UtcNow.AddHours(1) ? EventStatus.Soon
+                : Status;
     }
 }

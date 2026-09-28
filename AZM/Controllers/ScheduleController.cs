@@ -29,22 +29,27 @@ namespace AZM.Api.Controllers
             if (!result.IsSuccess) return BadRequest(new { message = result.Error });
 
             var upcoming = result.Data!
-                .Where(e => e.EventDate >= DateTime.UtcNow && e.Status == "Upcoming")
+                .Where(e => e.EventDate >= DateTime.UtcNow && (e.Status == "Upcoming" || e.Status == "Soon"))
                 .OrderBy(e => e.EventDate);
-
+            
             return Ok(upcoming);
         }
-
-        [HttpGet("hosted")]
-        public async Task<IActionResult> GetHosted()
+        /// <summary>
+        /// "Hosting" tab: events the user organizes that are today or in the future.
+        /// </summary>
+        [HttpGet("hosting")]
+        public async Task<IActionResult> GetHosting()
         {
             var result = await _mediator.Send(new GetOrganizerEventsQuery(CurrentUserId, CurrentUserId));
             if (!result.IsSuccess) return BadRequest(new { message = result.Error });
 
-            var all = result.Data!
-                .OrderByDescending(e => e.EventDate);
+            var startOfToday = DateTime.UtcNow.Date;
 
-            return Ok(all);
+            var upcoming = result.Data!
+                .Where(e => e.EventDate >= startOfToday && e.Status != "Cancelled")
+                .OrderBy(e => e.EventDate);
+
+            return Ok(upcoming);
         }
     }
 }

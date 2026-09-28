@@ -13,8 +13,10 @@ namespace AZM.Domain.Entities
         public DateTime JoinedAt { get; private set; }
         public DateTime? LeftAt { get; private set; }
         public bool HasCompletedActivity { get; private set; }   
-        public DateTime? CompletedAt { get; private set; }      
+        public DateTime? CompletedAt { get; private set; }
+        public DateTime? ReminderSentAt { get; private set; }
 
+        public void MarkReminderSent() => ReminderSentAt = DateTime.UtcNow;
         private EventParticipant() { }
 
         public static EventParticipant Create(Guid eventId, Guid userId)
@@ -35,12 +37,13 @@ namespace AZM.Domain.Entities
             LeftAt = DateTime.UtcNow;
         }
 
+       
         public void Rejoin()
         {
             Status = ParticipantStatus.Joined;
             LeftAt = null;
+            ReminderSentAt = null;   // let the reminder job notify them again
         }
-
         public void MarkActivityCompleted()
         {
             if (HasCompletedActivity)
