@@ -10,6 +10,7 @@ namespace AZM.Domain.Interfaces
 
     public interface ISocialAuthService
     {
-        Task<SocialUserInfo?> VerifyGoogleTokenAsync(string idToken);
+      //  Task<SocialUserInfo?> VerifyGoogleTokenAsync(string idToken);
+        Task<(SocialUserInfo? User, string? Error)> VerifyGoogleTokenAsync(string idToken);
     }
 }

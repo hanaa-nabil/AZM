@@ -1,7 +1,6 @@
 using AZM.Domain.Interfaces;
 using FirebaseAdmin;
 using FirebaseAdmin.Auth;
-using Google.Apis.Auth.OAuth2;
 using Microsoft.Extensions.Logging;
 
 namespace AZM.Infrastructure.Services
@@ -13,34 +12,17 @@ namespace AZM.Infrastructure.Services
         public GoogleAuthService(ILogger<GoogleAuthService> logger)
         {
             _logger = logger;
-
-            if (FirebaseApp.DefaultInstance is null)
-            {
-                _logger.LogWarning("FirebaseApp.DefaultInstance was null — attempting to initialize via Application Default Credentials.");
-                try
-                {
-                    FirebaseApp.Create(new AppOptions
-                    {
-                        Credential = GoogleCredential.GetApplicationDefault()
-                    });
-                    _logger.LogInformation("FirebaseApp initialized successfully via ADC.");
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Failed to initialize FirebaseApp via ADC. Google/Firebase sign-in will not work until this is resolved.");
-                }
-            }
         }
 
-        public async Task<SocialUserInfo?> VerifyGoogleTokenAsync(string idToken)
+        public async Task<(SocialUserInfo? User, string? Error)> VerifyGoogleTokenAsync(string idToken)
         {
             if (string.IsNullOrWhiteSpace(idToken))
-                return null;
+                return (null, "No token provided.");
 
             if (FirebaseApp.DefaultInstance is null)
             {
                 _logger.LogError("Cannot verify Google token — FirebaseApp is not initialized.");
-                return null;
+                return (null, "Firebase is not initialized on the server.");
             }
 
             try
@@ -54,27 +36,28 @@ namespace AZM.Infrastructure.Services
                 if (string.IsNullOrWhiteSpace(email))
                 {
                     _logger.LogWarning("Firebase token has no email claim. Uid: {Uid}", decoded.Uid);
-                    return null;
+                    return (null, "Google token has no email claim.");
                 }
 
                 var parts = (name ?? "").Split(' ', 2, StringSplitOptions.RemoveEmptyEntries);
-                return new SocialUserInfo
+                var user = new SocialUserInfo
                 {
                     SocialId = decoded.Uid,
                     Email = email,
                     FirstName = parts.Length > 0 ? parts[0] : "",
                     LastName = parts.Length > 1 ? parts[1] : ""
                 };
+                return (user, null);
             }
             catch (FirebaseAuthException ex)
             {
                 _logger.LogWarning(ex, "Firebase token validation failed: {ErrorCode} — {Message}", ex.AuthErrorCode, ex.Message);
-                return null;
+                return (null, $"Firebase token validation failed: {ex.AuthErrorCode} — {ex.Message}");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Unexpected error verifying Firebase id token via FirebaseAdmin.Auth.");
-                return null;
+                return (null, $"Unexpected error verifying token: {ex.Message}");
             }
         }
     }

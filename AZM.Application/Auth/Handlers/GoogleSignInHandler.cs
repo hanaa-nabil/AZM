@@ -32,9 +32,9 @@ namespace AZM.Application.Auth.Handlers
             CancellationToken cancellationToken)
         {
             // 1. Verify the Google token
-            var googleUser = await _socialAuthService.VerifyGoogleTokenAsync(request.Dto.IdToken);
+            var (googleUser, verifyError) = await _socialAuthService.VerifyGoogleTokenAsync(request.Dto.IdToken);
             if (googleUser is null)
-                return Result<AuthResponseDto>.Failure("Invalid Google token.", 401);
+                return Result<AuthResponseDto>.Failure(verifyError ?? "Invalid Google token.", 401); // TEMP: exposing real error for debugging — revert to generic message once root cause is fixed
 
             var email = googleUser.Email.Trim().ToLowerInvariant();
 
