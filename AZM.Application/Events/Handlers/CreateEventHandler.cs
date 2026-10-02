@@ -1,6 +1,7 @@
 ﻿using AZM.Application.Common;
 using AZM.Application.Events.Commands;
 using AZM.Domain.Entities;
+using AZM.Domain.Enums;
 using AZM.Domain.Interfaces;
 using MediatR;
 
@@ -9,7 +10,12 @@ namespace AZM.Application.Events.Handlers
     public class CreateEventHandler : IRequestHandler<CreateEventCommand, Result<Guid>>
     {
         private readonly IEventRepository _eventRepo;
-        public CreateEventHandler(IEventRepository eventRepo) => _eventRepo = eventRepo;
+        private readonly IUserRepository _userRepo;
+        public CreateEventHandler(IEventRepository eventRepo, IUserRepository userRepo)
+        {
+            _eventRepo = eventRepo;
+            _userRepo = userRepo;
+        }
 
         public async Task<Result<Guid>> Handle(CreateEventCommand cmd, CancellationToken ct)
         {
@@ -17,6 +23,16 @@ namespace AZM.Application.Events.Handlers
                 return Result<Guid>.Failure("Event date must be in the future.");
             if (cmd.Title.Length < 3)
                 return Result<Guid>.Failure("Title must be at least 3 characters.");
+
+            var user = await _userRepo.GetByIdAsync(cmd.OrganizerId.ToString());
+
+            if (user is null)
+                return Result<Guid>.Failure("User not found.");
+
+            if (cmd.IsPink && user.Gender != Gender.Female)
+                return Result<Guid>.Failure("Only women can create pink events.");
+            if (cmd.IsPink && user.Gender != Gender.Female)
+                return Result<Guid>.Failure("Only women can create pink events.");
 
             EventRoute? route = null;
             if (cmd.Route is not null)
@@ -48,7 +64,8 @@ namespace AZM.Application.Events.Handlers
                  maxParticipants: cmd.MaxParticipants,
                  routeImageUrl: null,
                  coverImageUrl: cmd.CoverImageUrl,
-                 visibility: cmd.Visibility,
+                 isPrivate: cmd.IsPrivate,
+                 isPink: cmd.IsPink,
                  route: route,
                  pace: cmd.Pace);
 

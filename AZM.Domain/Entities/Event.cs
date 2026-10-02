@@ -10,8 +10,8 @@ namespace AZM.Domain.Entities
         public SportType SportType { get; private set; }
         public DifficultyLevel DifficultyLevel { get; private set; }
         public EventStatus Status { get; private set; }
-      //  public bool IsPublic { get; private set; } = true;
-        public EventVisibility Visibility { get; private set; } = EventVisibility.Public;
+        public bool IsPrivate { get; private set; }
+        public bool IsPink { get; private set; }
         public EventRoute? Route { get; private set; }
         public DateTime? ReminderSentAt { get; set; }
         public Pace Pace { get; private set; }
@@ -54,7 +54,7 @@ namespace AZM.Domain.Entities
      string locationName, DateTime eventDate, Guid organizerId,
      int maxParticipants = 0, double? distanceKm = null,
      string? routeImageUrl = null, string? coverImageUrl = null,
-     EventVisibility visibility = EventVisibility.Public, EventRoute? route = null,
+     bool isPrivate = false, bool isPink = false, EventRoute? route = null,
      Pace pace = default)
         {
             return new Event
@@ -75,7 +75,9 @@ namespace AZM.Domain.Entities
                 RouteImageUrl = routeImageUrl,
                 CoverImageUrl = coverImageUrl,
                 CreatedAt = DateTime.UtcNow,
-                Visibility = visibility,
+                IsPrivate = isPrivate,
+                IsPink = isPink,
+                Pace = pace,
                 Route = route,
             };
         }
@@ -84,7 +86,7 @@ namespace AZM.Domain.Entities
          string title, string description, DifficultyLevel difficultyLevel,
          double latitude, double longitude, string locationName,
          DateTime eventDate, int maxParticipants, double? distanceKm,
-         string? coverImageUrl, Pace pace, EventVisibility visibility = EventVisibility.Public,
+         string? coverImageUrl, Pace pace, bool isPrivate = false, bool isPink = false,
          EventRoute? route = null)
         {
             Title = title;
@@ -97,7 +99,8 @@ namespace AZM.Domain.Entities
             MaxParticipants = maxParticipants;
             DistanceKm = distanceKm;
             CoverImageUrl = coverImageUrl;
-            Visibility = visibility;
+            IsPrivate = isPrivate;
+            IsPink = isPink;
             Pace = pace;
             if (route != null) Route = route;
             UpdatedAt = DateTime.UtcNow;

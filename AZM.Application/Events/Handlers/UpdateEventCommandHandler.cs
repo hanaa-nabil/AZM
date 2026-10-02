@@ -43,7 +43,7 @@ namespace AZM.Application.Events.Handlers
             ev.Update(request.Title, request.Description, request.DifficultyLevel,
                 request.Latitude, request.Longitude, request.LocationName, request.EventDate,
                 request.MaxParticipants, request.DistanceKm, request.CoverImageUrl, request.Pace,
-                request.Visibility,route); 
+                request.IsPrivate, request.IsPink, route); 
 
             await _eventRepo.UpdateAsync(ev, cancellationToken);
 

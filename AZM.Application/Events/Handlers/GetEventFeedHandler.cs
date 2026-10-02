@@ -75,7 +75,8 @@ namespace AZM.Application.Events.Handlers
                 DistanceKm = e.DistanceKm,
                 CoverImageUrl = e.CoverImageUrl,
                 Pace = e.Pace,
-                Visibility = e.Visibility.ToString(),
+                IsPrivate = e.IsPrivate,
+                IsPink = e.IsPink,
                 Organizer = new OrganizerSummaryDto
                 {
                     Id = e.OrganizerId,
@@ -103,5 +104,5 @@ namespace AZM.Application.Events.Handlers
                 IsJoined = isJoined || (requestingUserId.HasValue && e.OrganizerId == requestingUserId.Value),
                 IsOrganizer = requestingUserId.HasValue && e.OrganizerId == requestingUserId.Value
             };
-    }
+    };
 }

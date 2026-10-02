@@ -21,10 +21,9 @@ namespace AZM.Application.Events.Handlers
             var organized = await _eventRepo.GetByOrganizerAsync(request.UserId, ct);
 
             var combined = joined.Concat(organized)
-                .Where(e => e.Visibility == EventVisibility.Public)
-                .DistinctBy(e => e.Id)
-                .OrderByDescending(e => e.EventDate)
-                .ToList();
+                 .DistinctBy(e => e.Id)
+                 .OrderByDescending(e => e.EventDate)
+                 .ToList();
 
             var items = new List<EventFeedItemDto>();
 
@@ -49,6 +48,8 @@ namespace AZM.Application.Events.Handlers
                     MaxParticipants = e.MaxParticipants,
                     IsFull = e.IsFull,
                     CoverImageUrl = e.CoverImageUrl,
+                    IsPrivate = e.IsPrivate,
+                    IsPink = e.IsPink,
                     Organizer = new OrganizerSummaryDto
                     {
                         Id = e.OrganizerId,

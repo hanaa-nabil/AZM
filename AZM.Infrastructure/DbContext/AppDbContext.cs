@@ -87,10 +87,6 @@ namespace AZM.Infrastructure.DbContext
                 .HasForeignKey<EventRoute>(r => r.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Visibility default
-            builder.Entity<Event>()
-                .Property(e => e.Visibility)
-                .HasDefaultValue(EventVisibility.Public);
 
             builder.Entity<Event>()
               .HasIndex(e => new { e.Status, e.EventDate })

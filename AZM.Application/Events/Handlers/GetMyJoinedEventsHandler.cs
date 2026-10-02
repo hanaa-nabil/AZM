@@ -85,7 +85,8 @@ namespace AZM.Application.Events.Handlers
                              ) : null,
                     IsJoined = true,
                     Pace = e.Pace,
-                    Visibility = e.Visibility.ToString(),
+                    IsPrivate = e.IsPrivate,
+                    IsPink = e.IsPink,
                     IsOrganizer = false,
                 });
             }

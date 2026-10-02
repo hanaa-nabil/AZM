@@ -30,7 +30,8 @@ namespace AZM.Application.DTOs.Event
         public bool IsJoined { get; init; }
         public Pace Pace { get; init; }
         public bool IsOrganizer { get; init; }
-        public string Visibility { get; set; } = string.Empty;
+        public bool IsPrivate { get;  set; }
+        public bool IsPink { get;  set; }
         public List<ParticipantDto> Participants { get; set; } = new();
         public EventRouteDto? Route { get; set; }
     }

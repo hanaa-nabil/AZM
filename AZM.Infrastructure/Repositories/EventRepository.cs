@@ -195,16 +195,15 @@ namespace AZM.Infrastructure.Repositories
         private IQueryable<Event> ApplyVisibility(IQueryable<Event> query, Guid? viewerId)
         {
             if (viewerId is null)
-                return query.Where(e => e.Visibility == EventVisibility.Public);
+                return query.Where(e => !e.IsPrivate && !e.IsPink);
 
             var id = viewerId.Value;
             return query.Where(e =>
-                e.Visibility == EventVisibility.Public ||
                 e.OrganizerId == id ||
-                (e.Visibility == EventVisibility.FollowersOnly &&
-                _db.Follows.Any(f => f.FollowerId == id && f.FollowingId == e.OrganizerId))  ||
-                (e.Visibility == EventVisibility.FemaleOnly &&
-                    _db.Users.Any(u => u.Id == id && u.Gender == Gender.Female)));
+                ((!e.IsPrivate ||
+                    _db.Follows.Any(f => f.FollowerId == id && f.FollowingId == e.OrganizerId)) &&
+                 (!e.IsPink ||
+                    _db.Users.Any(u => u.Id == id && u.Gender == Gender.Female))));
         }
 
         public async Task<bool> CanUserSeeEventAsync(Guid eventId, Guid? viewerId, CancellationToken ct = default)

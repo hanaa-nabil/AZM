@@ -61,7 +61,8 @@ namespace AZM.Application.Events.Handlers
                         Status = p.Status.ToString()
                     }),
                 Pace = ev.Pace,
-                Visibility = ev.Visibility.ToString(),
+                IsPrivate = ev.IsPrivate,
+                IsPink = ev.IsPink,
                 IsOrganizer = q.RequestingUserId.HasValue && ev.OrganizerId == q.RequestingUserId.Value,
                 Route = ev.Route is not null ? new EventRouteDto(
                      ev.Route.StartLatitude, ev.Route.StartLongitude, ev.Route.StartAddress,

@@ -12,10 +12,10 @@ namespace AZM.Api.Requests
         string LocationName,
         DateTime EventDate,
         Pace Pace ,
+        bool IsPrivate,
+         bool IsPink,
         int MaxParticipants = 0,
         string? CoverImageUrl = null,
-        EventRouteRequest? Route = null,
-        EventVisibility Visibility  = EventVisibility.Public
-
+        EventRouteRequest? Route = null
     );
 }

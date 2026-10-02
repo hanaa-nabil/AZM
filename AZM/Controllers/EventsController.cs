@@ -130,8 +130,8 @@ namespace AZM.Api.Controllers
                  request.SportType, request.DifficultyLevel,
                  request.Latitude, request.Longitude, request.LocationName,
                  request.EventDate, CurrentUserId!.Value,
-                 request.MaxParticipants,  request.Pace,
-                 request.CoverImageUrl, request.Visibility, routeDto);
+                 request.MaxParticipants,  request.Pace,        
+                 request.CoverImageUrl, request.IsPrivate, request.IsPink, routeDto);
 
             var result = await _mediator.Send(cmd);
             if (!result.IsSuccess) return BadRequest(result.Error);
@@ -166,7 +166,8 @@ namespace AZM.Api.Controllers
                 DistanceKm: request.DistanceKm,
                 Pace: request.Pace,        
                 CoverImageUrl: request.CoverImageUrl,
-                Visibility: request.Visibility,
+                IsPrivate: request.IsPrivate,
+                IsPink: request.IsPink,
                 Route: routeDto);
                 var result = await _mediator.Send(cmd);
             return result.IsSuccess ? NoContent() : BadRequest(new { message = result.Error });
