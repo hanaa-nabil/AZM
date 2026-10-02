@@ -25,6 +25,8 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<UserDailyActivity> UserDailyActivities => Set<UserDailyActivity>();
         public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
         public DbSet<Follow> Follows => Set<Follow>();
+        public DbSet<Squad> Squads => Set<Squad>();
+        public DbSet<SquadMember> SquadMembers => Set<SquadMember>();
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -120,6 +122,18 @@ namespace AZM.Infrastructure.DbContext
             builder.Entity<Follow>()
                 .HasIndex(f => new { f.FollowerId, f.FollowingId })
                 .IsUnique();
+
+            builder.Entity<SquadMember>()
+                .HasOne(m => m.User)
+                .WithMany()
+                .HasForeignKey(m => m.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<SquadMember>()
+                .HasOne(m => m.Squad)
+                .WithMany(s => s.Members)
+                .HasForeignKey(m => m.SquadId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
 }
 }
