@@ -26,40 +26,17 @@ namespace AZM.Application.Auth.Handlers
             _emailService = emailService;
             _otpService = otpService;
         }
-
         public async Task<Result<RegisterResponseDto>> Handle(
-            RegisterCommand request,
-            CancellationToken cancellationToken)
+    RegisterCommand request,
+    CancellationToken cancellationToken)
         {
             var dto = request.Dto;
 
-            // 1. Normalize
             var email = dto.Email.Trim().ToLowerInvariant();
             var firstName = dto.FirstName.Trim();
             var lastName = dto.LastName.Trim();
             var username = dto.Username.Trim();
-            // 2. Birthdate validation
-            var today = DateOnly.FromDateTime(DateTime.UtcNow);
-            var birthDate = DateOnly.FromDateTime(dto.BirthDate);
 
-            if (birthDate >= today)
-                return Result<RegisterResponseDto>.Failure(
-                    "Birth date cannot be today or in the future.", 400);
-
-            if (birthDate < today.AddYears(-100))
-                return Result<RegisterResponseDto>.Failure(
-                    "Please enter a valid birth date.", 400);
-
-            // 3. Duplicate email check
-            if (await _userRepository.EmailExistsAsync(email))
-                return Result<RegisterResponseDto>.Failure(
-                    "An account with this email already exists.", 409);
-
-
-            if (await _userRepository.UsernameExistsAsync(username))
-                return Result<RegisterResponseDto>.Failure(
-                    "This username is already taken.", 409);
-            // 4. Create the user — phone number will be added in the next step
             var user = new User
             {
                 UserName = username,
@@ -81,21 +58,17 @@ namespace AZM.Application.Auth.Handlers
                 return Result<RegisterResponseDto>.Failure(errors, 400);
             }
 
-            // 5. Generate OTP and send it to their email
-            //    If the email send fails, delete the user so we don't leave an orphaned account
             try
             {
                 var otp = await _otpService.GenerateAndStoreOtpAsync(email);
                 await _emailService.SendOtpEmailAsync(email, firstName, otp);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 await _userManager.DeleteAsync(user);
-                return Result<RegisterResponseDto>.Failure(
-                    $"Failed to send verification email: {ex.Message}", 500);
+                return Result<RegisterResponseDto>.Failure($"Failed to send verification email: {ex.Message}", 500);
             }
 
-            // 6. Return userId + email only — JWT is issued after the full flow is complete
             return Result<RegisterResponseDto>.Success(new RegisterResponseDto
             {
                 UserId = user.Id.ToString(),
@@ -103,11 +76,10 @@ namespace AZM.Application.Auth.Handlers
                 FirstName = firstName,
                 LastName = lastName,
                 BirthDate = dto.BirthDate,
-                EmailVerificationRequired = true,  
-                PhoneNumberRequired = true,        
-            Message = "Please check your email for the verification code."
+                EmailVerificationRequired = true,
+                PhoneNumberRequired = true,
+                Message = "Please check your email for the verification code."
             }, 201);
-           
         }
     }
 }

@@ -8,14 +8,8 @@ namespace AZM.Domain.Interfaces
         Task<Event?> GetByIdAsync(Guid id, CancellationToken ct = default);
         Task<Event?> GetByIdWithParticipantsAsync(Guid id, CancellationToken ct = default);
         Task<IEnumerable<Event>> GetStartingWithinAsync(TimeSpan window, CancellationToken ct = default);
-        Task<(IEnumerable<Event> Events, int TotalCount)> GetFeedAsync(
-            int page,
-            int pageSize,
-            SportType? sportType = null,
-            EventStatus? status = null,
-            CancellationToken ct = default);
-        Task<IEnumerable<Event>> GetNearbyAsync(double lat, double lng, double radiusKm, CancellationToken ct = default);
         Task<IEnumerable<Event>> GetByOrganizerAsync(Guid organizerId, CancellationToken ct = default);
+        Task<IEnumerable<Event>> GetByOrganizerAsync(Guid organizerId, Guid? viewerId, CancellationToken ct = default);
         Task<IEnumerable<Event>> GetUserJoinedEventsAsync(Guid userId, CancellationToken ct = default);
         Task AddAsync(Event ev, CancellationToken ct = default);
         Task UpdateAsync(Event ev, CancellationToken ct = default);
@@ -35,5 +29,16 @@ namespace AZM.Domain.Interfaces
         Task<List<Event>> GetEventsToCompleteAsync(DateTime cutoffUtc, CancellationToken ct);
         Task DeleteByOrganizerAsync(Guid organizerId, CancellationToken ct = default);
         Task<IEnumerable<Event>> GetEventsWithPendingRemindersAsync(TimeSpan window, CancellationToken ct = default);
+
+
+        Task<(IEnumerable<Event> Events, int TotalCount)> GetFeedAsync(
+    int page, int pageSize, SportType? sportType = null, EventStatus? status = null,
+    Guid? viewerId = null, CancellationToken ct = default);
+
+        Task<IEnumerable<Event>> GetNearbyAsync(
+            double lat, double lng, double radiusKm, Guid? viewerId = null, CancellationToken ct = default);
+
+        Task<bool> CanUserSeeEventAsync(Guid eventId, Guid? viewerId, CancellationToken ct = default);
+
     }
 }

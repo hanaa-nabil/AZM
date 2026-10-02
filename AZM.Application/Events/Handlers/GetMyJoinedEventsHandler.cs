@@ -16,10 +16,41 @@ namespace AZM.Application.Events.Handlers
         {
             var events = await _eventRepo.GetUserJoinedEventsAsync(q.UserId, ct);
 
+            // Hide events more than 30 minutes past their start; keep future events and
+            // events within the 30-minute grace window after they began.
+            var cutoff = DateTime.UtcNow.AddMinutes(-30);
+            events = events.Where(e => e.EventDate > cutoff).OrderBy(e => e.EventDate).ToList();
+
             var items = new List<EventFeedItemDto>();
             foreach (var e in events)
             {
                 var participants = await _eventRepo.GetParticipantsAsync(e.Id, ct);
+
+                var participantDtos = participants
+                    .Where(p => p.Status == Domain.Enums.ParticipantStatus.Joined)
+                    .Select(p => new ParticipantDto
+                    {
+                        Id = p.UserId,
+                        FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
+                        Username = p.User.UserName ?? string.Empty,
+                        AvatarUrl = p.User.ProfilePhotoUrl,
+                        IsVerified = p.User.IsIdVerified && p.User.IsFaceVerified,
+                        JoinedAt = p.JoinedAt,
+                        Status = p.Status.ToString()
+                    }).ToList();
+
+                // Organizer has no EventParticipant row (can't join their own event), so
+                // add them to the list explicitly, marked distinctly from real joiners.
+                participantDtos.Insert(0, new ParticipantDto
+                {
+                    Id = e.OrganizerId,
+                    FullName = $"{e.Organizer.FirstName} {e.Organizer.LastName}".Trim(),
+                    Username = e.Organizer.UserName ?? string.Empty,
+                    AvatarUrl = e.Organizer.ProfilePhotoUrl,
+                    IsVerified = e.Organizer.IsIdVerified && e.Organizer.IsFaceVerified,
+                    JoinedAt = e.CreatedAt,
+                    Status = "Organizer"
+                });
 
                 items.Add(new EventFeedItemDto
                 {
@@ -28,7 +59,7 @@ namespace AZM.Application.Events.Handlers
                     Description = e.Description,
                     SportType = e.SportType.ToString(),
                     DifficultyLevel = e.DifficultyLevel.ToString(),
-                    Status = e.Status.ToString(),
+                    Status = e.DisplayStatus.ToString(),   // now shows "Soon" within the last hour
                     LocationName = e.LocationName,
                     Latitude = e.Latitude,
                     Longitude = e.Longitude,
@@ -46,26 +77,7 @@ namespace AZM.Application.Events.Handlers
                         Username = e.Organizer.UserName ?? string.Empty,
                         AvatarUrl = e.Organizer.ProfilePhotoUrl
                     },
-                    //Participants = participants.Select(p => new ParticipantDto
-                    //{
-                    //    Id = p.UserId,
-                    //    FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
-                    //    AvatarUrl = p.User.ProfilePhotoUrl
-                    //}).ToList(),
-
-                    Participants =participants
-                    .Where(p => p.Status == Domain.Enums.ParticipantStatus.Joined)
-                    .Select(p => new ParticipantDto
-                    {
-                        Id = p.UserId,
-                        FullName = $"{p.User.FirstName} {p.User.LastName}".Trim(),
-                        Username = p.User.UserName ?? string.Empty,
-                        AvatarUrl = p.User.ProfilePhotoUrl,
-                        IsVerified = p.User.IsIdVerified && p.User.IsFaceVerified,
-                        JoinedAt = p.JoinedAt,
-                        Status = p.Status.ToString()
-                    }).ToList(),
-                   
+                    Participants = participantDtos,
                     Route = e.Route is not null ? new EventRouteDto(
                             e.Route.StartLatitude, e.Route.StartLongitude, e.Route.StartAddress,
                             e.Route.EndLatitude, e.Route.EndLongitude, e.Route.EndAddress,
@@ -73,10 +85,9 @@ namespace AZM.Application.Events.Handlers
                              ) : null,
                     IsJoined = true,
                     Pace = e.Pace,
+                    Visibility = e.Visibility.ToString(),
                     IsOrganizer = false,
-               
-                }
-                );
+                });
             }
 
             return Result<IEnumerable<EventFeedItemDto>>.Success(items);

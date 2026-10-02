@@ -14,8 +14,8 @@ namespace AZM.Api.Requests
         Pace Pace ,
         int MaxParticipants = 0,
         string? CoverImageUrl = null,
-        bool IsPublic = true,
-        EventRouteRequest? Route = null
+        EventRouteRequest? Route = null,
+        EventVisibility Visibility  = EventVisibility.Public
 
     );
 }

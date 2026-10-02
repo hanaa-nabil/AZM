@@ -22,24 +22,37 @@ namespace AZM.Infrastructure.BackgroundJobs
 
             foreach (var ev in events)
             {
-                // The repository already filtered to joined participants with no reminder sent
                 var pending = ev.Participants.ToList();
-                if (pending.Count == 0) continue;
-
                 var minutesLeft = Math.Max(1, (int)Math.Ceiling((ev.EventDate - DateTime.UtcNow).TotalMinutes));
 
-                await _notifications.SendBulkAsync(
-                    pending.Select(p => p.UserId),
-                    NotificationType.EventStartingSoon,
-                    "Event starting soon!",
-                    $"{ev.Title} starts in {minutesLeft} minutes. Get ready!",
-                    relatedEventId: ev.Id,
-                    actorId: ev.OrganizerId);
-
-                foreach (var p in pending)
+                if (pending.Count > 0)
                 {
-                    p.MarkReminderSent();
-                    await _eventRepo.UpdateParticipantAsync(p);
+                    await _notifications.SendBulkAsync(
+                        pending.Select(p => p.UserId),
+                        NotificationType.EventStartingSoon,
+                        "Event starting soon!",
+                        $"{ev.Title} starts in {minutesLeft} minutes. Get ready!",
+                        relatedEventId: ev.Id,
+                        actorId: ev.OrganizerId);
+
+                    foreach (var p in pending)
+                    {
+                        p.MarkReminderSent();
+                        await _eventRepo.UpdateParticipantAsync(p);
+                    }
+                }
+
+                if (ev.OrganizerReminderSentAt is null)
+                {
+                    await _notifications.SendAsync(
+                        ev.OrganizerId,
+                        NotificationType.EventStartingSoon,
+                        "Your event is starting soon!",
+                        $"{ev.Title} starts in {minutesLeft} minutes.",
+                        relatedEventId: ev.Id);
+
+                    ev.MarkOrganizerReminderSent();
+                    await _eventRepo.UpdateAsync(ev);
                 }
             }
         }

@@ -29,6 +29,8 @@ namespace AZM.Api.Controllers
         [HttpGet("notification-types")]
         public IActionResult GetNotificationTypes() => Ok(ToDto<NotificationType>());
 
+        [HttpGet("event-visibilities")]
+        public IActionResult GetEventVisibilities() => Ok(ToDto<EventVisibility>());
         /// <summary>
         /// Convenience endpoint: returns all enums in one call, useful for a
         /// single "app config" fetch on client startup.
@@ -44,7 +46,8 @@ namespace AZM.Api.Controllers
                 participantStatuses = ToDto<ParticipantStatus>(),
                 genders = ToDto<Gender>(),
                 eventStatuses = ToDto<EventStatus>(),
-                notificationTypes = ToDto<NotificationType>()
+                notificationTypes = ToDto<NotificationType>(),
+                eventVisibilities = ToDto<EventVisibility>()
             });
         }
 

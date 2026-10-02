@@ -24,8 +24,8 @@ namespace AZM.Application.Events.Handlers
 
         public async Task<Result<IEnumerable<NearbyEventDto>>> Handle(GetNearbyEventsQuery q, CancellationToken ct)
         {
-            var events = await _eventRepo.GetNearbyAsync(q.Latitude, q.Longitude, q.RadiusKm, ct);
-
+            var events = await _eventRepo.GetNearbyAsync(
+                   q.Latitude, q.Longitude, q.RadiusKm, q.RequestingUserId, ct);
             var items = events
                 .Where(e => VisibleStatuses.Contains(e.Status))
                 .Select(e => new NearbyEventDto

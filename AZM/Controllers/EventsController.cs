@@ -20,10 +20,6 @@ namespace AZM.Api.Controllers
         private readonly IMediator _mediator;
 
         public EventsController(IMediator mediator) => _mediator = mediator;
-
-        //private Guid? CurrentUserId =>
-        //    Guid.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;
-
         private Guid? CurrentUserId =>
             Guid.TryParse(User.FindFirstValue(JwtRegisteredClaimNames.Sub), out var id) ? id : null;
         // ── Feed ──────────────────────────────────────────────────────────────────
@@ -135,7 +131,7 @@ namespace AZM.Api.Controllers
                  request.Latitude, request.Longitude, request.LocationName,
                  request.EventDate, CurrentUserId!.Value,
                  request.MaxParticipants,  request.Pace,
-                 request.CoverImageUrl, request.IsPublic, routeDto);
+                 request.CoverImageUrl, request.Visibility, routeDto);
 
             var result = await _mediator.Send(cmd);
             if (!result.IsSuccess) return BadRequest(result.Error);
@@ -170,7 +166,7 @@ namespace AZM.Api.Controllers
                 DistanceKm: request.DistanceKm,
                 Pace: request.Pace,        
                 CoverImageUrl: request.CoverImageUrl,
-                IsPublic: request.IsPublic,
+                Visibility: request.Visibility,
                 Route: routeDto);
                 var result = await _mediator.Send(cmd);
             return result.IsSuccess ? NoContent() : BadRequest(new { message = result.Error });

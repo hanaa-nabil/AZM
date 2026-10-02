@@ -12,8 +12,10 @@ namespace AZM.Application.Events.Handlers
         public GetEventByIdHandler(IEventRepository eventRepo) => _eventRepo = eventRepo;
         public async Task<Result<EventDetailDto>> Handle(GetEventByIdQuery q, CancellationToken ct)
         {
+            if (!await _eventRepo.CanUserSeeEventAsync(q.EventId, q.RequestingUserId, ct))
+                return Result<EventDetailDto>.Failure("Event not found.");
             var ev = await _eventRepo.GetByIdWithParticipantsAsync(q.EventId, ct);
-            if (ev is null) return Result<EventDetailDto>.Failure("Event not found.");
+
             bool isJoined = q.RequestingUserId.HasValue &&
                 (ev.Participants.Any(p =>
                     p.UserId == q.RequestingUserId.Value &&
@@ -59,6 +61,7 @@ namespace AZM.Application.Events.Handlers
                         Status = p.Status.ToString()
                     }),
                 Pace = ev.Pace,
+                Visibility = ev.Visibility.ToString(),
                 IsOrganizer = q.RequestingUserId.HasValue && ev.OrganizerId == q.RequestingUserId.Value,
                 Route = ev.Route is not null ? new EventRouteDto(
                      ev.Route.StartLatitude, ev.Route.StartLongitude, ev.Route.StartAddress,

@@ -24,8 +24,8 @@ namespace AZM.Application.Events.Handlers
                  cmd.Latitude, cmd.Longitude, cmd.LocationName,
                  cmd.EventDate, cmd.MaxParticipants,
                  cmd.DistanceKm, cmd.CoverImageUrl,
-                 cmd.IsPublic,
-                 cmd.Pace,                           
+                 cmd.Pace,
+                 cmd.Visibility,
                  cmd.Route is not null ? new EventRoute
                  {
                     StartLatitude = cmd.Route.StartLatitude,

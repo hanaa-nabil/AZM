@@ -1,4 +1,5 @@
 ﻿using AZM.Domain.Entities;
+using AZM.Domain.Enums;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -86,10 +87,10 @@ namespace AZM.Infrastructure.DbContext
                 .HasForeignKey<EventRoute>(r => r.EventId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // IsPublic default
+            // Visibility default
             builder.Entity<Event>()
-                .Property(e => e.IsPublic)
-                .HasDefaultValue(true);
+                .Property(e => e.Visibility)
+                .HasDefaultValue(EventVisibility.Public);
 
             builder.Entity<Event>()
               .HasIndex(e => new { e.Status, e.EventDate })

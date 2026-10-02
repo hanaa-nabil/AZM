@@ -18,7 +18,7 @@ namespace AZM.Application.Events.Commands
         int MaxParticipants,
         Pace Pace,
         string? CoverImageUrl,
-        bool IsPublic = true,
+        EventVisibility Visibility = EventVisibility.Public,
         EventRouteDto? Route = null
     ) : IRequest<Result<Guid>>;
 }

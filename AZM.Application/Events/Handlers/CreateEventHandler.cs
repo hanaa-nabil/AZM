@@ -48,7 +48,7 @@ namespace AZM.Application.Events.Handlers
                  maxParticipants: cmd.MaxParticipants,
                  routeImageUrl: null,
                  coverImageUrl: cmd.CoverImageUrl,
-                 isPublic: cmd.IsPublic,
+                 visibility: cmd.Visibility,
                  route: route,
                  pace: cmd.Pace);
 

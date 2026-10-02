@@ -64,10 +64,11 @@ namespace AZM.Infrastructure.Repositories
         // ── Feed ──────────────────────────────────────────────────────────────────
 
         public async Task<(IEnumerable<Event> Events, int TotalCount)> GetFeedAsync(
-            int page, int pageSize,
-            SportType? sportType = null,
-            EventStatus? status = null,
-            CancellationToken ct = default)
+      int page, int pageSize,
+      SportType? sportType = null,
+      EventStatus? status = null,
+      Guid? viewerId = null,
+      CancellationToken ct = default)
         {
             var query = _db.Events
                 .Include(e => e.Organizer)
@@ -75,13 +76,16 @@ namespace AZM.Infrastructure.Repositories
                 .Include(e => e.Route)
                 .AsQueryable();
 
+            query = ApplyVisibility(query, viewerId);
+
             if (sportType.HasValue)
                 query = query.Where(e => e.SportType == sportType.Value);
 
             if (status.HasValue)
                 query = query.Where(e => e.Status == status.Value);
             else
-                query = query.Where(e => e.Status != EventStatus.Cancelled);
+                query = query.Where(e => e.Status != EventStatus.Cancelled
+                                      && e.Status != EventStatus.Completed);
 
             var total = await query.CountAsync(ct);
             var events = await query
@@ -96,22 +100,20 @@ namespace AZM.Infrastructure.Repositories
         // ── Nearby (Haversine in memory — acceptable for moderate data) ────────────
 
         public async Task<IEnumerable<Event>> GetNearbyAsync(
-            double lat, double lng, double radiusKm, CancellationToken ct = default)
+           double lat, double lng, double radiusKm, Guid? viewerId = null, 
+           CancellationToken ct = default)
         {
-            // Pull candidates within a bounding box first for DB efficiency
             double latDelta = radiusKm / 111.0;
             double lngDelta = radiusKm / (111.0 * Math.Cos(lat * Math.PI / 180));
 
-            var candidates = await _db.Events
-                .Include(e => e.Organizer)
-                .Include(e => e.Participants)
+            var candidates = await ApplyVisibility(
+                    _db.Events.Include(e => e.Organizer).Include(e => e.Participants), viewerId)
                 .Where(e =>
                     e.Status != EventStatus.Cancelled &&
                     e.Latitude >= lat - latDelta && e.Latitude <= lat + latDelta &&
                     e.Longitude >= lng - lngDelta && e.Longitude <= lng + lngDelta)
                 .ToListAsync(ct);
 
-            // Exact Haversine filter
             return candidates.Where(e => Haversine(lat, lng, e.Latitude, e.Longitude) <= radiusKm)
                 .OrderBy(e => Haversine(lat, lng, e.Latitude, e.Longitude));
         }
@@ -128,12 +130,13 @@ namespace AZM.Infrastructure.Repositories
         }
 
         // ── Organizer / User ──────────────────────────────────────────────────────
-
-        public async Task<IEnumerable<Event>> GetByOrganizerAsync(Guid organizerId, CancellationToken ct = default)
-            => await _db.Events
-                .Include(e => e.Organizer)
-                .Include(e => e.Participants)
-                .Include(e => e.Route)
+        public async Task<IEnumerable<Event>> GetByOrganizerAsync(
+            Guid organizerId, Guid? viewerId, CancellationToken ct = default)
+            => await ApplyVisibility(
+                    _db.Events
+                        .Include(e => e.Organizer)
+                        .Include(e => e.Participants)
+                        .Include(e => e.Route), viewerId)
                 .Where(e => e.OrganizerId == organizerId)
                 .OrderByDescending(e => e.EventDate)
                 .ToListAsync(ct);
@@ -145,6 +148,15 @@ namespace AZM.Infrastructure.Repositories
                 .Where(e => e.Participants.Any(p =>
                     p.UserId == userId &&
                     p.Status == ParticipantStatus.Joined))
+                .OrderByDescending(e => e.EventDate)
+                .ToListAsync(ct);
+ 
+        public async Task<IEnumerable<Event>> GetByOrganizerAsync(Guid organizerId, CancellationToken ct = default)
+            => await _db.Events
+                .Include(e => e.Organizer)
+                .Include(e => e.Participants)
+                .Include(e => e.Route)
+                .Where(e => e.OrganizerId == organizerId)
                 .OrderByDescending(e => e.EventDate)
                 .ToListAsync(ct);
 
@@ -172,15 +184,31 @@ namespace AZM.Infrastructure.Repositories
                 .Include(e => e.Participants.Where(p =>
                     p.Status == ParticipantStatus.Joined && p.ReminderSentAt == null))
                 .Where(e =>
-                    e.Status == EventStatus.Upcoming &&
-                    e.EventDate > now &&
-                    e.EventDate <= cutoff &&
-                    e.Participants.Any(p =>
-                        p.Status == ParticipantStatus.Joined && p.ReminderSentAt == null))
+                   e.Status == EventStatus.Upcoming &&
+                   e.EventDate > now &&
+                   e.EventDate <= cutoff &&
+                   (e.OrganizerReminderSentAt == null ||
+                   e.Participants.Any(p => p.Status == ParticipantStatus.Joined && p.ReminderSentAt == null)))
                 .OrderBy(e => e.EventDate)
                 .ToListAsync(ct);
         }
+        private IQueryable<Event> ApplyVisibility(IQueryable<Event> query, Guid? viewerId)
+        {
+            if (viewerId is null)
+                return query.Where(e => e.Visibility == EventVisibility.Public);
 
+            var id = viewerId.Value;
+            return query.Where(e =>
+                e.Visibility == EventVisibility.Public ||
+                e.OrganizerId == id ||
+                (e.Visibility == EventVisibility.FollowersOnly &&
+                _db.Follows.Any(f => f.FollowerId == id && f.FollowingId == e.OrganizerId))  ||
+                (e.Visibility == EventVisibility.FemaleOnly &&
+                    _db.Users.Any(u => u.Id == id && u.Gender == Gender.Female)));
+        }
+
+        public async Task<bool> CanUserSeeEventAsync(Guid eventId, Guid? viewerId, CancellationToken ct = default)
+            => await ApplyVisibility(_db.Events.Where(e => e.Id == eventId), viewerId).AnyAsync(ct);
         // ── CRUD ──────────────────────────────────────────────────────────────────
 
         public async Task AddAsync(Event ev, CancellationToken ct = default)

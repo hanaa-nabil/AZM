@@ -14,7 +14,7 @@ namespace AZM.Api.Requests
        double? DistanceKm,
        Pace Pace,
        string? CoverImageUrl,
-       bool IsPublic = true,
+       EventVisibility Visibility = EventVisibility.Public,
        EventRouteRequest? Route = null
    );
 }

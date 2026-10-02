@@ -10,7 +10,8 @@ namespace AZM.Domain.Entities
         public SportType SportType { get; private set; }
         public DifficultyLevel DifficultyLevel { get; private set; }
         public EventStatus Status { get; private set; }
-        public bool IsPublic { get; private set; } = true;
+      //  public bool IsPublic { get; private set; } = true;
+        public EventVisibility Visibility { get; private set; } = EventVisibility.Public;
         public EventRoute? Route { get; private set; }
         public DateTime? ReminderSentAt { get; set; }
         public Pace Pace { get; private set; }
@@ -28,6 +29,7 @@ namespace AZM.Domain.Entities
         // Organizer
         public Guid OrganizerId { get; private set; }
         public User Organizer { get; private set; } = null!;
+        public DateTime? OrganizerReminderSentAt { get; private set; }
 
         // Capacity
         public int MaxParticipants { get; private set; }
@@ -43,7 +45,7 @@ namespace AZM.Domain.Entities
         // Computed
         public int ParticipantCount => Participants.Count(p => p.Status == ParticipantStatus.Joined);
         public bool IsFull => MaxParticipants > 0 && ParticipantCount >= MaxParticipants;
-
+        public void MarkOrganizerReminderSent() => OrganizerReminderSentAt = DateTime.UtcNow;
         private Event() { }
 
         public static Event Create(
@@ -52,8 +54,8 @@ namespace AZM.Domain.Entities
      string locationName, DateTime eventDate, Guid organizerId,
      int maxParticipants = 0, double? distanceKm = null,
      string? routeImageUrl = null, string? coverImageUrl = null,
-     bool isPublic = true, EventRoute? route = null,
-     Pace pace = default)  
+     EventVisibility visibility = EventVisibility.Public, EventRoute? route = null,
+     Pace pace = default)
         {
             return new Event
             {
@@ -73,7 +75,7 @@ namespace AZM.Domain.Entities
                 RouteImageUrl = routeImageUrl,
                 CoverImageUrl = coverImageUrl,
                 CreatedAt = DateTime.UtcNow,
-                IsPublic = isPublic,
+                Visibility = visibility,
                 Route = route,
             };
         }
@@ -82,7 +84,7 @@ namespace AZM.Domain.Entities
          string title, string description, DifficultyLevel difficultyLevel,
          double latitude, double longitude, string locationName,
          DateTime eventDate, int maxParticipants, double? distanceKm,
-         string? coverImageUrl, bool isPublic, Pace pace,
+         string? coverImageUrl, Pace pace, EventVisibility visibility = EventVisibility.Public,
          EventRoute? route = null)
         {
             Title = title;
@@ -95,7 +97,7 @@ namespace AZM.Domain.Entities
             MaxParticipants = maxParticipants;
             DistanceKm = distanceKm;
             CoverImageUrl = coverImageUrl;
-            IsPublic = isPublic;
+            Visibility = visibility;
             Pace = pace;
             if (route != null) Route = route;
             UpdatedAt = DateTime.UtcNow;

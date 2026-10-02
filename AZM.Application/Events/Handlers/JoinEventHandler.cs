@@ -28,6 +28,10 @@ namespace AZM.Application.Events.Handlers
         {
             var ev = await _eventRepo.GetByIdAsync(cmd.EventId, ct);
             if (ev is null) return Result<bool>.Failure("Event not found.");
+
+            if (!await _eventRepo.CanUserSeeEventAsync(cmd.EventId, cmd.UserId, ct))
+                return Result<bool>.Failure("Event not found.");
+
             if (ev.Status == EventStatus.Cancelled)
                 return Result<bool>.Failure("Cannot join a cancelled event.");
             if (ev.Status == EventStatus.Completed)

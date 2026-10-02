@@ -223,44 +223,44 @@ namespace AZM.Api
 
             app.MapControllers();
             // Temporary — remove after diagnosing, don't ship this
-            app.MapGet("/diagnostic/google-connectivity", async () =>
-            {
-                try
-                {
-                    using var http = new HttpClient();
-                    http.Timeout = TimeSpan.FromSeconds(10);
-                    var result = await http.GetStringAsync(
-                        "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com");
-                    return Results.Ok(new { success = true, length = result.Length });
-                }
-                catch (Exception ex)
-                {
-                    return Results.Ok(new { success = false, error = ex.GetType().Name, message = ex.Message });
-                }
-            });
-            // Temporary — remove after diagnosing
-            app.MapGet("/diagnostic/server-time", () =>
-            {
-                return Results.Ok(new
-                {
-                    utcNow = DateTime.UtcNow,
-                    localNow = DateTime.Now,
-                    localOffset = DateTimeOffset.Now.Offset.ToString()
-                });
-            });
-            app.MapGet("/diagnostic/firebase-config", () =>
-            {
-                return Results.Ok(new
-                {
-                    firebaseAppInitialized = FirebaseAdmin.FirebaseApp.DefaultInstance != null,
-                    configuredProjectId = builder.Configuration["Firebase:ProjectId"],
-                    configuredCredPath = builder.Configuration["Firebase:CredentialsPath"],
-                    resolvedCredPath = Path.Combine(AppContext.BaseDirectory,
-                        builder.Configuration["Firebase:CredentialsPath"] ?? ""),
-                    credFileExists = File.Exists(Path.Combine(AppContext.BaseDirectory,
-                        builder.Configuration["Firebase:CredentialsPath"] ?? ""))
-                });
-            });
+            //app.MapGet("/diagnostic/google-connectivity", async () =>
+            //{
+            //    try
+            //    {
+            //        using var http = new HttpClient();
+            //        http.Timeout = TimeSpan.FromSeconds(10);
+            //        var result = await http.GetStringAsync(
+            //            "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com");
+            //        return Results.Ok(new { success = true, length = result.Length });
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        return Results.Ok(new { success = false, error = ex.GetType().Name, message = ex.Message });
+            //    }
+            //});
+            //// Temporary — remove after diagnosing
+            //app.MapGet("/diagnostic/server-time", () =>
+            //{
+            //    return Results.Ok(new
+            //    {
+            //        utcNow = DateTime.UtcNow,
+            //        localNow = DateTime.Now,
+            //        localOffset = DateTimeOffset.Now.Offset.ToString()
+            //    });
+            //});
+            //app.MapGet("/diagnostic/firebase-config", () =>
+            //{
+            //    return Results.Ok(new
+            //    {
+            //        firebaseAppInitialized = FirebaseAdmin.FirebaseApp.DefaultInstance != null,
+            //        configuredProjectId = builder.Configuration["Firebase:ProjectId"],
+            //        configuredCredPath = builder.Configuration["Firebase:CredentialsPath"],
+            //        resolvedCredPath = Path.Combine(AppContext.BaseDirectory,
+            //            builder.Configuration["Firebase:CredentialsPath"] ?? ""),
+            //        credFileExists = File.Exists(Path.Combine(AppContext.BaseDirectory,
+            //            builder.Configuration["Firebase:CredentialsPath"] ?? ""))
+            //    });
+            //});
             app.Run();
         }
     }

@@ -18,13 +18,16 @@ namespace AZM.Application.Events.Handlers
         public async Task<Result<EventFeedResponseDto>> Handle(GetEventFeedQuery q, CancellationToken ct)
         {
             var effectiveStatus = q.Status;
-            var (events, total) = await _eventRepo.GetFeedAsync(q.Page, q.PageSize, q.SportType, effectiveStatus, ct);
+            //var (events, total) = await _eventRepo.GetFeedAsync(q.Page, q.PageSize, q.SportType, effectiveStatus, ct);
+            var (events, total) = await _eventRepo.GetFeedAsync(
+                 q.Page, q.PageSize, q.SportType, q.Status, q.RequestingUserId, ct);
 
-            if (!q.Status.HasValue)
-            {
-                events = events.Where(e => e.Status != EventStatus.Completed).ToList();
-                total = events.Count(); // note: this breaks accurate pagination totals, see note below
-            }
+            //var eventList = events.ToList();
+            //if (!q.Status.HasValue)
+            //{
+            //    events = events.Where(e => e.Status != EventStatus.Completed).ToList();
+            //    total = events.Count(); // note: this breaks accurate pagination totals, see note below
+            //}
 
             HashSet<Guid> joinedIds = [];
             if (q.RequestingUserId.HasValue)
@@ -72,6 +75,7 @@ namespace AZM.Application.Events.Handlers
                 DistanceKm = e.DistanceKm,
                 CoverImageUrl = e.CoverImageUrl,
                 Pace = e.Pace,
+                Visibility = e.Visibility.ToString(),
                 Organizer = new OrganizerSummaryDto
                 {
                     Id = e.OrganizerId,

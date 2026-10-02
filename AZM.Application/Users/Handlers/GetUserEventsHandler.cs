@@ -21,7 +21,7 @@ namespace AZM.Application.Events.Handlers
             var organized = await _eventRepo.GetByOrganizerAsync(request.UserId, ct);
 
             var combined = joined.Concat(organized)
-                .Where(e => e.IsPublic)
+                .Where(e => e.Visibility == EventVisibility.Public)
                 .DistinctBy(e => e.Id)
                 .OrderByDescending(e => e.EventDate)
                 .ToList();
