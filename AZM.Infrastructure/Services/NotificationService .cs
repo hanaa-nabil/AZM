@@ -62,10 +62,12 @@ namespace AZM.Infrastructure.Services
                 await PushAsync(n.RecipientId, title, body, n.Id, type.ToString(), relatedEventId, actorId, ct);
         }
 
+
+
         private async Task PushAsync(
-            Guid userId, string title, string body,
-            Guid notificationId, string type, Guid? relatedEventId, Guid? actorId,
-            CancellationToken ct)
+              Guid userId, string title, string body,
+              Guid notificationId, string type, Guid? relatedEventId, Guid? actorId,
+              CancellationToken ct)
         {
             var user = await _userRepo.GetByIdAsync(userId.ToString());
             if (string.IsNullOrEmpty(user?.FcmToken))
@@ -74,10 +76,15 @@ namespace AZM.Infrastructure.Services
                 return;
             }
 
+            var category = relatedEventId.HasValue ? "Event"
+                         : actorId.HasValue ? "User"
+                         : "General";
+
             var data = new Dictionary<string, string>
             {
                 ["notificationId"] = notificationId.ToString(),
                 ["type"] = type,
+                ["category"] = category,  
             };
             if (relatedEventId.HasValue) data["relatedEventId"] = relatedEventId.Value.ToString();
             if (actorId.HasValue) data["actorId"] = actorId.Value.ToString();
@@ -101,6 +108,7 @@ namespace AZM.Infrastructure.Services
             try
             {
                 await FirebaseMessaging.DefaultInstance.SendAsync(message, ct);
+            
                 _logger.LogInformation(
                     "Push sent to user {UserId} for notification {NotificationId} ({Type}).",
                     userId, notificationId, type);

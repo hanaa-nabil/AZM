@@ -88,5 +88,12 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(new DeleteSquadCommand(id, CurrentUserId));
             return result.IsSuccess ? NoContent() : StatusCode(result.StatusCode, new { error = result.Error });
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string q)
+        {
+            var result = await _mediator.Send(new SearchSquadsQuery(q));
+            return Ok(result);
+        }
     }
 }

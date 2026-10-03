@@ -221,6 +221,14 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(new RepublishEventCommand(id, CurrentUserId!.Value));
             return result.IsSuccess ? NoContent() : BadRequest(new { message = result.Error });
         }
+
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string q, [FromQuery] int page = 1, [FromQuery] int pageSize = 20)
+        {
+            Guid? viewerId = Guid.TryParse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var id) ? id : null;
+            var result = await _mediator.Send(new SearchEventsQuery(q, viewerId, page, pageSize));
+            return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+        }
     }
 
 

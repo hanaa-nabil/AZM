@@ -175,6 +175,29 @@ namespace AZM.Infrastructure.Repositories
                 .OrderBy(e => e.EventDate)
                 .ToListAsync(ct);
         }
+
+        public async Task<(IEnumerable<Event> Events, int TotalCount)> SearchAsync(
+    string term, int page, int pageSize, CancellationToken ct = default)
+        {
+            var query = _db.Events
+                .Include(e => e.Organizer)
+                .Include(e => e.Participants)
+                .Include(e => e.Route)
+                .Where(e => e.Status != EventStatus.Cancelled &&
+                            (EF.Functions.Like(e.Title, $"%{term}%") ||
+                             EF.Functions.Like(e.Description, $"%{term}%") ||
+                             EF.Functions.Like(e.LocationName, $"%{term}%")))
+                .AsQueryable();
+
+            var total = await query.CountAsync(ct);
+            var events = await query
+                .OrderByDescending(e => e.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync(ct);
+
+            return (events, total);
+        }
         public async Task<IEnumerable<Event>> GetEventsWithPendingRemindersAsync(TimeSpan window, CancellationToken ct = default)
         {
             var now = DateTime.UtcNow;

@@ -34,7 +34,8 @@ namespace AZM.Domain.Interfaces
         Task<(IEnumerable<Event> Events, int TotalCount)> GetFeedAsync(
     int page, int pageSize, SportType? sportType = null, EventStatus? status = null,
     Guid? viewerId = null, CancellationToken ct = default);
-
+        Task<(IEnumerable<Event> Events, int TotalCount)> SearchAsync(
+    string term, int page, int pageSize, CancellationToken ct = default);
         Task<IEnumerable<Event>> GetNearbyAsync(
             double lat, double lng, double radiusKm, Guid? viewerId = null, CancellationToken ct = default);
 
