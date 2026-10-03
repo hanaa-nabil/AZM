@@ -13,5 +13,8 @@ namespace AZM.Application.DTOs.Event
         public string SportType { get; set; } = string.Empty;
         public double Latitude { get; set; }
         public double Longitude { get; set; }
+        public bool IsPink { get; set; }
+        public bool IsPrivate { get; set; }
+
     }
 }

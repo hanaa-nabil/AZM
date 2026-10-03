@@ -34,7 +34,10 @@ namespace AZM.Application.Events.Handlers
                     Title = e.Title,
                     SportType = e.SportType.ToString(),
                     Latitude = e.Latitude,
-                    Longitude = e.Longitude
+                    Longitude = e.Longitude,
+                    IsPink = e.IsPink,
+                    IsPrivate = e.IsPrivate
+
                 });
 
             return Result<IEnumerable<NearbyEventDto>>.Success(items);
