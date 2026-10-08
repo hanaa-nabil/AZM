@@ -50,7 +50,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> UseStreakFreeze()
         {
             var success = await _mediator.Send(new UseStreakFreezeCommand(CurrentUserId));
-            return success ? Ok() : BadRequest(new { message = "No streak freezes available." });
+            return success ? Ok() : BadRequest(new { error = "No streak freezes available." });
         }
 
         [HttpPost("{id:guid}/finish-event")]
@@ -61,7 +61,7 @@ namespace AZM.Api.Controllers
 
             return result.IsSuccess
                 ? Ok(new { message = "Event completed." })
-                : BadRequest(new { message = result.Error });
+                : BadRequest(new { error = result.Error });
         }
 
         [HttpGet("{userId:guid}/events")]
@@ -70,7 +70,7 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(new GetUserEventsQuery(userId));
             return result.IsSuccess
                 ? Ok(result.Data)
-                : BadRequest(new { message = result.Error });
+                : BadRequest(new { error = result.Error });
         }
 
         [HttpGet("{userId:guid}")]

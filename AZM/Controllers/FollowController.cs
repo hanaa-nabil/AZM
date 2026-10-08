@@ -27,7 +27,7 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(new FollowUserCommand(CurrentUserId, userId));
             return result.IsSuccess
                 ? Ok(new { message = "Followed successfully." })
-                : StatusCode(result.StatusCode, new { message = result.Error });
+                : StatusCode(result.StatusCode, new { error = result.Error });
         }
 
         [HttpPost("username/{username}")]
@@ -36,7 +36,7 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(new FollowUserByUsernameCommand(CurrentUserId, username));
             return result.IsSuccess
                 ? Ok(new { message = "Followed successfully." })
-                : StatusCode(result.StatusCode, new { message = result.Error });
+                : StatusCode(result.StatusCode, new { error = result.Error });
         }
 
         [HttpDelete("{userId:guid}")]
@@ -45,7 +45,7 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(new UnfollowUserCommand(CurrentUserId, userId));
             return result.IsSuccess
                 ? Ok(new { message = "Unfollowed successfully." })
-                : StatusCode(result.StatusCode, new { message = result.Error });
+                : StatusCode(result.StatusCode, new { error = result.Error });
         }
 
         [HttpDelete("username/{username}")]
@@ -54,7 +54,7 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(new UnfollowUserByUsernameCommand(CurrentUserId, username));
             return result.IsSuccess
                 ? Ok(new { message = "Unfollowed successfully." })
-                : StatusCode(result.StatusCode, new { message = result.Error });
+                : StatusCode(result.StatusCode, new { error = result.Error });
         }
 
         [HttpGet("followers")]

@@ -18,7 +18,8 @@ namespace AZM.Domain.Entities
         public SquadMemberStatus Status { get; private set; }
         public DateTime RequestedAt { get; private set; }
         public DateTime? ApprovedAt { get; private set; }
-
+        public DateTime? LastReadAt { get; private set; }
+        public void MarkRead() => LastReadAt = DateTime.UtcNow;
         private SquadMember() { }
 
         public static SquadMember CreateFounder(Guid squadId, Guid userId)
@@ -54,7 +55,13 @@ namespace AZM.Domain.Entities
             Status = SquadMemberStatus.Approved;
             ApprovedAt = DateTime.UtcNow;
         }
-
+        public void Reapply(bool autoApprove)
+        {
+            Role = SquadMemberRole.Member;
+            Status = autoApprove ? SquadMemberStatus.Approved : SquadMemberStatus.Pending;
+            RequestedAt = DateTime.UtcNow;
+            ApprovedAt = autoApprove ? DateTime.UtcNow : null;
+        }
         public void Remove() => Status = SquadMemberStatus.Removed;
 
         public void PromoteToCoCaptain() => Role = SquadMemberRole.CoCaptain;

@@ -22,14 +22,15 @@ namespace AZM.Application.Notifications.Queries
                 Body = n.Body,
                 IsRead = n.IsRead,
                 CreatedAt = n.CreatedAt,
-
+                SquadId = n.RelatedSquadId,
                 // Event takes priority when a notification has both (e.g. "X joined your event" —
                 // has an Actor AND a RelatedEventId; the primary navigation target is the event).
-                Category = n.RelatedEventId.HasValue
-                    ? NotificationCategory.Event
-                    : n.Actor is not null
-                        ? NotificationCategory.User
+                Category = n.RelatedSquadId.HasValue ?NotificationCategory.Squad
+                          :n.RelatedEventId.HasValue  ? NotificationCategory.Event
+                          :n.Actor is not null ? NotificationCategory.User
                         : NotificationCategory.General,
+
+
 
                 RelatedEventId = n.RelatedEventId,
                 Actor = n.Actor is null ? null : new NotificationActorDto

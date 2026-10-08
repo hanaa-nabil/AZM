@@ -8,5 +8,6 @@ using System.Threading.Tasks;
 
 namespace AZM.Application.Squad.Commands
 {
-    public record RequestToJoinSquadCommand(Guid SquadId, Guid UserId) : IRequest<Result<bool>>;
+    public record RequestToJoinSquadCommand(Guid SquadId, Guid UserId) : IRequest<Result<string>>;
+
 }

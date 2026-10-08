@@ -87,7 +87,9 @@ namespace AZM.Infrastructure.DependencyInjection
             services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
             services.AddScoped<ISquadRepository, SquadRepository>();
             services.AddScoped<IFollowRepository, FollowRepository>();
-
+          
+            services.AddScoped<ISquadMessageRepository, SquadMessageRepository>();
+            services.AddSingleton<ISquadPresence, SquadPresence>();
             services.AddScoped<AccountPurgeJob>();
             services.AddHostedService<EventCompletionBackgroundService>();
             return services;

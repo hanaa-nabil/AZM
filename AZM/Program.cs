@@ -2,6 +2,7 @@ using AZM.Api.Middleware;
 using AZM.Application.Auth.Handlers;
 using AZM.Infrastructure.BackgroundJobs;
 using AZM.Infrastructure.DependencyInjection;
+using AZM.Infrastructure.Hubs;
 using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Hangfire;
@@ -44,6 +45,9 @@ namespace AZM.Api
             // Infrastructure
             builder.Services.AddInfrastructure(builder.Configuration);
 
+            //signalR
+            builder.Services.AddSignalR();
+
             // MediatR
             builder.Services.AddMediatR(cfg =>
                 cfg.RegisterServicesFromAssemblyContaining<RegisterCommandHandler>());
@@ -71,6 +75,7 @@ namespace AZM.Api
                          Encoding.UTF8.GetBytes(jwtSection["SecretKey"]!))
                  };
 
+
                  options.Events = new JwtBearerEvents
                  {
                      OnChallenge = async context =>
@@ -97,7 +102,17 @@ namespace AZM.Api
                          context.Response.ContentType = "application/json";
                          var json = JsonSerializer.Serialize(new { error = "You do not have permission to perform this action." });
                          await context.Response.WriteAsync(json);
+                     },
+
+                     OnMessageReceived = context =>
+                     {
+                         var token = context.Request.Query["access_token"];
+                         if (!string.IsNullOrEmpty(token) &&
+                             context.HttpContext.Request.Path.StartsWithSegments("/hubs"))
+                             context.Token = token;
+                         return Task.CompletedTask;
                      }
+
                  };
              });
 
@@ -227,6 +242,8 @@ namespace AZM.Api
             {
                 initialized = FirebaseAdmin.FirebaseApp.DefaultInstance != null
             }));
+           
+           app.MapHub<SquadChatHub>("/hubs/squad-chat");
             app.Run();
         }
     }

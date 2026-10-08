@@ -33,7 +33,9 @@ namespace AZM.Infrastructure.BackgroundJobs
                         "Event starting soon!",
                         $"{ev.Title} starts in {minutesLeft} minutes. Get ready!",
                         relatedEventId: ev.Id,
-                        actorId: ev.OrganizerId);
+                        actorId: ev.OrganizerId
+                        //squadId: ev.squadid,
+                        );
 
                     foreach (var p in pending)
                     {

@@ -38,7 +38,7 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(
                 new GetEventFeedQuery(CurrentUserId, page, pageSize, sportType, status));
 
-            return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+            return result.IsSuccess ? Ok(result.Data) : BadRequest(new { error = result.Error });
         }
 
         // ── Nearby ────────────────────────────────────────────────────────────────
@@ -56,7 +56,7 @@ namespace AZM.Api.Controllers
             var result = await _mediator.Send(
                 new GetNearbyEventsQuery(latitude, longitude, radiusKm, CurrentUserId));
 
-            return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+            return result.IsSuccess ? Ok(result.Data) : BadRequest(new { error = result.Error });
         }
 
         // ── Detail ────────────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> GetById(Guid id)
         {
             var result = await _mediator.Send(new GetEventByIdQuery(id, CurrentUserId));
-            return result.IsSuccess ? Ok(result.Data) : NotFound(result.Error);
+            return result.IsSuccess ? Ok(result.Data) : NotFound(new { error = result.Error });
         }
 
         // ── Participants ──────────────────────────────────────────────────────────
@@ -82,7 +82,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> GetParticipants(Guid id)
         {
             var result = await _mediator.Send(new GetEventParticipantsQuery(id));
-            return result.IsSuccess ? Ok(result.Data) : NotFound(result.Error);
+            return result.IsSuccess ? Ok(result.Data) : NotFound(new { error = result.Error });
         }
 
         // ── My Events ─────────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> GetMyJoined()
         {
             var result = await _mediator.Send(new GetMyJoinedEventsQuery(CurrentUserId!.Value));
-            return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+            return result.IsSuccess ? Ok(result.Data) : BadRequest(new { error = result.Error });
         }
 
         /// <summary>
@@ -107,7 +107,7 @@ namespace AZM.Api.Controllers
         {
             var result = await _mediator.Send(
                 new GetOrganizerEventsQuery(CurrentUserId!.Value, CurrentUserId));
-            return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+            return result.IsSuccess ? Ok(result.Data) : BadRequest(new { error = result.Error });
         }
 
 
@@ -170,7 +170,7 @@ namespace AZM.Api.Controllers
                 IsPink: request.IsPink,
                 Route: routeDto);
                 var result = await _mediator.Send(cmd);
-            return result.IsSuccess ? NoContent() : BadRequest(new { message = result.Error });
+            return result.IsSuccess ? NoContent() : BadRequest(new { error = result.Error });
         }
 
         
@@ -179,7 +179,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> Cancel(Guid id)
         {
             var result = await _mediator.Send(new CancelEventCommand(id, CurrentUserId!.Value));
-            return result.IsSuccess ? NoContent() : BadRequest(new { message = result.Error });
+            return result.IsSuccess ? NoContent() : BadRequest(new { error = result.Error });
         }
 
         // ── Join / Leave ──────────────────────────────────────────────────────────
@@ -192,7 +192,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> Join(Guid id)
         {
             var result = await _mediator.Send(new JoinEventCommand(id, CurrentUserId!.Value));
-            return result.IsSuccess ? Ok(new { message = "Joined successfully." }) : BadRequest(new { message = result.Error });
+            return result.IsSuccess ? Ok(new { message = "Joined successfully." }) : BadRequest(new { error = result.Error });
 
         }
 
@@ -205,7 +205,7 @@ namespace AZM.Api.Controllers
         {
             var result = await _mediator.Send(new LeaveEventCommand(id, CurrentUserId!.Value));
 
-            return result.IsSuccess ? Ok(new { message = "Left successfully." }) : BadRequest(new { message = result.Error });
+            return result.IsSuccess ? Ok(new { message = "Left successfully." }) : BadRequest(new { error = result.Error });
         }
 
         [HttpGet("{userId:guid}/events/counts")]
@@ -219,7 +219,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> Republish(Guid id)
         {
             var result = await _mediator.Send(new RepublishEventCommand(id, CurrentUserId!.Value));
-            return result.IsSuccess ? NoContent() : BadRequest(new { message = result.Error });
+            return result.IsSuccess ? NoContent() : BadRequest(new { error = result.Error });
         }
 
         [HttpGet("search")]
@@ -227,7 +227,7 @@ namespace AZM.Api.Controllers
         {
             Guid? viewerId = Guid.TryParse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var id) ? id : null;
             var result = await _mediator.Send(new SearchEventsQuery(q, viewerId, page, pageSize));
-            return result.IsSuccess ? Ok(result.Data) : BadRequest(result.Error);
+            return result.IsSuccess ? Ok(result.Data) : BadRequest(new { error = result.Error });
         }
     }
 

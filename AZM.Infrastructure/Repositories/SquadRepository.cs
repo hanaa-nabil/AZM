@@ -70,14 +70,13 @@ namespace AZM.Infrastructure.Repositories
                 .Where(m => m.SquadId == squadId && m.Status == SquadMemberStatus.Pending)
                 .ToListAsync(ct);
 
+      
         public async Task<List<Squad>> GetMySquadsAsync(Guid userId, CancellationToken ct = default)
-            => await _db.SquadMembers
-                .Where(m => m.UserId == userId && m.Status == SquadMemberStatus.Approved)
-                .Select(m => m.Squad)
-                .Include(s => s.Founder)
-                .Include(s => s.Members)
-                .ToListAsync(ct);
-
+              => await _db.Squads
+                 .Include(s => s.Founder)
+                 .Include(s => s.Members)
+                 .Where(s => s.Members.Any(m => m.UserId == userId && m.Status == SquadMemberStatus.Approved))
+                 .ToListAsync(ct);
         public async Task<List<Squad>> GetNearbyAsync(double lat, double lng, double radiusKm, CancellationToken ct = default)
         {
             double latDelta = radiusKm / 111.0;
@@ -99,5 +98,21 @@ namespace AZM.Infrastructure.Repositories
                 .Include(s => s.Members)
                 .Where(s => EF.Functions.Like(s.Name, $"%{term}%"))
                 .ToListAsync(ct);
+
+
+        public async Task<List<Guid>> GetCoMemberIdsAsync(Guid userId, CancellationToken ct = default)
+        {
+            var mySquadIds = _db.SquadMembers
+                .Where(m => m.UserId == userId && m.Status == SquadMemberStatus.Approved)
+                .Select(m => m.SquadId);
+
+            return await _db.SquadMembers
+                .Where(m => mySquadIds.Contains(m.SquadId)
+                            && m.UserId != userId
+                            && m.Status == SquadMemberStatus.Approved)
+                .Select(m => m.UserId)
+                .Distinct()
+                .ToListAsync(ct);
+        }
     }
 }

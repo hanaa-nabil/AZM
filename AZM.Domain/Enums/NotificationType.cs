@@ -24,6 +24,13 @@ namespace AZM.Domain.Enums
         NewFollower,
         FollowedUserPublishedEvent,
         FollowedUserJoinedEvent,
-        FollowedUserEarnedBadge
+        FollowedUserEarnedBadge,
+        SquadMessage,
+        SquadJoinRequest,
+        SquadMemberJoined,
+        SquadRequestApproved,
+        SquadMemberRemoved,
+        SquadEventPinned,
+        NearbyFriend
     }
 }

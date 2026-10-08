@@ -23,7 +23,8 @@ namespace AZM.Domain.Entities
 
         public Guid FounderId { get; private set; }
         public User Founder { get; private set; } = null!;
-
+        public Guid? PinnedEventId { get; private set; }
+        public void PinEvent(Guid? eventId) => PinnedEventId = eventId;
         public ICollection<SquadMember> Members { get; private set; } = new List<SquadMember>();
 
         public int MemberCount => Members.Count(m => m.Status == SquadMemberStatus.Approved);

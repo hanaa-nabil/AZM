@@ -10,6 +10,7 @@ namespace AZM.Application.DTOs.Notification
     {
         General = 0,
         User = 1,    
-        Event = 2    
+        Event = 2  ,
+        Squad = 3,
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AZM.Domain.DomainEvents;
+using AZM.Domain.Entities;
 using AZM.Domain.Enums;
 using AZM.Domain.Interfaces;
 using MediatR;
@@ -25,6 +26,7 @@ namespace AZM.Application.Notifications.Handler
                 "Event cancelled",
                 "An event you joined was cancelled",
                 e.EventId,
+                
                 ct: ct);
     }
 }

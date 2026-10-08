@@ -23,10 +23,6 @@ namespace AZM.Application.DTOs.Auth
         public string Email { get; set; } = string.Empty;
 
         [Required, MinLength(8), MaxLength(128)]
-        [RegularExpression(
-            @"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&\#_])[A-Za-z\d@$!%*?&\#_]{8,}$",
-            ErrorMessage = "Password must have uppercase, lowercase, digit, and special character.")]
-        [DefaultValue("Test@1234")]
         public string Password { get; set; } = string.Empty;
 
         [Required]

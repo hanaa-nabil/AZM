@@ -21,5 +21,6 @@ namespace AZM.Domain.Entities
         public User? Actor { get; set; }
         public User Recipient { get; set; } = default!;
         public Event? RelatedEvent { get; set; }
+        public Guid? RelatedSquadId { get; set; }
     }
 }

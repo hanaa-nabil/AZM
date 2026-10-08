@@ -17,6 +17,7 @@ namespace AZM.Application.DTOs.Notification
 
         public NotificationCategory Category { get; set; }
         public NotificationActorDto? Actor { get; set; }        // present only when Category == User (or Event, if an actor also exists)
-        public Guid? RelatedEventId { get; set; }                // present only when Category == Event
+        public Guid? RelatedEventId { get; set; }
+        public Guid? SquadId { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AZM.Domain.DomainEvents;
+using AZM.Domain.Entities;
 using AZM.Domain.Enums;
 using AZM.Domain.Interfaces;
 using MediatR;
@@ -34,7 +35,6 @@ namespace AZM.Application.Notifications.Handlers
             var followerIds = await _followRepository.GetFollowerIdsAsync(notification.ParticipantId);
             if (followerIds.Count == 0)
                 return;
-
             var participant = await _userRepository.GetByIdAsync(notification.ParticipantId.ToString());
             var name = participant?.FullName ?? "Someone you follow";
 

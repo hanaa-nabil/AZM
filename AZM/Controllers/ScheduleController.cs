@@ -26,7 +26,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> GetAttending()
         {
             var result = await _mediator.Send(new GetMyJoinedEventsQuery(CurrentUserId));
-            if (!result.IsSuccess) return BadRequest(new { message = result.Error });
+            if (!result.IsSuccess) return BadRequest(new { error = result.Error });
 
             var upcoming = result.Data!
                 .Where(e => e.EventDate >= DateTime.UtcNow && (e.Status == "Upcoming" || e.Status == "Soon"))
@@ -41,7 +41,7 @@ namespace AZM.Api.Controllers
         public async Task<IActionResult> GetHosting()
         {
             var result = await _mediator.Send(new GetOrganizerEventsQuery(CurrentUserId, CurrentUserId));
-            if (!result.IsSuccess) return BadRequest(new { message = result.Error });
+            if (!result.IsSuccess) return BadRequest(new { error = result.Error });
 
             var startOfToday = DateTime.UtcNow.Date;
 

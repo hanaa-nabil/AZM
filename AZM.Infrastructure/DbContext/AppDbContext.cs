@@ -27,6 +27,10 @@ namespace AZM.Infrastructure.DbContext
         public DbSet<Follow> Follows => Set<Follow>();
         public DbSet<Squad> Squads => Set<Squad>();
         public DbSet<SquadMember> SquadMembers => Set<SquadMember>();
+        public DbSet<SquadMessage> SquadMessages => Set<SquadMessage>();
+
+        // OnModelCreating
+        
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
@@ -134,6 +138,20 @@ namespace AZM.Infrastructure.DbContext
                 .WithMany(s => s.Members)
                 .HasForeignKey(m => m.SquadId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            builder.Entity<SquadMessage>()
+               .HasOne(m => m.Squad).WithMany().HasForeignKey(m => m.SquadId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+            // NoAction avoids the SQL Server "multiple cascade paths" error you hit before
+            builder.Entity<SquadMessage>()
+              .HasOne(m => m.Sender).WithMany().HasForeignKey(m => m.SenderId)
+              .OnDelete(DeleteBehavior.NoAction);
+
+            builder.Entity<SquadMessage>().HasIndex(m => new {
+                m.SquadId,
+                m.SentAt
+            });
         }
 }
 }
