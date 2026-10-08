@@ -18,5 +18,7 @@ namespace AZM.Domain.Interfaces
         Task DeleteAllAsync(Guid userId);
         Task<bool> ExistsForDateAsync(Guid userId, NotificationType type, DateOnly date);
         Task MarkAllReadAsync(Guid userId);
+        Task<bool> ExistsRecentAsync(Guid recipientId, Guid actorId, NotificationType type,
+                DateTime sinceUtc, CancellationToken ct = default);
     }
 }

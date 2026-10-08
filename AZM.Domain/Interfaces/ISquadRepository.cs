@@ -25,5 +25,6 @@ namespace AZM.Domain.Interfaces
         Task<List<Squad>> GetNearbyAsync(double lat, double lng, double radiusKm, CancellationToken ct = default);
         Task<List<Squad>> SearchAsync(string term, CancellationToken ct = default);
         Task<List<Guid>> GetCoMemberIdsAsync(Guid userId, CancellationToken ct = default);
+
     }
 }

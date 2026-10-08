@@ -19,5 +19,9 @@ namespace AZM.Domain.Interfaces
         Task<List<UserProfile>> GetUsersWithStreakLastActiveAsync(DateOnly date);
         Task RecordDailyActivityAsync(Guid userId, DateOnly date);
         Task<List<UserDailyActivity>> GetRecentActivityAsync(Guid userId, int days);
+
+        Task<List<UserProfile>> GetNearbyProfilesAsync(IEnumerable<Guid> userIds, double lat, double lng,
+    double radiusKm, DateTime freshAfterUtc, CancellationToken ct = default);
+
     }
 }

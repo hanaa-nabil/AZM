@@ -22,6 +22,28 @@ namespace AZM.Domain.Entities
         public User? User { get; set; }
 
         private readonly List<INotification> _domainEvents = new();
+        public double? Latitude { get; private set; }
+        public double? Longitude { get; private set; }
+        public DateTime? LocationUpdatedAt { get; private set; }
+        public bool ShareLocation { get; private set; }
+
+        public void SetLocationSharing(bool enabled)
+        {
+            ShareLocation = enabled;
+            if (!enabled)
+            {
+                Latitude = null;
+                Longitude = null;
+                LocationUpdatedAt = null;
+            }
+        }
+
+        public void UpdateLocation(double lat, double lng)
+        {
+            Latitude = lat;
+            Longitude = lng;
+            LocationUpdatedAt = DateTime.UtcNow;
+        }
 
         /// <summary>
         /// Not mapped by EF — read by whatever dispatches domain events on SaveChanges

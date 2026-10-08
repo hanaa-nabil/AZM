@@ -1,4 +1,5 @@
-﻿using AZM.Domain.Entities;
+﻿using AZM.Domain.DomainEvents;
+using AZM.Domain.Entities;
 using AZM.Domain.Interfaces;
 using AZM.Infrastructure.DbContext;
 using Microsoft.AspNetCore.Identity;
@@ -119,12 +120,32 @@ namespace AZM.Infrastructure.Repositories
                 .Where(a => a.UserId == userId && a.Date >= since)
                 .ToListAsync();
         }
-        
+        public async Task<List<UserProfile>> GetNearbyProfilesAsync(IEnumerable<Guid> userIds, double lat, double lng,
+               double radiusKm, DateTime freshAfterUtc, CancellationToken ct = default)
+        {
+            var ids = userIds.ToList();
+            double latDelta = radiusKm / 111.0;
+            double lngDelta = radiusKm / (111.0 * Math.Cos(lat * Math.PI / 180));
+
+            var candidates = await _db.UserProfiles
+                .Include(p => p.User)
+                .Where(p => ids.Contains(p.UserId) && p.ShareLocation
+                    && p.LocationUpdatedAt >= freshAfterUtc
+                    && p.Latitude >= lat - latDelta && p.Latitude <= lat + latDelta
+                    && p.Longitude >= lng - lngDelta && p.Longitude <= lng + lngDelta)
+                .ToListAsync(ct);
+
+            return candidates
+                .Where(p => GeoUtils.DistanceKm(lat, lng, p.Latitude!.Value, p.Longitude!.Value) <= radiusKm)
+                .ToList();
+        }
         public async Task<User?> GetByUsernameWithDetailsAsync(string username, CancellationToken ct = default)
             => await _db.Users
                 .Include(u => u.Profile)
                 .Include(u => u.Sports)
                 .FirstOrDefaultAsync(u => u.UserName == username, ct);
+
+       
 
     }
 }

@@ -107,12 +107,12 @@ namespace AZM.Infrastructure.Repositories
                 .Select(m => m.SquadId);
 
             return await _db.SquadMembers
-                .Where(m => mySquadIds.Contains(m.SquadId)
-                            && m.UserId != userId
-                            && m.Status == SquadMemberStatus.Approved)
-                .Select(m => m.UserId)
-                .Distinct()
-                .ToListAsync(ct);
+              .Where(m => mySquadIds.Contains(m.SquadId) && m.UserId != userId
+                          && m.Status == SquadMemberStatus.Approved)
+              .Select(m => m.UserId).Distinct().ToListAsync(ct);
         }
+
+
+      
     }
 }

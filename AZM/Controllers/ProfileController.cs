@@ -1,6 +1,7 @@
 ﻿using AZM.Application.DTOs.User;
 using AZM.Application.Users.Commands;
 using AZM.Application.Users.Queries;
+using AZM.Application.Users.Requests;
 using AZM.Domain.Enums;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
@@ -87,6 +88,24 @@ namespace AZM.Api.Controllers
             Guid? viewerId = Guid.TryParse(User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value, out var id) ? id : null;
             var result = await _mediator.Send(new GetUserProfileByUsernameQuery(username, viewerId));
             return Ok(result);
+        }
+
+
+
+        [HttpPut("location-sharing")]
+        public async Task<IActionResult> SetLocationSharing([FromBody] LocationSharingRequest r)
+        {
+            var result = await _mediator.Send(new SetLocationSharingCommand(CurrentUserId, r.Enabled));
+            return result.IsSuccess ? NoContent()
+                : StatusCode(result.StatusCode == 0 ? 400 : result.StatusCode, new { error = result.Error });
+        }
+
+        [HttpPut("location")]
+        public async Task<IActionResult> UpdateLocation([FromBody] LocationRequest r)
+        {
+            var result = await _mediator.Send(new UpdateMyLocationCommand(CurrentUserId, r.Latitude, r.Longitude));
+            return result.IsSuccess ? NoContent()
+                : StatusCode(result.StatusCode == 0 ? 400 : result.StatusCode, new { error = result.Error });
         }
     }
 }

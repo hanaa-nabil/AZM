@@ -77,5 +77,11 @@ namespace AZM.Infrastructure.Repositories
                 n.CreatedAt >= start &&
                 n.CreatedAt < end);
         }
+
+        public Task<bool> ExistsRecentAsync(Guid recipientId, Guid actorId, NotificationType type,
+              DateTime sinceUtc, CancellationToken ct = default)
+                   => _context.Notifications.AnyAsync(n => n.RecipientId == recipientId && n.ActorId == actorId
+                     && n.Type == type && n.CreatedAt >= sinceUtc, ct);
+
     }
 }
